@@ -26,14 +26,21 @@ using Terraria.WorldBuilding;
 using SeldomArchipelago.HardmodeItem;
 using System.Linq;
 using SeldomArchipelago.NPCs;
+using System.Formats.Tar;
+using Archipelago.MultiClient.Net.MessageLog.Messages;
 
 namespace SeldomArchipelago.Systems
 {
     class ArchipelagoSystem : ModSystem
     {
         // Data that's reset between worlds
-        public class WorldState
+        public class WorldState : TagSerializable
         {
+            public static readonly Func<TagCompound, WorldState> DESERIALIZER = LoadFromTagCompound;
+            // The slot & multiworld seed the world initialized under.
+            // We keep a copy here and in SessionState to prevent unwanted cross-pollination between different saves.
+            public string slotName = null;
+            public string seed = null;
             // Achievements can be completed while loading into the world, but those complete before
             // `ArchipelagoPlayer::OnEnterWorld`, where achievements are reset, is run. So, this
             // keeps track of which achievements have been completed since `OnWorldLoad` was run, so
@@ -62,11 +69,51 @@ namespace SeldomArchipelago.Systems
             public Dictionary<int, int> npcLocTypeToNpcItemType = null;
 
             public bool NPCRandoActive() => randomizedNPCs is not null;
+            public TagCompound SerializeData()
+            {
+                var tag = new TagCompound
+                {
+                    [nameof(slotName)] = slotName,
+                    [nameof(seed)] = seed,
+                    [nameof(locationBacklog)] = locationBacklog,
+                    [nameof(collectedItems)] = collectedItems,
+                    [nameof(receivedRewards)] = receivedRewards,
+                };
+                if (NPCRandoActive())
+                {
+                    tag[nameof(randomizedNPCs)] = randomizedNPCs.ToList();
+                    tag[nameof(receivedNPCs)] = receivedNPCs.ToList();
+                    tag[nameof(npcLocTypeToNpcItemType) + "Keys"] = npcLocTypeToNpcItemType.Keys.ToList();
+                    tag[nameof(npcLocTypeToNpcItemType) + "Values"] = npcLocTypeToNpcItemType.Values.ToList();
+                }
+                return tag;
+            }
+            public static WorldState LoadFromTagCompound(TagCompound tag)
+            {
+                var world = new WorldState();
+                world.slotName = tag.GetString(nameof(slotName));
+                world.seed = tag.GetString(nameof(seed));
+                world.locationBacklog = tag.Get<List<string>>(nameof(locationBacklog));
+                world.collectedItems = tag.GetInt(nameof(collectedItems));
+                world.receivedRewards = tag.Get<List<int>>(nameof(receivedRewards));
+                if (tag.TryGet(nameof(randomizedNPCs), out List<int> ranNPC))
+                {
+                    world.randomizedNPCs = ranNPC.ToImmutableHashSet();
+                    world.receivedNPCs = tag.Get<List<int>>(nameof(receivedNPCs)).ToHashSet();
+                    var npcKeys = tag.Get<List<int>>(nameof(npcLocTypeToNpcItemType) + "Keys");
+                    var npcValues = tag.Get<List<int>>(nameof(npcLocTypeToNpcItemType) + "Values");
+                    world.npcLocTypeToNpcItemType = npcKeys.Zip(npcValues, (k, v) => new { Key = k, Value = v }).ToDictionary(x => x.Key, x => x.Value);
+                }
+                return world;
+            }
         }
 
         // Data that's reset between Archipelago sessions
         public class SessionState
         {
+            // The slot & multiworld seed of the currently connected session.
+            public string slotName = null;
+            public string seed = null;
             // List of locations that are currently being sent
             public List<Task<Dictionary<long, ScoutedItemInfo>>> locationQueue = new List<Task<Dictionary<long, ScoutedItemInfo>>>();
             public ArchipelagoSession session;
@@ -94,12 +141,20 @@ namespace SeldomArchipelago.Systems
 
         public override void LoadWorldData(TagCompound tag)
         {
-            world.collectedItems = tag.ContainsKey("ApCollectedItems") ? tag.Get<int>("ApCollectedItems") : 0;
-            world.receivedRewards = tag.ContainsKey("ApReceivedRewards") ? tag.Get<List<int>>("ApReceivedRewards") : new();
-            world.receivedNPCs = tag.ContainsKey("ApReceivedNPCs") ? tag.Get<List<int>>("ApReceivedNPCs").ToHashSet() : new();
-            world.randomizedNPCs = tag.ContainsKey("ApRandomizedNPCs") ? tag.Get<List<int>>("ApRandomizedNPCs").ToImmutableHashSet() : null;
+            if (tag.TryGet<WorldState>("ApWorldData", out var worldData) && worldData.seed != "")  // Empty worldstates get saved to new worlds, so we check for that
+            {
+                world = worldData;
+            }
         }
-
+        public void ApMessageToChat(LogMessage message)
+        {
+            var text = "";
+            foreach (var part in message.Parts)
+            {
+                text += part.Text;
+            }
+            Chat(text);
+        }
         public override void OnWorldLoad()
         {
             // Needed for achievements to work right
@@ -138,15 +193,7 @@ namespace SeldomArchipelago.Systems
             var success = (LoginSuccessful)result;
             session.goals = new List<string>(((JArray)success.SlotData["goal"]).ToObject<string[]>());
 
-            session.session.MessageLog.OnMessageReceived += (message) =>
-            {
-                var text = "";
-                foreach (var part in message.Parts)
-                {
-                    text += part.Text;
-                }
-                Chat(text);
-            };
+            session.session.MessageLog.OnMessageReceived += ApMessageToChat;
 
             if ((bool)success.SlotData["deathlink"])
             {
@@ -190,6 +237,12 @@ namespace SeldomArchipelago.Systems
             }
 
             session.slot = success.Slot;
+            string theSlotName = session.session.Players.GetPlayerName(session.slot);
+            string theSeed = session.session.RoomState.Seed;
+            session.slotName = theSlotName;
+            world.slotName = theSlotName;
+            session.seed = theSeed;
+            world.seed = theSeed;
 
             foreach (var location in world.locationBacklog) QueueLocation(location);
             world.locationBacklog.Clear();
@@ -488,6 +541,13 @@ namespace SeldomArchipelago.Systems
         {
             if (session == null) return;
 
+            if (session.slotName != world.slotName || session.seed != world.seed)
+            {
+                Chat($"WARNING: Disparity between world & server data detected.\nSERVER SEED: {session.seed}\nSERVER SLOT: {session.slotName}\nWORLD SEED: {world.seed}\nWORLD SLOT: {world.slotName}");
+                session = null;
+                return;
+            }
+
             if (!session.session.Socket.Connected)
             {
                 Chat("Disconnected from Archipelago. Reload the world to reconnect.");
@@ -555,17 +615,11 @@ namespace SeldomArchipelago.Systems
 
         public override void SaveWorldData(TagCompound tag)
         {
-            tag["ApCollectedItems"] = world.collectedItems;
             if (session != null)
             {
                 session.session.DataStorage[Scope.Slot, "CollectedLocations"] = session.collectedLocations.ToArray();
             }
-            tag["ApReceivedRewards"] = world.receivedRewards;
-            tag["ApReceivedNPCs"] = world.receivedNPCs.ToList();
-            if (world.NPCRandoActive())
-            {
-                tag["ApRandomizedNPCs"] = world.randomizedNPCs.ToList();
-            }
+            tag["ApWorldData"] = world;
         }
 
         public void Reset()
@@ -578,6 +632,7 @@ namespace SeldomArchipelago.Systems
 
         public override void OnWorldUnload()
         {
+            session.session.MessageLog.OnMessageReceived -= ApMessageToChat;
             world = new();
             Reset();
         }
