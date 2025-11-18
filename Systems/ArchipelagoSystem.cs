@@ -184,11 +184,7 @@ namespace SeldomArchipelago.Systems
             session = new();
             session.session = newSession;
 
-            var locations = session.session.DataStorage[Scope.Slot, "CollectedLocations"].To<String[]>();
-            if (locations != null)
-            {
-                session.collectedLocations = new List<string>(locations);
-            }
+            session.collectedLocations = (from id in session.session.Locations.AllLocationsChecked select session.session.Locations.GetLocationNameFromId(id)).ToList();
 
             var success = (LoginSuccessful)result;
             session.goals = new List<string>(((JArray)success.SlotData["goal"]).ToObject<string[]>());
@@ -615,10 +611,6 @@ namespace SeldomArchipelago.Systems
 
         public override void SaveWorldData(TagCompound tag)
         {
-            if (session != null)
-            {
-                session.session.DataStorage[Scope.Slot, "CollectedLocations"] = session.collectedLocations.ToArray();
-            }
             tag["ApWorldData"] = world;
         }
 
