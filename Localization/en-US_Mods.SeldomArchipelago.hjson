@@ -37,6 +37,11 @@ Configs: {
 			Label: Debug Mode
 			Tooltip: ""
 		}
+
+		rarityBalance: {
+			Label: Balance Weapons By Rarity
+			Tooltip: ""
+		}
 	}
 }
 
