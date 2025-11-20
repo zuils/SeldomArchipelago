@@ -30,12 +30,12 @@ namespace SeldomArchipelago.Config
 
         [Header("Miscellaneous")]
 
-        [Label("Debug Mode")]
-        [DefaultValue(false)]
-        public bool debug;
-
         [Label("Receive Hardmode As Item")]
         [DefaultValue(false)]
         public bool hardmodeAsItem;
+
+        [Label("Debug Mode")]
+        [DefaultValue(false)]
+        public bool debug;
     }
 }
