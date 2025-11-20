@@ -681,7 +681,7 @@ namespace SeldomArchipelago.Systems
 
                 info.Add($"You've collected {world.collectedItems} items");
                 info.Add($"NPC randomization is {(world.NPCRandoActive() ? "en" : "dis")}abled");
-                info.Add($"Received NPC IDs: [{string.Join(", ", world.receivedNPCs)}]");
+                info.Add($"Received NPC IDs: [{string.Join(", ", from npc in world.receivedNPCs select npcIDtoName[npc])}]");
             }
 
             if (session == null)

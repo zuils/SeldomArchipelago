@@ -32,6 +32,11 @@ Configs: {
 			Label: Receive Hardmode As Item
 			Tooltip: ""
 		}
+
+		debug: {
+			Label: Debug Mode
+			Tooltip: ""
+		}
 	}
 }
 
