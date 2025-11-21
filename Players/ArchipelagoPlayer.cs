@@ -22,6 +22,8 @@ namespace SeldomArchipelago.Players
         // been sent out (because they weren't in-game at the time), it's free in the collection
         // shop.
         List<int> receivedRewards = new();
+        // The player's current summon damage multiplier in respects to rarity balance.
+        public float summonMultiplier = 1f;
 
         public override void OnEnterWorld()
         {
@@ -127,5 +129,13 @@ namespace SeldomArchipelago.Players
 
         public void ReceivedReward(int item) => receivedRewards.Add(item);
         public bool HasReceivedReward(int item) => receivedRewards.Contains(item);
+        public override void PostUpdateBuffs()
+        {
+            if (Player.numMinions == 0)
+            {
+                summonMultiplier = 1f;
+                Main.NewText("I'm very happy.");
+            }
+        }
     }
 }

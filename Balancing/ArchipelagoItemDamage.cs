@@ -8,6 +8,7 @@ using Terraria.GameContent.UI;
 using Terraria.ModLoader;
 using Terraria.ID;
 using Terraria.DataStructures;
+using SeldomArchipelago.Players;
 
 namespace SeldomArchipelago.Balancing
 {
@@ -25,11 +26,25 @@ namespace SeldomArchipelago.Balancing
     {
         public override void OnSpawn(Projectile projectile, IEntitySource source)
         {
-            if (ModContent.GetInstance<Config.Config>().rarityBalance && source is IEntitySource_WithStatsFromItem itemSource)
+            if (ModContent.GetInstance<Config.Config>().rarityBalance && source is IEntitySource_WithStatsFromItem { Player: var player, Item: var item})
             {
-                if (itemSource.Item.rare >= ItemRarityID.LightRed)
+                if (item.rare >= ItemRarityID.LightRed)
                 {
-                    projectile.ApplyStatsFromSource(source);
+                    ArchipelagoPlayer APplayer = player.GetModPlayer<ArchipelagoPlayer>();
+                    APplayer.summonMultiplier = 0.2f;
+                    Main.NewText("I'm very angry.");
+                }
+            }
+        }
+        public override void ModifyHitNPC(Projectile projectile, NPC target, ref NPC.HitModifiers modifiers)
+        {
+            if (projectile.IsMinionOrSentryRelated)
+            {
+                projectile.TryGetOwner(out var owner);
+                if (owner != null)
+                {
+                    ArchipelagoPlayer APplayer = owner.GetModPlayer<ArchipelagoPlayer>();
+                    projectile.damage = (int)(projectile.damage * APplayer.summonMultiplier);
                 }
             }
         }
