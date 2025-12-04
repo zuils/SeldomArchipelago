@@ -551,17 +551,6 @@ namespace SeldomArchipelago.Systems
                 return;
             }
 
-            if (world.NPCRandoActive() && !world.receivedNPCs.Contains(NPCID.Guide))
-            {
-                int guideIndex = NPC.FindFirstNPC(NPCID.Guide);
-                if (guideIndex != -1)
-                {
-                    Main.npc[guideIndex].Transform(ModContent.GetInstance<GhostNPC>().Type);
-                    GhostNPC ghost = Main.npc[guideIndex].ModNPC as GhostNPC;
-                    ghost.GhostType = NPCID.Guide;
-                }
-            }
-
             var unqueue = new List<int>();
             for (var i = 0; i < session.locationQueue.Count; i++)
             {
@@ -592,6 +581,17 @@ namespace SeldomArchipelago.Systems
                 Collect(itemName);
 
                 world.collectedItems++;
+            }
+
+            if (world.NPCRandoActive() && !world.receivedNPCs.Contains(NPCID.Guide))
+            {
+                int guideIndex = NPC.FindFirstNPC(NPCID.Guide);
+                if (guideIndex != -1)
+                {
+                    Main.npc[guideIndex].Transform(ModContent.GetInstance<GhostNPC>().Type);
+                    GhostNPC ghost = Main.npc[guideIndex].ModNPC as GhostNPC;
+                    ghost.GhostType = NPCID.Guide;
+                }
             }
 
             if (ModLoader.HasMod("CalamityMod")) ModContent.GetInstance<CalamitySystem>().CalamityPostUpdateWorld();
