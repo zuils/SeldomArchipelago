@@ -132,6 +132,11 @@ namespace SeldomArchipelago.Systems
 
         public WorldState world = new();
         public SessionState session;
+        public bool WorldSessionDisparity()
+        {
+            if (session is null) return false;
+            return session.slotName != world.slotName || session.seed != world.seed;
+        }
 
         // Contains ghosts that require special housing conditions to spawn.
         public readonly static ImmutableHashSet<int> specialSpawnGhosts =
@@ -144,6 +149,18 @@ namespace SeldomArchipelago.Systems
             if (tag.TryGet<WorldState>("ApWorldData", out var worldData) && worldData.seed != "")  // Empty worldstates get saved to new worlds, so we check for that
             {
                 world = worldData;
+            }
+            bool worldHasGuide = !world.NPCRandoActive() || world.receivedNPCs.Contains(NPCID.Guide);
+            bool sessHasGuide = session is not null && session.session.Items.AllItemsReceived.Any(i => i.ItemName == "Guide");
+            if (!WorldSessionDisparity() && !worldHasGuide && !sessHasGuide)
+            {
+                int guideIndex = NPC.FindFirstNPC(NPCID.Guide);
+                if (guideIndex != -1)
+                {
+                    Main.npc[guideIndex].Transform(ModContent.GetInstance<GhostNPC>().Type);
+                    GhostNPC ghost = Main.npc[guideIndex].ModNPC as GhostNPC;
+                    ghost.GhostType = NPCID.Guide;
+                }
             }
         }
         public void ApMessageToChat(LogMessage message)
@@ -537,17 +554,17 @@ namespace SeldomArchipelago.Systems
         {
             if (session == null) return;
 
-            if (session.slotName != world.slotName || session.seed != world.seed)
-            {
-                Chat($"WARNING: Disparity between world & server data detected.\nSERVER SEED: {session.seed}\nSERVER SLOT: {session.slotName}\nWORLD SEED: {world.seed}\nWORLD SLOT: {world.slotName}");
-                session = null;
-                return;
-            }
-
             if (!session.session.Socket.Connected)
             {
                 Chat("Disconnected from Archipelago. Reload the world to reconnect.");
                 session = null;
+                return;
+            }
+
+            if (WorldSessionDisparity())
+            {
+                Chat($"WARNING: Disparity between world & server data detected.\nSERVER SEED: {session.seed}\nSERVER SLOT: {session.slotName}\nWORLD SEED: {world.seed}\nWORLD SLOT: {world.slotName}\nYou have been disconnected from the server. Please load a different world.");
+                Reset();
                 return;
             }
 
@@ -583,17 +600,6 @@ namespace SeldomArchipelago.Systems
                 world.collectedItems++;
             }
 
-            if (world.NPCRandoActive() && !world.receivedNPCs.Contains(NPCID.Guide))
-            {
-                int guideIndex = NPC.FindFirstNPC(NPCID.Guide);
-                if (guideIndex != -1)
-                {
-                    Main.npc[guideIndex].Transform(ModContent.GetInstance<GhostNPC>().Type);
-                    GhostNPC ghost = Main.npc[guideIndex].ModNPC as GhostNPC;
-                    ghost.GhostType = NPCID.Guide;
-                }
-            }
-
             if (ModLoader.HasMod("CalamityMod")) ModContent.GetInstance<CalamitySystem>().CalamityPostUpdateWorld();
 
             if (session.victory) return;
@@ -618,13 +624,16 @@ namespace SeldomArchipelago.Systems
         {
             typeof(SocialAPI).GetField("_mode", BindingFlags.Static | BindingFlags.NonPublic).SetValue(null, SocialMode.Steam);
 
-            if (session != null) session.session.Socket.DisconnectAsync();
+            if (session != null)
+            {
+                session.session.MessageLog.OnMessageReceived -= ApMessageToChat;
+                session.session.Socket.DisconnectAsync();
+            }
             session = null;
         }
 
         public override void OnWorldUnload()
         {
-            if (session is not null) session.session.MessageLog.OnMessageReceived -= ApMessageToChat;
             world = new();
             Reset();
         }
