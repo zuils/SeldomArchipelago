@@ -23,11 +23,13 @@ using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
 using Terraria.Social;
 using Terraria.WorldBuilding;
-using SeldomArchipelago.HardmodeItem;
+using SeldomArchipelago.FlagItem;
 using System.Linq;
 using SeldomArchipelago.NPCs;
 using System.Formats.Tar;
 using Archipelago.MultiClient.Net.MessageLog.Messages;
+using System.Diagnostics.Metrics;
+using Terraria.GameContent.UI.States;
 
 namespace SeldomArchipelago.Systems
 {
@@ -56,6 +58,8 @@ namespace SeldomArchipelago.Systems
             // playing Hardcore and wants to receive all the rewards again when making a new player/
             // world.
             public List<int> receivedRewards = new List<int>();
+            // List of flags that have been received but not triggered
+            public List<string> suspendedFlags = new List<string>();
             // All NPCs that have been randomized.
             public ImmutableHashSet<int> randomizedNPCs = null;
             // Set of town NPC items received in this world. Since this is saved to the world and
@@ -262,7 +266,28 @@ namespace SeldomArchipelago.Systems
         }
         public bool LocationCollected(string loc) => session is null ? world.locationBacklog.Contains(loc) : session.collectedLocations.Contains(loc);
 
-        public string[] flags = { "Post-King Slime", "Post-Desert Scourge", "Post-Giant Clam", "Post-Eye of Cthulhu", "Post-Acid Rain Tier 1", "Post-Crabulon", "Post-Evil Boss", "Post-Old One's Army Tier 1", "Post-Goblin Army", "Post-Queen Bee", "Post-The Hive Mind", "Post-The Perforators", "Post-Skeletron", "Post-Deerclops", "Post-The Slime God", "Hardmode", "Post-Dreadnautilus", "Post-Hardmode Giant Clam", "Post-Pirate Invasion", "Post-Queen Slime", "Post-Aquatic Scourge", "Post-Cragmaw Mire", "Post-Acid Rain Tier 2", "Post-The Twins", "Post-Old One's Army Tier 2", "Post-Brimstone Elemental", "Post-The Destroyer", "Post-Cryogen", "Post-Skeletron Prime", "Post-Calamitas Clone", "Post-Plantera", "Post-Great Sand Shark", "Post-Leviathan and Anahita", "Post-Astrum Aureus", "Post-Golem", "Post-Old One's Army Tier 3", "Post-Martian Madness", "Post-The Plaguebringer Goliath", "Post-Duke Fishron", "Post-Mourning Wood", "Post-Pumpking", "Post-Everscream", "Post-Santa-NK1", "Post-Ice Queen", "Post-Frost Legion", "Post-Ravager", "Post-Empress of Light", "Post-Lunatic Cultist", "Post-Astrum Deus", "Post-Lunar Events", "Post-Moon Lord", "Post-Profaned Guardians", "Post-The Dragonfolly", "Post-Providence, the Profaned Goddess", "Post-Storm Weaver", "Post-Ceaseless Void", "Post-Signus, Envoy of the Devourer", "Post-Polterghast", "Post-Mauler", "Post-Nuclear Terror", "Post-The Old Duke", "Post-The Devourer of Gods", "Post-Yharon, Dragon of Rebirth", "Post-Exo Mechs", "Post-Supreme Witch, Calamitas", "Post-Primordial Wyrm", "Post-Boss Rush" };
+        public static string[] flags = { "Post-King Slime", "Post-Desert Scourge", "Post-Giant Clam", "Post-Eye of Cthulhu", "Post-Acid Rain Tier 1", "Post-Crabulon", "Post-Evil Boss", "Post-Old One's Army Tier 1", "Post-Goblin Army", "Post-Queen Bee", "Post-The Hive Mind", "Post-The Perforators", "Post-Skeletron", "Post-Deerclops", "Post-The Slime God", "Hardmode", "Post-Dreadnautilus", "Post-Hardmode Giant Clam", "Post-Pirate Invasion", "Post-Queen Slime", "Post-Aquatic Scourge", "Post-Cragmaw Mire", "Post-Acid Rain Tier 2", "Post-The Twins", "Post-Old One's Army Tier 2", "Post-Brimstone Elemental", "Post-The Destroyer", "Post-Cryogen", "Post-Skeletron Prime", "Post-Calamitas Clone", "Post-Plantera", "Post-Great Sand Shark", "Post-Leviathan and Anahita", "Post-Astrum Aureus", "Post-Golem", "Post-Old One's Army Tier 3", "Post-Martian Madness", "Post-The Plaguebringer Goliath", "Post-Duke Fishron", "Post-Mourning Wood", "Post-Pumpking", "Post-Everscream", "Post-Santa-NK1", "Post-Ice Queen", "Post-Frost Legion", "Post-Ravager", "Post-Empress of Light", "Post-Lunatic Cultist", "Post-Astrum Deus", "Post-Lunar Events", "Post-Moon Lord", "Post-Profaned Guardians", "Post-The Dragonfolly", "Post-Providence, the Profaned Goddess", "Post-Storm Weaver", "Post-Ceaseless Void", "Post-Signus, Envoy of the Devourer", "Post-Polterghast", "Post-Mauler", "Post-Nuclear Terror", "Post-The Old Duke", "Post-The Devourer of Gods", "Post-Yharon, Dragon of Rebirth", "Post-Exo Mechs", "Post-Supreme Witch, Calamitas", "Post-Primordial Wyrm", "Post-Boss Rush" };
+
+        public static bool FindFlag(string flag, out string fuzzy)
+        {
+            fuzzy = null;
+            if (flags.Contains(flag))
+            {
+                return true;
+            }
+            else
+            {
+                string lowerItem = flag.ToLower();
+                int assumedItemIndex = Array.FindIndex(flags, x => x.ToLower().Contains(lowerItem));
+                if (assumedItemIndex > -1)
+                {
+                    fuzzy = flags[assumedItemIndex];
+                    return true;
+                }
+                return false;
+
+            }
+        }
 
         public bool CheckFlag(string flag) => flag switch
         {
@@ -328,12 +353,28 @@ namespace SeldomArchipelago.Systems
                 {"Princess", NPCID.Princess },
             };
         public static Dictionary<int, string> npcIDtoName = npcNameToID.ToDictionary(x => x.Value, x => x.Key);
-        public void Collect(string item)
+        public void Collect(string item, bool bypassStarterConfigCheck = false)
         {
             if (npcNameToID.ContainsKey(item))
             {
                 world.receivedNPCs.Add(npcNameToID[item]);
                 return;
+            }
+            if (!bypassStarterConfigCheck && ModContent.GetInstance<Config.Config>().manualFlags.Contains(item))
+            {
+                GiveItem(null, (Player player) =>
+                {
+                    Item flagStarter = new Item(ModContent.ItemType<FlagStarter>());
+                    FlagStarter flagStarterMod = flagStarter.ModItem as FlagStarter;
+                    flagStarterMod.FlagName = item;
+                    player.QuickSpawnItem(player.GetSource_GiftOrReward(), flagStarter, 1);
+                    Main.NewText($"Flag Starter for {item} received! If you ever lose a flagstarter item, use '/apflagstart' and '/apflagstart list'.");
+                });
+                world.suspendedFlags.Add(item);
+                return;
+            } else
+            {
+                world.suspendedFlags.Remove(item);
             }
             switch (item)
             {
@@ -346,16 +387,7 @@ namespace SeldomArchipelago.Systems
                 case "Post-Queen Bee": BossFlag(ref NPC.downedQueenBee, NPCID.QueenBee); break;
                 case "Post-Skeletron": BossFlag(ref NPC.downedBoss3, NPCID.SkeletronHead); break;
                 case "Post-Deerclops": BossFlag(ref NPC.downedDeerclops, NPCID.Deerclops); break;
-                case "Hardmode":
-                    if (ModContent.GetInstance<Config.Config>().hardmodeAsItem)
-                    {
-                        GiveItem(ModContent.ItemType<HardmodeStarter>());
-                    }
-                    else
-                    {
-                        ActivateHardmode();
-                    }
-                    break;
+                case "Hardmode": ActivateHardmode(); break;
                 case "Post-Pirate Invasion": NPC.downedPirates = true; break;
                 case "Post-Queen Slime": BossFlag(ref NPC.downedQueenSlime, NPCID.QueenSlimeBoss); break;
                 case "Post-The Twins":
@@ -548,6 +580,7 @@ namespace SeldomArchipelago.Systems
                 case "Reward: Defender Medal": GiveItem(ItemID.DefenderMedal); break;
                 case null: break;
                 default: Chat($"Received unknown item: {item}"); break;
+                    
             }
         }
         public override void PostUpdateWorld()
@@ -833,6 +866,7 @@ namespace SeldomArchipelago.Systems
         }
         public static void ActivateHardmode()
         {
+            if (Main.hardMode) return;
             ArchipelagoSystem.BossFlag(NPCID.WallofFlesh);
             WorldGen.StartHardmode();
         }
