@@ -35,6 +35,9 @@ Configs: {
 
 		debug: {
 			Label: Debug Mode
+			Tooltip: ""
+		}
+
 		manualFlags: {
 			Label: Receive Flag As Item
 			Tooltip: ""

@@ -108,6 +108,8 @@ namespace SeldomArchipelago.NPCs
         }
         public override bool CanChat() => true;
         public override bool NeedSaving() => true;
+        public override bool CanBeHitByNPC(NPC attacker) => false;
+        public override bool? CanBeHitByItem(Player player, Item item) => false;
         public static bool AnyGhosts(int type) => Main.npc.Any(npc => npc.active && npc.ModNPC is GhostNPC checkNPC && checkNPC.ghostType == type);
         public override void SaveData(TagCompound tag)
         {

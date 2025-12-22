@@ -70,7 +70,7 @@ namespace SeldomArchipelago.FlagItem
         }
         public override void UpdateInventory(Player player)
         {
-            if (flagName is not null && ModContent.GetInstance<ArchipelagoSystem>().CheckFlag(flagName))
+            if (flagName is null || ModContent.GetInstance<ArchipelagoSystem>().CheckFlag(flagName))
             {
                 FlagName = null;
             }

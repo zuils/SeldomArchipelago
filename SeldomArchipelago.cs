@@ -355,8 +355,8 @@ namespace SeldomArchipelago
                     else if (archipelagoSystem.world.ghostNPCqueue.Count > 0)
                     {
                         // For regular NPCs the value we assign here is arbitrary, it just needs to be set to a town npc's type so SpawnNPC can trigger at all
-                        Main.townNPCCanSpawn[NPCID.SantaClaus] = true;
-                        WorldGen.prioritizedTownNPCType = NPCID.SantaClaus;
+                        Main.townNPCCanSpawn[NPCID.BlueSlime] = true;
+                        WorldGen.prioritizedTownNPCType = NPCID.BlueSlime;
                         return;
                     };
                 });
