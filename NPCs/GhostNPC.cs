@@ -74,6 +74,7 @@ namespace SeldomArchipelago.NPCs
             {
                 typeToTexture[npcType] = ModContent.Request<Texture2D>($"Terraria/Images/NPC_{npcType}");
             }
+            typeToTexture[NPCID.Princess] = ModContent.Request<Texture2D>($"Terraria/Images/TownNPCs/Princess_Default");
             NPC.townNPC = true;
         }
         public override void SetDefaults()
