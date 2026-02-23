@@ -223,18 +223,6 @@ namespace SeldomArchipelago
                     }
                     // Set prioritizedNPC if Ghost NPC is next
                     int firstGhost = archipelagoSystem.world.ghostNPCqueue.FirstOrDefault();
-                    if (ModContent.GetInstance<Config.Config>().debug)
-                    {
-                        string debug = "SATISFIED GHOSTS: ";
-                        foreach (int npc in archipelagoSystem.world.ghostNPCqueue)
-                        {
-                            debug += ArchipelagoSystem.npcIDtoName[npc] + ", ";
-                        }
-                        debug = debug.TrimEnd([',', ' ']);
-                        WorldGen.BroadcastText(NetworkText.FromLiteral(debug), 255, 255, 255);
-
-
-                    }
                     if (archipelagoSystem.world.ghostNPCqueue.Count == 1 && ArchipelagoSystem.specialSpawnGhosts.Contains(firstGhost))
                     {
                         Main.townNPCCanSpawn[firstGhost] = true;

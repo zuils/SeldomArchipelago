@@ -75,9 +75,5 @@ namespace SeldomArchipelago.Config
                 counter++;
             }
         }
-
-        [Label("Debug Mode")]
-        [DefaultValue(false)]
-        public bool debug;
     }
 }
