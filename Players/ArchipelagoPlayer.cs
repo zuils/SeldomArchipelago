@@ -1,9 +1,11 @@
+using ReLogic.Utilities;
 using SeldomArchipelago.NPCs;
 using SeldomArchipelago.Systems;
 using System.Collections.Generic;
 using System.Reflection;
 using Terraria;
 using Terraria.Achievements;
+using Terraria.Audio;
 using Terraria.DataStructures;
 using Terraria.GameContent.Achievements;
 using Terraria.ID;
@@ -45,7 +47,11 @@ namespace SeldomArchipelago.Players
                     var serCondition = serConditions.Get<TagCompound>(condition.Key);
                     if (condition.Value is CustomIntCondition intCondition) intCondition.Value = serCondition.Get<int>("int");
                     if (condition.Value is CustomFloatCondition floatCondition) floatCondition.Value = serCondition.Get<float>("float");
-                    if (serCondition.Get<bool>("completed")) condition.Value.Complete();
+                    if (serCondition.Get<bool>("completed"))
+                    {
+                        condition.Value.Complete();
+                    }
+                    SoundEngine.StopTrackedSounds();
                 }
             }
 
