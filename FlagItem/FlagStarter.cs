@@ -44,6 +44,7 @@ namespace SeldomArchipelago.FlagItem
         }
         public override Microsoft.Xna.Framework.Color? GetAlpha(Microsoft.Xna.Framework.Color lightColor)
         {
+            if (colorHash is null) return lightColor;
             lightColor.R = colorHash[1];
             lightColor.G = colorHash[2];
             lightColor.B = colorHash[3];
@@ -53,8 +54,13 @@ namespace SeldomArchipelago.FlagItem
         {
             if (flagName == null)
             {
-                tooltips.Add(new TooltipLine(Mod, "Tooltip0", "\"Missed its window\""));
+                tooltips.Add(new TooltipLine(Mod, "Tooltip0", "Made for a flag that already activated."));
+                tooltips.Add(new TooltipLine(Mod, "Tooltip1", "In this state, it's sad and pointless. Please discard."));
             }
+        }
+        public override void SetStaticDefaults()
+        {
+            Item.ResearchUnlockCount = 999;
         }
         public override void SetDefaults()
         {
@@ -72,10 +78,15 @@ namespace SeldomArchipelago.FlagItem
         {
             if (flagName is null || ModContent.GetInstance<ArchipelagoSystem>().CheckFlag(flagName))
             {
-                FlagName = null;
+                Item.TurnToAir();
             }
         }
-        public override void LoadData(TagCompound tag) => FlagName = tag.GetString(nameof(flagName));
+        public override void LoadData(TagCompound tag)
+        {
+            string savedName = tag.GetString(nameof(flagName));
+            if (savedName == "") savedName = null;
+            FlagName = savedName;
+        }
         public override void SaveData(TagCompound tag) => tag[nameof(flagName)] = flagName;
     }
 }

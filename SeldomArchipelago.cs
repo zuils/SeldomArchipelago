@@ -1,3 +1,6 @@
+using CalamityMod.Items.LabFinders;
+using CalamityMod.Items.Weapons.Rogue;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
@@ -77,122 +80,6 @@ namespace SeldomArchipelago
             var archipelagoSystem = ModContent.GetInstance<ArchipelagoSystem>();
 
             // Begin cursed IL editing
-
-            // Manage Ghost Spawning
-            IL_WorldGen.SpawnTownNPC += il =>
-            {
-                var cursor = new ILCursor(il);
-                var label = il.DefineLabel();
-
-                cursor.GotoNext(i => i.MatchCall(out var mref) && mref.Name == "NewNPC");
-                cursor.Remove();
-                cursor.EmitDelegate((IEntitySource source, int x, int y, int type, int mysteryNumber, float _, float _, float _, float _, int target) => // whatever floats ur boat, dude
-                {
-                    int itemsChecked = 0;
-                    while (itemsChecked < archipelagoSystem.world.ghostNPCqueue.Count)
-                    {
-                        int ghostID = archipelagoSystem.world.ghostNPCqueue.Dequeue();
-                        if (type != ghostID && ArchipelagoSystem.specialSpawnGhosts.Contains(ghostID))
-                        {
-                            archipelagoSystem.world.ghostNPCqueue.Enqueue(ghostID);
-                        }
-                        else
-                        {
-                            int ghostIndex = NPC.NewNPC(source, WorldGen.bestX * 16, WorldGen.bestY * 16, ModContent.NPCType<GhostNPC>(), mysteryNumber, 0f, 0f, 0f, 0f, target);
-                            NPC ghost = Main.npc[ghostIndex];
-                            ghost.homeTileX = WorldGen.bestX;
-                            ghost.homeTileY = WorldGen.bestY;
-                            GhostNPC modGhost = ghost.ModNPC as GhostNPC;
-                            modGhost.GhostType = ghostID;
-                            return ghostIndex;
-                        }
-                        itemsChecked++;
-                    }
-                    return NPC.NewNPC(source, x, y, type, mysteryNumber, 0f, 0f, 0f, 0f, target);
-                });
-                cursor.GotoNext(i => i.MatchCallvirt(out var mref) && mref.Name == "get_FullName");
-                cursor.EmitDelegate((NPC npc) =>
-                {
-                    if (npc.ModNPC is GhostNPC ghost)
-                    {
-                        string message = $"The {Lang.GetNPCName(ghost.GhostType)} has arrived...?";
-                        if (Main.netMode == NetmodeID.SinglePlayer)
-                            Main.NewText(message, 0, 255, 100);
-                        else if (Main.netMode == NetmodeID.Server)
-                        {
-                            ChatHelper.BroadcastChatMessage(NetworkText.FromLiteral(message), new Color(0, 255, 100));
-                        }
-                    }
-                    else
-                    {
-                        npc.netUpdate = true;
-                        string fullName = npc.FullName;
-                        if (Main.netMode == NetmodeID.SinglePlayer)
-                            Main.NewText(Language.GetTextValue("Announcement.HasArrived", fullName), 50, 125);
-                        else if (Main.netMode == NetmodeID.Server)
-                            ChatHelper.BroadcastChatMessage(NetworkText.FromKey("Announcement.HasArrived", npc.GetFullNetName()), new Color(50, 125, 255));
-                    }
-                });
-                cursor.EmitBr(label);
-                cursor.GotoNext(i => i.MatchCall(out var mref) && mref.Name == "NotifyProgressionEvent");
-                cursor.Index--;
-                cursor.MarkLabel(label);
-            };
-
-            // Manage Ghost Redeeming
-            On_Player.SetTalkNPC += (On_Player.orig_SetTalkNPC orig, Player player, int index, bool fromNet) =>
-            {
-                if (-1 < index && index <= Main.npc.Length && Main.npc[index].ModNPC is GhostNPC ghost)
-                {
-                    archipelagoSystem.QueueLocationClient(ArchipelagoSystem.npcIDtoName[ghost.GhostType]);
-                    if (archipelagoSystem.world.npcLocTypeToNpcItemType is not null && archipelagoSystem.world.npcLocTypeToNpcItemType.TryGetValue(ghost.GhostType, out int newNpcType))
-                    {
-                        Main.npc[index].Transform(newNpcType);
-                        orig(player, index, fromNet);
-                    }
-                    else if (Main.netMode == NetmodeID.MultiplayerClient)
-                    {
-                        NetMessage.SendStrikeNPC(ghost.NPC, new NPC.HitInfo() { InstantKill = true });
-                    }
-                    else
-                    {
-                        ghost.NPC.StrikeInstantKill();
-                        NPC.FairyEffects(ghost.NPC.Center, Main.rand.Next(3));
-                    }
-                }
-                else
-                {
-                    orig(player, index, fromNet);
-                }
-            };
-
-            // Manage Ghost Occupying Rooms
-            On_WorldGen.IsRoomConsideredAlreadyOccupied += (On_WorldGen.orig_IsRoomConsideredAlreadyOccupied orig, int i, int j, int type) =>
-            {
-                GhostNPC[] existingGhosts = [.. (from npc in Main.npc where npc.ModNPC is GhostNPC select npc.ModNPC as GhostNPC)];
-                foreach (var ghost in existingGhosts)
-                {
-                    if (ghost.NPC.active && ghost.NPC.homeTileX == i && ghost.NPC.homeTileY == j) return true;
-                }
-                bool result = orig(i, j, type);
-                return result;
-            };
-
-            On_WorldGen.ScoreRoom_IsThisRoomOccupiedBySomeone += (On_WorldGen.orig_ScoreRoom_IsThisRoomOccupiedBySomeone orig, int ignoreNPC, int npcTypeAsking) =>
-            {
-                 GhostNPC[] existingGhosts = [.. (from npc in Main.npc where npc.active && npc.ModNPC is GhostNPC select npc.ModNPC as GhostNPC)];
-                foreach (var ghost in existingGhosts)
-                {
-                    for (int i = 0; i < WorldGen.numRoomTiles; i++)
-                    {
-                        if (ghost.NPC.homeTileX == WorldGen.roomX[i] && ghost.NPC.homeTileY - 1 == WorldGen.roomY[i])
-                        {
-                            return true;
-                        }
-                    }
-                }
-                return orig(ignoreNPC, npcTypeAsking);
-            };
 
             // Manage Town/Ghost NPC Spawn Conditions
             IL_Main.UpdateTime_SpawnTownNPCs += il =>
@@ -318,11 +205,12 @@ namespace SeldomArchipelago
                         }
                             
                         // Enqueue Ghosts
-                        foreach (int type in validGhostTypes)
-                        {
-                            if (!archipelagoSystem.world.ghostNPCqueue.Contains(type) && !archipelagoSystem.LocationCollected(ArchipelagoSystem.npcIDtoName[type]))
-                                archipelagoSystem.world.ghostNPCqueue.Enqueue(type);
-                        }
+                        if (archipelagoSystem.session is not null)
+                            foreach (int type in validGhostTypes)
+                            {
+                                if (!archipelagoSystem.world.ghostNPCqueue.Contains(type) && !archipelagoSystem.LocationCollected(ArchipelagoSystem.npcIDtoName[type]))
+                                    archipelagoSystem.world.ghostNPCqueue.Enqueue(type);
+                            }
                     }
                     // Set prioritizedNPC if Vanilla NPC can spawn
                     for (int i = 0; i < Main.townNPCCanSpawn.Length; i++)
@@ -354,7 +242,6 @@ namespace SeldomArchipelago
                     }
                     else if (archipelagoSystem.world.ghostNPCqueue.Count > 0)
                     {
-                        // For regular NPCs the value we assign here is arbitrary, it just needs to be set to a town npc's type so SpawnNPC can trigger at all
                         Main.townNPCCanSpawn[NPCID.BlueSlime] = true;
                         WorldGen.prioritizedTownNPCType = NPCID.BlueSlime;
                         return;
@@ -362,6 +249,147 @@ namespace SeldomArchipelago
                 });
                 cursor.EmitLdsfld(typeof(NPC).GetField(nameof(NPC.boughtCat)));
                 cursor.Index--;
+            };
+
+            // Bypass AnyNPCs Blocks
+            // The method we subscribe here checks multiple times whether an NPC of the type prioritizedTownNPCType exists.
+            // If any of those return true, it blocks that NPC from spawning, which is a problem especially for special spawn ghosts that need to spawn while their real counterpart is alive.
+            On_WorldGen.IsThereASpawnablePrioritizedTownNPC += (On_WorldGen.orig_IsThereASpawnablePrioritizedTownNPC orig, int x, int y, ref bool canSpawn) => {
+                int temp = WorldGen.prioritizedTownNPCType;
+                if (ArchipelagoSystem.specialSpawnGhosts.Contains(temp))
+                {
+                    bool result = orig(x, y, ref canSpawn);
+                    if (result && !canSpawn) // This specific combo tells us the house is suited to the special NPC, and that AnyNPCs was tripped
+                    {
+                        canSpawn = true;
+                    }
+                    return result;
+                }
+                else if (temp == NPCID.BlueSlime)
+                {
+                    WorldGen.prioritizedTownNPCType = 0;
+                    bool result = orig(x, y, ref canSpawn);
+                    WorldGen.prioritizedTownNPCType = temp;
+                    return result;
+                }
+                
+                return orig(x, y, ref canSpawn);
+            };
+
+            // Manage Ghost Spawning
+            IL_WorldGen.SpawnTownNPC += il =>
+            {
+                var cursor = new ILCursor(il);
+                var label = il.DefineLabel();
+
+                cursor.GotoNext(i => i.MatchCall(out var mref) && mref.Name == "NewNPC");
+                cursor.Remove();
+                cursor.EmitDelegate((IEntitySource source, int x, int y, int type, int mysteryNumber, float _, float _, float _, float _, int target) => // whatever floats ur boat, dude
+                {
+                    int itemsChecked = 0;
+                    while (itemsChecked < archipelagoSystem.world.ghostNPCqueue.Count)
+                    {
+                        int ghostID = archipelagoSystem.world.ghostNPCqueue.Dequeue();
+                        if (type != ghostID && ArchipelagoSystem.specialSpawnGhosts.Contains(ghostID))
+                        {
+                            archipelagoSystem.world.ghostNPCqueue.Enqueue(ghostID);
+                        }
+                        else
+                        {
+                            int ghostIndex = NPC.NewNPC(source, WorldGen.bestX * 16, WorldGen.bestY * 16, ModContent.NPCType<GhostNPC>(), mysteryNumber, 0f, 0f, 0f, 0f, target);
+                            NPC ghost = Main.npc[ghostIndex];
+                            ghost.homeTileX = WorldGen.bestX;
+                            ghost.homeTileY = WorldGen.bestY;
+                            GhostNPC modGhost = ghost.ModNPC as GhostNPC;
+                            modGhost.GhostType = ghostID;
+                            return ghostIndex;
+                        }
+                        itemsChecked++;
+                    }
+                    return NPC.NewNPC(source, x, y, type, mysteryNumber, 0f, 0f, 0f, 0f, target);
+                });
+                cursor.GotoNext(i => i.MatchCallvirt(out var mref) && mref.Name == "get_FullName");
+                cursor.EmitDelegate((NPC npc) =>
+                {
+                    if (npc.ModNPC is GhostNPC ghost)
+                    {
+                        string message = $"The {Lang.GetNPCName(ghost.GhostType)} has arrived...?";
+                        if (Main.netMode == NetmodeID.SinglePlayer)
+                            Main.NewText(message, 0, 255, 100);
+                        else if (Main.netMode == NetmodeID.Server)
+                        {
+                            ChatHelper.BroadcastChatMessage(NetworkText.FromLiteral(message), new Color(0, 255, 100));
+                        }
+                    }
+                    else
+                    {
+                        npc.netUpdate = true;
+                        string fullName = npc.FullName;
+                        if (Main.netMode == NetmodeID.SinglePlayer)
+                            Main.NewText(Language.GetTextValue("Announcement.HasArrived", fullName), 50, 125);
+                        else if (Main.netMode == NetmodeID.Server)
+                            ChatHelper.BroadcastChatMessage(NetworkText.FromKey("Announcement.HasArrived", npc.GetFullNetName()), new Color(50, 125, 255));
+                    }
+                });
+                cursor.EmitBr(label);
+                cursor.GotoNext(i => i.MatchCall(out var mref) && mref.Name == "NotifyProgressionEvent");
+                cursor.Index--;
+                cursor.MarkLabel(label);
+            };
+
+            // Manage Ghost Redeeming
+            On_Player.SetTalkNPC += (On_Player.orig_SetTalkNPC orig, Player player, int index, bool fromNet) =>
+            {
+                if (-1 < index && index <= Main.npc.Length && Main.npc[index].ModNPC is GhostNPC ghost)
+                {
+                    archipelagoSystem.QueueLocationClient(ArchipelagoSystem.npcIDtoName[ghost.GhostType]);
+                    if (archipelagoSystem.world.npcLocTypeToNpcItemType is not null && archipelagoSystem.world.npcLocTypeToNpcItemType.TryGetValue(ghost.GhostType, out int newNpcType))
+                    {
+                        Main.npc[index].Transform(newNpcType);
+                        orig(player, index, fromNet);
+                    }
+                    else if (Main.netMode == NetmodeID.MultiplayerClient)
+                    {
+                        NetMessage.SendStrikeNPC(ghost.NPC, new NPC.HitInfo() { InstantKill = true });
+                    }
+                    else
+                    {
+                        ghost.NPC.StrikeInstantKill();
+                        NPC.FairyEffects(ghost.NPC.Center, Main.rand.Next(3));
+                    }
+                }
+                else
+                {
+                    orig(player, index, fromNet);
+                }
+            };
+
+            // Manage Ghost Occupying Rooms
+            On_WorldGen.IsRoomConsideredAlreadyOccupied += (On_WorldGen.orig_IsRoomConsideredAlreadyOccupied orig, int i, int j, int type) =>
+            {
+                GhostNPC[] existingGhosts = [.. (from npc in Main.npc where npc.ModNPC is GhostNPC select npc.ModNPC as GhostNPC)];
+                foreach (var ghost in existingGhosts)
+                {
+                    if (ghost.NPC.active && ghost.NPC.homeTileX == i && ghost.NPC.homeTileY == j) return true;
+                }
+                bool result = orig(i, j, type);
+                return result;
+            };
+
+            On_WorldGen.ScoreRoom_IsThisRoomOccupiedBySomeone += (On_WorldGen.orig_ScoreRoom_IsThisRoomOccupiedBySomeone orig, int ignoreNPC, int npcTypeAsking) =>
+            {
+                 GhostNPC[] existingGhosts = [.. (from npc in Main.npc where npc.active && npc.ModNPC is GhostNPC select npc.ModNPC as GhostNPC)];
+                foreach (var ghost in existingGhosts)
+                {
+                    for (int i = 0; i < WorldGen.numRoomTiles; i++)
+                    {
+                        if (ghost.NPC.homeTileX == WorldGen.roomX[i] && ghost.NPC.homeTileY - 1 == WorldGen.roomY[i])
+                        {
+                            return true;
+                        }
+                    }
+                }
+                return orig(ignoreNPC, npcTypeAsking);
             };
 
             // Bypass Spawn Blocking for Santa & Bound NPCs
