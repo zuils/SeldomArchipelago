@@ -27,10 +27,24 @@ namespace SeldomArchipelago.Config
         [Label("Password")]
         [DefaultValue("")]
         public string password;
+        [Header("Chat")]
+        [Label("Color AP Text")]
+        public bool colorText;
+
+        [Label("Adjust Filter")]
+        [Dropdown]
+        public ChatSetting chatSettings;
 
         [Header("Miscellaneous")]
 
         [DefaultValue(false)]
         public bool hardmodeAsItem;
+    }
+    public enum ChatSetting
+    {
+        All,
+        Grey,
+        Filter,
+        Disable
     }
 }

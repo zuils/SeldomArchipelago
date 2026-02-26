@@ -24,6 +24,11 @@ using Terraria.Social;
 using Terraria.WorldBuilding;
 using SeldomArchipelago.HardmodeItem;
 using Archipelago.MultiClient.Net.MessageLog.Messages;
+using System.Diagnostics.Metrics;
+using Terraria.GameContent.UI.States;
+using Archipelago.MultiClient.Net.MessageLog.Parts;
+using Terraria.ModLoader.Config;
+using System.Text;
 
 namespace SeldomArchipelago.Systems
 {
@@ -157,12 +162,46 @@ namespace SeldomArchipelago.Systems
         }
         public void ApMessageToChat(LogMessage message)
         {
-            var text = "";
+            var config = ModContent.GetInstance<Config.Config>();
+
+            string normalMsg() => string.Concat(from part in message.Parts select part.Text);
+            string colorMsg()
+            {
+                if (!config.colorText) return normalMsg();
+                StringBuilder builder = new StringBuilder();
+                foreach (var part in message.Parts)
+                {
+                    string msg = part.Text;
+                    var color = part.Color;
+                    string colorHex = color.R.ToString("X2") + color.G.ToString("X2") + color.B.ToString("X2");
+                    builder.Append($"[c/{colorHex}:{msg}]");
+                }
+                return builder.ToString();
+            }
+
+            if (config.chatSettings == Config.ChatSetting.Disable) return;
+
+            bool thisSlotMentioned = false;
+            bool playerPart = false;
             foreach (var part in message.Parts)
             {
-                text += part.Text;
+                if (part.Type == MessagePartType.Player)
+                {
+                    playerPart = true;
+                    if (part.Text == session.slotName) thisSlotMentioned = true;
+                }
             }
-            Chat(text);
+            if (playerPart && !thisSlotMentioned)
+            {
+                switch (config.chatSettings)
+                {
+                    case Config.ChatSetting.All: Chat(colorMsg()); break;
+                    case Config.ChatSetting.Grey: Chat(normalMsg(), Color.Gray); break;
+                    case Config.ChatSetting.Filter: break;
+                    default: throw new Exception("Unhandled chat configuration");
+                }
+            }
+            else Chat(colorMsg());
         }
 
         public string[] flags = { "Post-King Slime", "Post-Desert Scourge", "Post-Giant Clam", "Post-Eye of Cthulhu", "Post-Acid Rain Tier 1", "Post-Crabulon", "Post-Evil Boss", "Post-Old One's Army Tier 1", "Post-Goblin Army", "Post-Queen Bee", "Post-The Hive Mind", "Post-The Perforators", "Post-Skeletron", "Post-Deerclops", "Post-The Slime God", "Hardmode", "Post-Dreadnautilus", "Post-Hardmode Giant Clam", "Post-Pirate Invasion", "Post-Queen Slime", "Post-Aquatic Scourge", "Post-Cragmaw Mire", "Post-Acid Rain Tier 2", "Post-The Twins", "Post-Old One's Army Tier 2", "Post-Brimstone Elemental", "Post-The Destroyer", "Post-Cryogen", "Post-Skeletron Prime", "Post-Calamitas Clone", "Post-Plantera", "Post-Great Sand Shark", "Post-Leviathan and Anahita", "Post-Astrum Aureus", "Post-Golem", "Post-Old One's Army Tier 3", "Post-Martian Madness", "Post-The Plaguebringer Goliath", "Post-Duke Fishron", "Post-Mourning Wood", "Post-Pumpking", "Post-Everscream", "Post-Santa-NK1", "Post-Ice Queen", "Post-Frost Legion", "Post-Ravager", "Post-Empress of Light", "Post-Lunatic Cultist", "Post-Astrum Deus", "Post-Lunar Events", "Post-Moon Lord", "Post-Profaned Guardians", "Post-The Dragonfolly", "Post-Providence, the Profaned Goddess", "Post-Storm Weaver", "Post-Ceaseless Void", "Post-Signus, Envoy of the Devourer", "Post-Polterghast", "Post-Mauler", "Post-Nuclear Terror", "Post-The Old Duke", "Post-The Devourer of Gods", "Post-Yharon, Dragon of Rebirth", "Post-Exo Mechs", "Post-Supreme Witch, Calamitas", "Post-Primordial Wyrm", "Post-Boss Rush" };
@@ -641,7 +680,7 @@ namespace SeldomArchipelago.Systems
             return info.ToArray();
         }
 
-        public void Chat(string message, int player = -1, Color? color = null)
+        public void Chat(string message, Color color, int player = -1, Color? color = null)
         {
             var resolvedColor = color ?? Color.White;
 
@@ -661,6 +700,7 @@ namespace SeldomArchipelago.Systems
         {
             foreach (var message in messages) Chat(message, player, color);
         }
+        public void Chat(string message, int player = -1) => Chat(message, Color.White, player);
 
         public void QueueLocation(string locationName)
         {
