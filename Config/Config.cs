@@ -35,7 +35,9 @@ namespace SeldomArchipelago.Config
         [DefaultValue("")]
         public string password;
         [Header("Chat")]
+
         [Label("Color AP Text")]
+        [DefaultValue(true)]
         public bool colorText;
 
         [Label("Adjust Filter")]
