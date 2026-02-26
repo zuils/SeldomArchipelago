@@ -28,19 +28,62 @@ Configs: {
 			Tooltip: ""
 		}
 
-		hardmodeAsItem: {
-			Label: Receive Hardmode As Item
-			Tooltip: ""
-		}
-
-		debug: {
-			Label: Debug Mode
-			Tooltip: ""
-		}
-
 		manualFlags: {
-			Label: Receive Flag As Item
+			Label: Receive Flag As Inventory Item
+			Tooltip: "Flag items entered (such as Hardmode, Post-Plantera, etc.) will not activate automatically when received, and instead spawn an inventory item that can manually activate said flag."
+		}
+
+		chatSettings: {
+			Label: Chat Settings
 			Tooltip: ""
+		}
+	}
+
+	ChatSettings: {
+		Tooltip: ""
+
+		Show_All_Messages: {
+			Label: Show_ All_ Messages
+			Tooltip: ""
+		}
+
+		Grey_Out_Unrelated_Messages: {
+			Label: Grey_ Out_ Unrelated_ Messages
+			Tooltip: ""
+		}
+
+		Hide_Unrelated_Messages: {
+			Label: Hide_ Unrelated_ Messages
+			Tooltip: ""
+		}
+
+		Hide_All_Messages: {
+			Label: Hide_ All_ Messages
+			Tooltip: ""
+		}
+	}
+
+	ChatSetting: {
+		Tooltip: ""
+
+		All: {
+			Tooltip: See all item/location messages in the multiworld normally
+			Label: All
+		}
+
+		Grey: {
+			Tooltip: Grey out item/loaction messages unrelated to you
+			Label: Grey
+		}
+
+		Filter: {
+			Tooltip: Filter out item/location messages unrelated to you
+			Label: Filter
+		}
+
+		Disable: {
+			Tooltip: Hide all AP messages
+			Label: Disable
 		}
 	}
 }

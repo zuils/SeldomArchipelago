@@ -30,6 +30,9 @@ using System.Formats.Tar;
 using Archipelago.MultiClient.Net.MessageLog.Messages;
 using System.Diagnostics.Metrics;
 using Terraria.GameContent.UI.States;
+using Archipelago.MultiClient.Net.MessageLog.Parts;
+using Terraria.ModLoader.Config;
+using System.Text;
 
 namespace SeldomArchipelago.Systems
 {
@@ -169,12 +172,46 @@ namespace SeldomArchipelago.Systems
         }
         public void ApMessageToChat(LogMessage message)
         {
-            var text = "";
+            var config = ModContent.GetInstance<Config.Config>();
+
+            string normalMsg() => string.Concat(from part in message.Parts select part.Text);
+            string colorMsg()
+            {
+                if (!config.colorText) return normalMsg();
+                StringBuilder builder = new StringBuilder();
+                foreach (var part in message.Parts)
+                {
+                    string msg = part.Text;
+                    var color = part.Color;
+                    string colorHex = color.R.ToString("X2") + color.G.ToString("X2") + color.B.ToString("X2");
+                    builder.Append($"[c/{colorHex}:{msg}]");
+                }
+                return builder.ToString();
+            }
+
+            if (config.chatSettings == Config.ChatSetting.Disable) return;
+
+            bool thisSlotMentioned = false;
+            bool playerPart = false;
             foreach (var part in message.Parts)
             {
-                text += part.Text;
+                if (part.Type == MessagePartType.Player)
+                {
+                    playerPart = true;
+                    if (part.Text == session.slotName) thisSlotMentioned = true;
+                }
             }
-            Chat(text);
+            if (playerPart && !thisSlotMentioned)
+            {
+                switch (config.chatSettings)
+                {
+                    case Config.ChatSetting.All: Chat(colorMsg()); break;
+                    case Config.ChatSetting.Grey: Chat(normalMsg(), Color.Gray); break;
+                    case Config.ChatSetting.Filter: break;
+                    default: throw new Exception("Unhandled chat configuration");
+                }
+            }
+            else Chat(colorMsg());
         }
         public override void OnWorldLoad()
         {
@@ -777,24 +814,25 @@ namespace SeldomArchipelago.Systems
             return info.ToArray();
         }
 
-        public void Chat(string message, int player = -1)
+        public void Chat(string message, Color color, int player = -1)
         {
             if (player == -1)
             {
                 if (Main.netMode == NetmodeID.Server)
                 {
-                    ChatHelper.BroadcastChatMessage(NetworkText.FromLiteral(message), Color.White);
+                    ChatHelper.BroadcastChatMessage(NetworkText.FromLiteral(message), color);
                     Console.WriteLine(message);
                 }
-                else Main.NewText(message);
+                else Main.NewText(message, color);
             }
-            else ChatHelper.SendChatMessageToClient(NetworkText.FromLiteral(message), Color.White, player);
+            else ChatHelper.SendChatMessageToClient(NetworkText.FromLiteral(message), color, player);
         }
 
         public void Chat(string[] messages, int player = -1)
         {
             foreach (var message in messages) Chat(message, player);
         }
+        public void Chat(string message, int player = -1) => Chat(message, Color.White, player);
 
         public void QueueLocation(string locationName)
         {

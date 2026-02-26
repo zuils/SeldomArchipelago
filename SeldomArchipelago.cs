@@ -414,7 +414,9 @@ namespace SeldomArchipelago
                 cursor.GotoNext(i => i.MatchLdsfld(typeof(NPC).GetField(nameof(NPC.downedBoss3))));
                 cursor.Index++;
                 cursor.EmitPop();
-                cursor.EmitDelegate<Func<bool>>(() => archipelagoSystem.session is null ? NPC.downedBoss3 : archipelagoSystem.LocationCollected("Skeletron"));
+                cursor.EmitDelegate<Func<bool>>(() => {
+                    return archipelagoSystem.session is null ? NPC.downedBoss3 : archipelagoSystem.LocationCollected("Skeletron");
+                });
             };
 
             // Add Checks To Bound NPCs
