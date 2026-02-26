@@ -228,7 +228,7 @@ namespace SeldomArchipelago.Systems
             {
                 newSession = ArchipelagoSessionFactory.CreateSession(config.address, config.port);
 
-                result = newSession.TryConnectAndLogin("Terraria", config.name, ItemsHandlingFlags.AllItems, null, null, null, config.password == "" ? null : config.password);
+                result = newSession.TryConnectAndLogin("Terraria", config.name, ItemsHandlingFlags.AllItems, new Version(0, 6, 61), null, null, config.password == "" ? null : config.password);
                 if (result is LoginFailure)
                 {
                     return;
