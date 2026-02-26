@@ -6,6 +6,7 @@ Configs: {
 			Common: Common Header
 			Advanced: Advanced Header
 			Miscellaneous: Miscellaneous Header
+			Chat: Chat Header
 		}
 
 		name: {
@@ -30,11 +31,16 @@ Configs: {
 
 		manualFlags: {
 			Label: Receive Flag As Inventory Item
-			Tooltip: "Flag items entered (such as Hardmode, Post-Plantera, etc.) will not activate automatically when received, and instead spawn an inventory item that can manually activate said flag."
+			Tooltip: Flag items entered (such as Hardmode, Post-Plantera, etc.) will not activate automatically when received, and instead spawn an inventory item that can manually activate said flag.
 		}
 
 		chatSettings: {
 			Label: Chat Settings
+			Tooltip: ""
+		}
+
+		colorText: {
+			Label: Color AP Text
 			Tooltip: ""
 		}
 	}
