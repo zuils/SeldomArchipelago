@@ -20,6 +20,7 @@ using Terraria.Achievements;
 using Terraria.Chat;
 using Terraria.DataStructures;
 using Terraria.Enums;
+using Terraria.GameContent.Achievements;
 using Terraria.GameContent.Events;
 using Terraria.ID;
 using Terraria.Localization;
@@ -264,11 +265,29 @@ namespace SeldomArchipelago
                 return orig(x, y, ref canSpawn);
             };
 
-            // Manage Ghost Spawning
+            // Manage Ghost Spawning and Block No Hobo Achievement For Ghosts
             IL_WorldGen.SpawnTownNPC += il =>
             {
                 var cursor = new ILCursor(il);
-                var label = il.DefineLabel();
+                var npcLabel = il.DefineLabel();
+                var ghostLabel = il.DefineLabel();
+
+                cursor.GotoNext(i => i.MatchCall(out var mref) && mref.Name == "NotifyProgressionEvent");
+                cursor.EmitLdloc0();
+                cursor.EmitDelegate((int achievement, int npcIndex) =>
+                {
+                    NPC npc = Main.npc[npcIndex];
+                    if (npc.ModNPC is GhostNPC)
+                    {
+                        Main.NewText("Ghost.");
+                    }
+                    else
+                    {
+                        Main.NewText("Not ghost.");
+                        AchievementsHelper.NotifyProgressionEvent(achievement);
+                    }
+                });
+                cursor.Remove();
 
                 cursor.GotoNext(i => i.MatchCall(out var mref) && mref.Name == "NewNPC");
                 cursor.Remove();
@@ -308,6 +327,7 @@ namespace SeldomArchipelago
                         {
                             ChatHelper.BroadcastChatMessage(NetworkText.FromLiteral(message), new Color(0, 255, 100));
                         }
+                        return 0;
                     }
                     else
                     {
@@ -317,12 +337,16 @@ namespace SeldomArchipelago
                             Main.NewText(Language.GetTextValue("Announcement.HasArrived", fullName), 50, 125);
                         else if (Main.netMode == NetmodeID.Server)
                             ChatHelper.BroadcastChatMessage(NetworkText.FromKey("Announcement.HasArrived", npc.GetFullNetName()), new Color(50, 125, 255));
+                        return 1;
                     }
                 });
-                cursor.EmitBr(label);
+                cursor.EmitBrtrue(npcLabel);
+                cursor.EmitBr(ghostLabel);
                 cursor.GotoNext(i => i.MatchCall(out var mref) && mref.Name == "NotifyProgressionEvent");
                 cursor.Index--;
-                cursor.MarkLabel(label);
+                cursor.MarkLabel(npcLabel);
+                cursor.GotoNext(i => i.MatchLdsfld(out var _));
+                cursor.MarkLabel(ghostLabel);
             };
 
             // Manage Ghost Redeeming
