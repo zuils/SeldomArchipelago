@@ -358,6 +358,7 @@ namespace SeldomArchipelago
                     if (archipelagoSystem.world.npcLocTypeToNpcItemType is not null && archipelagoSystem.world.npcLocTypeToNpcItemType.TryGetValue(ghost.GhostType, out int newNpcType))
                     {
                         Main.npc[index].Transform(newNpcType);
+                        if (newNpcType == NPCID.Truffle) AchievementsHelper.NotifyProgressionEvent(18);
                         orig(player, index, fromNet);
                     }
                     else if (Main.netMode == NetmodeID.MultiplayerClient)
