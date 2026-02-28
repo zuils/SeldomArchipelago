@@ -844,15 +844,15 @@ namespace SeldomArchipelago.Systems
 
             var location = session.session.Locations.GetLocationIdFromName("Terraria", locationName);
             if (location == -1) return;
-            if (!session.session.Locations.AllMissingLocations.Contains(location))
-            {
-                Chat($"Location {locationName} already collected.");
-                session.collectedLocations.Add(locationName);
-                return;
-            }
 
             if (!session.collectedLocations.Contains(locationName))
             {
+                if (session.session.Locations.AllLocationsChecked.Contains(location))
+                {
+                    Chat($"Location {locationName} already collected.");
+                    session.collectedLocations.Add(locationName);
+                    return;
+                }
                 session.locationQueue.Add(session.session.Locations.ScoutLocationsAsync(new[] { location }));
                 session.collectedLocations.Add(locationName);
             }
