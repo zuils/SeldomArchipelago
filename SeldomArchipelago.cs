@@ -137,7 +137,7 @@ namespace SeldomArchipelago
 
                 // Town NPCs
                 cursor.GotoNext(i => i.MatchLdsfld(typeof(NPC).GetField(nameof(NPC.unlockedSlimeGreenSpawn))));
-                cursor.GotoNext(i => i.MatchLdsfld(typeof(NPC).GetField(nameof(NPC.boughtCat))));
+                cursor.GotoNext(i => i.MatchLdsfld(typeof(WorldGen).GetField(nameof(WorldGen.prioritizedTownNPCType))));
                 cursor.Index++;
                 cursor.EmitPop();
                 cursor.EmitDelegate(() =>
@@ -204,6 +204,12 @@ namespace SeldomArchipelago
                                 validGhostTypes.Add(type);
                             Main.townNPCCanSpawn[type] = archipelagoSystem.world.receivedNPCs.Contains(type) && !existingTownTypes.Contains(type);
                         }
+
+                        // Cover Non-Randomized NPCs
+                        foreach (int type in existingTownTypes)
+                        {
+                            if (!archipelagoSystem.world.randomizedNPCs.Contains(type)) Main.townNPCCanSpawn[type] = false;
+                        }
                             
                         // Enqueue Ghosts
                         if (archipelagoSystem.session is not null)
@@ -236,7 +242,7 @@ namespace SeldomArchipelago
                         return;
                     };
                 });
-                cursor.EmitLdsfld(typeof(NPC).GetField(nameof(NPC.boughtCat)));
+                cursor.EmitLdsfld(typeof(WorldGen).GetField(nameof(WorldGen.prioritizedTownNPCType)));
                 cursor.Index--;
             };
 
