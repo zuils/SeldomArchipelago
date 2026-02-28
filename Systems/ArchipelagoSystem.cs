@@ -843,7 +843,13 @@ namespace SeldomArchipelago.Systems
             }
 
             var location = session.session.Locations.GetLocationIdFromName("Terraria", locationName);
-            if (location == -1 || !session.session.Locations.AllMissingLocations.Contains(location)) return;
+            if (location == -1) return;
+            if (!session.session.Locations.AllMissingLocations.Contains(location))
+            {
+                Chat($"Location {locationName} already collected.");
+                session.collectedLocations.Add(locationName);
+                return;
+            }
 
             if (!session.collectedLocations.Contains(locationName))
             {
