@@ -130,7 +130,7 @@ namespace SeldomArchipelago.Systems
             // instead of collecting them. This is needed bc AP just gives us a list of items that
             // we have, and it's up to us to keep track of which ones we've already applied.
             public int currentItem;
-            public List<string> collectedLocations = new List<string>();
+            public HashSet<string> collectedLocations = new HashSet<string>();
             public List<string> goals = new List<string>();
 
             public bool victory;
@@ -242,7 +242,7 @@ namespace SeldomArchipelago.Systems
             session = new();
             session.session = newSession;
 
-            session.collectedLocations = (from id in session.session.Locations.AllLocationsChecked select session.session.Locations.GetLocationNameFromId(id)).ToList();
+            session.collectedLocations = (from id in session.session.Locations.AllLocationsChecked select session.session.Locations.GetLocationNameFromId(id)).ToHashSet();
 
             var success = (LoginSuccessful)result;
             session.goals = new List<string>(((JArray)success.SlotData["goal"]).ToObject<string[]>());
