@@ -166,7 +166,7 @@ namespace SeldomArchipelago.Systems
                 {
                     Main.npc[guideIndex].Transform(ModContent.GetInstance<GhostNPC>().Type);
                     GhostNPC ghost = Main.npc[guideIndex].ModNPC as GhostNPC;
-                    ghost.GhostType = NPCID.Guide;
+                    ghost.SetGhostType(NPCID.Guide);
                 }
             }
         }

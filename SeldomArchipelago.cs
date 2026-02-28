@@ -277,13 +277,8 @@ namespace SeldomArchipelago
                 cursor.EmitDelegate((int achievement, int npcIndex) =>
                 {
                     NPC npc = Main.npc[npcIndex];
-                    if (npc.ModNPC is GhostNPC)
+                    if (npc.ModNPC is not GhostNPC)
                     {
-                        Main.NewText("Ghost.");
-                    }
-                    else
-                    {
-                        Main.NewText("Not ghost.");
                         AchievementsHelper.NotifyProgressionEvent(achievement);
                     }
                 });
@@ -308,7 +303,7 @@ namespace SeldomArchipelago
                             ghost.homeTileX = WorldGen.bestX;
                             ghost.homeTileY = WorldGen.bestY;
                             GhostNPC modGhost = ghost.ModNPC as GhostNPC;
-                            modGhost.GhostType = ghostID;
+                            modGhost.SetGhostType(ghostID);
                             return ghostIndex;
                         }
                         itemsChecked++;
@@ -355,26 +350,9 @@ namespace SeldomArchipelago
                 if (-1 < index && index <= Main.npc.Length && Main.npc[index].ModNPC is GhostNPC ghost)
                 {
                     archipelagoSystem.QueueLocationClient(ArchipelagoSystem.npcIDtoName[ghost.GhostType]);
-                    if (archipelagoSystem.world.npcLocTypeToNpcItemType is not null && archipelagoSystem.world.npcLocTypeToNpcItemType.TryGetValue(ghost.GhostType, out int newNpcType))
-                    {
-                        Main.npc[index].Transform(newNpcType);
-                        if (newNpcType == NPCID.Truffle) AchievementsHelper.NotifyProgressionEvent(18);
-                        orig(player, index, fromNet);
-                    }
-                    else if (Main.netMode == NetmodeID.MultiplayerClient)
-                    {
-                        NetMessage.SendStrikeNPC(ghost.NPC, new NPC.HitInfo() { InstantKill = true });
-                    }
-                    else
-                    {
-                        ghost.NPC.StrikeInstantKill();
-                        NPC.FairyEffects(ghost.NPC.Center, Main.rand.Next(3));
-                    }
+                    GhostNPC.RedeemGhost(index);
                 }
-                else
-                {
-                    orig(player, index, fromNet);
-                }
+                orig(player, index, fromNet);
             };
 
             // Manage Ghost Occupying Rooms
@@ -818,6 +796,12 @@ namespace SeldomArchipelago
                 }
 
                 CollectionButton.SetupShop(items, reader.ReadInt32());
+            }
+            else if (message == "RedeemGhost")
+            {
+                int index = reader.ReadInt32();
+                int redeemer = reader.ReadInt32();
+                GhostNPC.RedeemGhost(index, redeemer);
             }
             else archipelagoSystem.QueueLocation(message);
         }

@@ -9,6 +9,7 @@ using Terraria;
 using Terraria.Audio;
 using Terraria.DataStructures;
 using Terraria.GameContent;
+using Terraria.GameContent.Achievements;
 using Terraria.GameContent.Bestiary;
 using Terraria.GameContent.ItemDropRules;
 using Terraria.GameContent.Personalities;
@@ -21,28 +22,38 @@ using Terraria.Utilities;
 using ReLogic.Content;
 using System.Collections.Immutable;
 using Newtonsoft.Json.Linq;
+using System.IO;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using SeldomArchipelago.Systems;
 
 namespace SeldomArchipelago.NPCs
 {
     [AutoloadHead]
     public class GhostNPC : ModNPC
     {
-        public int GhostType
+        int ghostType;
+        public int GhostType {get => ghostType;}
+        int transformType;
+        public void SetGhostType(int type)
         {
-            get => ghostType;
-            set
+            if (allGhostTypes.Contains(type))
             {
-                if (allGhostTypes.Contains(value))
-                {
-                    ghostType = value;
-                }
-                else
-                {
-                    throw new Exception($"Attempted to set ghostType to value {value}.");
-                }
+                ghostType = type;
+            }
+            else
+            {
+                throw new Exception($"Attempted to set ghostType to value {type}.");
+            }
+            var archipelagoSystem = ModContent.GetInstance<ArchipelagoSystem>();
+            if (archipelagoSystem.world.npcLocTypeToNpcItemType is not null && archipelagoSystem.world.npcLocTypeToNpcItemType.TryGetValue(ghostType, out int newNpcType))
+            {
+                transformType = newNpcType;
+            }
+            else
+            {
+                transformType = 0;
             }
         }
-        int ghostType;
         static readonly ImmutableHashSet<int> allGhostTypes =
         [
             NPCID.Guide,
@@ -108,17 +119,52 @@ namespace SeldomArchipelago.NPCs
             NPC.frame = GetTexture().Frame(1, 25, 0, 0);
         }
         public override bool CanChat() => true;
+        public override string GetChat() => $"{ArchipelagoSystem.npcIDtoName[ghostType]} location redeemed!";
         public override bool NeedSaving() => true;
         public override bool CanBeHitByNPC(NPC attacker) => false;
         public override bool? CanBeHitByItem(Player player, Item item) => false;
         public static bool AnyGhosts(int type) => Main.npc.Any(npc => npc.active && npc.ModNPC is GhostNPC checkNPC && checkNPC.ghostType == type);
+        public static void RedeemGhost(int index, int redeemer = -1)
+        {
+            if (Main.netMode == NetmodeID.MultiplayerClient)
+            {
+                var packet = ModContent.GetInstance<SeldomArchipelago>().GetPacket();
+                packet.Write("RedeemGhost");
+                packet.Write(index);
+                packet.Write(redeemer);
+                packet.Send();
+                return;
+            }
+            GhostNPC ghost = Main.npc[index].ModNPC as GhostNPC;
+            if (ghost.transformType > 0)
+            {
+                Main.npc[index].Transform(ghost.transformType);
+                if (ghost.transformType == NPCID.Truffle) AchievementsHelper.NotifyProgressionEvent(18);
+                if (redeemer > -1) Main.player[redeemer].SetTalkNPC(index, true);
+            }
+            else
+            {
+                ghost.NPC.StrikeInstantKill();
+                NPC.FairyEffects(ghost.NPC.Center, Main.rand.Next(3));
+            }
+        }
         public override void SaveData(TagCompound tag)
         {
             tag[nameof(ghostType)] = ghostType;
+            tag[nameof(transformType)] = transformType;
         }
         public override void LoadData(TagCompound tag)
         {
             ghostType = tag.GetAsInt(nameof(ghostType));
+            transformType = tag.GetAsInt(nameof(transformType));
+        }
+        public override void SendExtraAI(BinaryWriter writer)
+        {
+            writer.Write(ghostType);
+        }
+        public override void ReceiveExtraAI(BinaryReader reader)
+        {
+            ghostType = reader.ReadInt32();
         }
     }
 }
