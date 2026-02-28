@@ -124,14 +124,13 @@ namespace SeldomArchipelago.NPCs
         public override bool CanBeHitByNPC(NPC attacker) => false;
         public override bool? CanBeHitByItem(Player player, Item item) => false;
         public static bool AnyGhosts(int type) => Main.npc.Any(npc => npc.active && npc.ModNPC is GhostNPC checkNPC && checkNPC.ghostType == type);
-        public static void RedeemGhost(int index, int redeemer = -1)
+        public static void RedeemGhost(int index)
         {
             if (Main.netMode == NetmodeID.MultiplayerClient)
             {
                 var packet = ModContent.GetInstance<SeldomArchipelago>().GetPacket();
                 packet.Write("RedeemGhost");
                 packet.Write(index);
-                packet.Write(redeemer);
                 packet.Send();
                 return;
             }
@@ -140,7 +139,6 @@ namespace SeldomArchipelago.NPCs
             {
                 Main.npc[index].Transform(ghost.transformType);
                 if (ghost.transformType == NPCID.Truffle) AchievementsHelper.NotifyProgressionEvent(18);
-                if (redeemer > -1) Main.player[redeemer].SetTalkNPC(index, true);
             }
             else
             {

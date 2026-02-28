@@ -799,8 +799,7 @@ namespace SeldomArchipelago
             else if (message == "RedeemGhost")
             {
                 int index = reader.ReadInt32();
-                int redeemer = reader.ReadInt32();
-                GhostNPC.RedeemGhost(index, redeemer);
+                GhostNPC.RedeemGhost(index);
             }
             else archipelagoSystem.QueueLocation(message);
         }
