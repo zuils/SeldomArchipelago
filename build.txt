@@ -1,7 +1,7 @@
-displayName = Archipelago Randomizer (Seldom's implementation)
-author = Seldom
-version = 2.0
-homepage = https://github.com/Seldom-SE/archipelago_terraria_client
+displayName = Archipelago Randomizer (Desp's Beta)
+author = Desp
+version = 2.0.1
+homepage = https://github.com/desperandos101/SeldomArchipelago
 includeSource = true
 dllReferences = Archipelago.MultiClient.Net, Newtonsoft.Json
 weakReferences = CalamityMod
