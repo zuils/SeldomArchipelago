@@ -202,13 +202,7 @@ namespace SeldomArchipelago
                         {
                             if (Main.townNPCCanSpawn[type] && GhostNPC.GhostableType(type) && !existingGhostTypes.Contains(type))
                                 validGhostTypes.Add(type);
-                            Main.townNPCCanSpawn[type] = archipelagoSystem.world.receivedNPCs.Contains(type) && !existingTownTypes.Contains(type);
-                        }
-
-                        // Cover Non-Randomized NPCs
-                        foreach (int type in existingTownTypes)
-                        {
-                            if (!archipelagoSystem.world.randomizedNPCs.Contains(type)) Main.townNPCCanSpawn[type] = false;
+                            Main.townNPCCanSpawn[type] = archipelagoSystem.world.receivedNPCs.Contains(type);
                         }
                             
                         // Enqueue Ghosts
@@ -218,6 +212,11 @@ namespace SeldomArchipelago
                                 if (!archipelagoSystem.world.ghostNPCqueue.Contains(type) && !archipelagoSystem.LocationCollected(ArchipelagoSystem.npcIDtoName[type]))
                                     archipelagoSystem.world.ghostNPCqueue.Enqueue(type);
                             }
+                    }
+                    // Block Duplicate Normal NPCs
+                    foreach (int type in existingTownTypes)
+                    {
+                        Main.townNPCCanSpawn[type] = false;
                     }
                     // Set prioritizedNPC if Vanilla NPC can spawn
                     for (int i = 0; i < Main.townNPCCanSpawn.Length; i++)
