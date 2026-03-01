@@ -2,7 +2,7 @@ using Terraria;
 using Terraria.GameContent.Events;
 using Terraria.ModLoader;
 
-namespace SeldomArchipelago.Command
+namespace SeldomDespArchipelago.Command
 {
     public class ApTriggerLunar : ModCommand
     {

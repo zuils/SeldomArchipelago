@@ -1,0 +1,101 @@
+Mods: {
+	SeldomDespArchipelago: {
+		Configs: {
+			Config: {
+				manualFlags: {
+					Tooltip: ""
+					Label: Receive Flag As Item
+				}
+
+				Headers: {
+					Miscellaneous: Miscellaneous Header
+					Chat: Chat Header
+					Advanced: Advanced Header
+					Common: Common Header
+				}
+
+				chatSettings: {
+					Tooltip: ""
+					Label: Adjust Filter
+				}
+
+				colorText: {
+					Tooltip: ""
+					Label: Color AP Text
+				}
+
+				password: {
+					Tooltip: ""
+					Label: Password
+				}
+
+				address: {
+					Tooltip: ""
+					Label: Server Address
+				}
+
+				port: {
+					Tooltip: ""
+					Label: Port
+				}
+
+				name: {
+					Tooltip: ""
+					Label: Name
+				}
+
+				DisplayName: Config
+			}
+
+			ChatSetting: {
+				Disable: {
+					Tooltip: ""
+					Label: Disable
+				}
+
+				Filter: {
+					Tooltip: ""
+					Label: Filter
+				}
+
+				Grey: {
+					Tooltip: ""
+					Label: Grey
+				}
+
+				All: {
+					Tooltip: ""
+					Label: All
+				}
+
+				Tooltip: ""
+			}
+		}
+
+		NPCs: {
+			GhostNPC: {
+				TownNPCMood: {
+					Princess_LovesNPC: I like {NPCName}.
+					LikeNPC_Princess: I like {NPCName}.
+					HateCrowded: I hate how crowded I am.
+					DislikeCrowded: I dislike how crowded I am.
+					LoveSpace: I love having so much space.
+					FarFromHome: I am too far from home.
+					NoHome: I hate not having a home.
+					Content: I am content.
+				}
+
+				DisplayName: Ghost N P C
+			}
+
+			CollectionNPC.DisplayName: Collection N P C
+		}
+
+		Items: {
+			FlagStarter: {
+				Tooltip: ""
+				DisplayName: Flag Starter
+			}
+		}
+	}
+}

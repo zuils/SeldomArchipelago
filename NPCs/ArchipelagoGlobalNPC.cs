@@ -1,9 +1,9 @@
-using SeldomArchipelago.Systems;
+using SeldomDespArchipelago.Systems;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 
-namespace SeldomArchipelago.NPCs
+namespace SeldomDespArchipelago.NPCs
 {
     [ExtendsFromMod("CalamityMod")]
     public class ArchipelagoGlobalNPC : GlobalNPC

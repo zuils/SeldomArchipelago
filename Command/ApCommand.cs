@@ -1,7 +1,7 @@
-using SeldomArchipelago.Systems;
+using SeldomDespArchipelago.Systems;
 using Terraria.ModLoader;
 
-namespace SeldomArchipelago.Command
+namespace SeldomDespArchipelago.Command
 {
     public class ApCommand : ModCommand
     {

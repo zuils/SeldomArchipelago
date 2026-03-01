@@ -5,10 +5,10 @@ using Microsoft.CodeAnalysis.Operations;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using SeldomArchipelago.NPCs;
-using SeldomArchipelago.Players;
-using SeldomArchipelago.Systems;
-using SeldomArchipelago.UI;
+using SeldomDespArchipelago.NPCs;
+using SeldomDespArchipelago.Players;
+using SeldomDespArchipelago.Systems;
+using SeldomDespArchipelago.UI;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -26,9 +26,11 @@ using Terraria.ID;
 using Terraria.Localization;
 using Terraria.ModLoader;
 
-namespace SeldomArchipelago
+// Note: When pulling commits from here to main, this namespace needs to be refactored.
+namespace SeldomDespArchipelago
 {
     // TODO Use a data-oriented approach to get rid of all this repetition
+    
     public class SeldomArchipelago : Mod
     {
         // We reuse some parts of Terraria's code for multiple purposes in this mod. For example,
@@ -337,6 +339,7 @@ namespace SeldomArchipelago
                             Main.NewText(Language.GetTextValue("Announcement.HasArrived", fullName), 50, 125);
                         else if (Main.netMode == NetmodeID.Server)
                             ChatHelper.BroadcastChatMessage(NetworkText.FromKey("Announcement.HasArrived", npc.GetFullNetName()), new Color(50, 125, 255));
+                        if (archipelagoSystem.session.goals.Contains(npc.TypeName)) archipelagoSystem.QueueLocation(npc.TypeName);  // For Princess + Future Single NPC Goals
                         return 1;
                     }
                 });
