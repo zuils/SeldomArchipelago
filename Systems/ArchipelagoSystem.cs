@@ -38,6 +38,7 @@ namespace SeldomArchipelago.Systems
 {
     class ArchipelagoSystem : ModSystem
     {
+        Version version = new Version(0, 6, 61);
         // Data that's reset between worlds
         public class WorldState : TagSerializable
         {
@@ -121,6 +122,7 @@ namespace SeldomArchipelago.Systems
             // The slot & multiworld seed of the currently connected session.
             public string slotName = null;
             public string seed = null;
+            public bool calamity = false;
             // List of locations that are currently being sent
             public List<Task<Dictionary<long, ScoutedItemInfo>>> locationQueue = new List<Task<Dictionary<long, ScoutedItemInfo>>>();
             public ArchipelagoSession session;
@@ -139,6 +141,15 @@ namespace SeldomArchipelago.Systems
 
         public WorldState world = new();
         public SessionState session;
+        public ConnectStatus status = ConnectStatus.Unset;
+        public enum ConnectStatus
+        {
+            Unset,
+            Valid,
+            SlotOrSeedMismatch,
+            CalamityNeeded,
+            NoCalamityNeeded
+        }
         public bool WorldSessionDisparity()
         {
             if (session is null) return false;
@@ -151,15 +162,125 @@ namespace SeldomArchipelago.Systems
             NPCID.Truffle
         ];
 
+        public override void OnWorldLoad()
+        {
+            // Needed for achievements to work right
+            typeof(SocialAPI).GetField("_mode", BindingFlags.Static | BindingFlags.NonPublic).SetValue(null, SocialMode.None);
+
+            if (Main.netMode == NetmodeID.MultiplayerClient) return;
+
+            var config = ModContent.GetInstance<Config.Config>();
+
+            LoginResult result;
+            ArchipelagoSession newSession;
+            try
+            {
+                newSession = ArchipelagoSessionFactory.CreateSession(config.address, config.port);
+
+                result = newSession.TryConnectAndLogin("Terraria", config.name, ItemsHandlingFlags.AllItems, version, null, null, config.password == "" ? null : config.password);
+                if (result is LoginFailure)
+                {
+                    return;
+                }
+            }
+            catch
+            {
+                return;
+            }
+
+            session = new();
+            session.session = newSession;
+
+            session.collectedLocations = (from id in session.session.Locations.AllLocationsChecked select session.session.Locations.GetLocationNameFromId(id)).ToHashSet();
+
+            var success = (LoginSuccessful)result;
+            session.goals = new List<string>(((JArray)success.SlotData["goal"]).ToObject<string[]>());
+
+            session.session.MessageLog.OnMessageReceived += ApMessageToChat;
+
+            if ((bool)success.SlotData["deathlink"])
+            {
+                session.deathlink = session.session.CreateDeathLinkService();
+                session.deathlink.EnableDeathLink();
+
+                session.deathlink.OnDeathLinkReceived += ReceiveDeathlink;
+            }
+
+            session.calamity = (long)success.SlotData["calamity"] == 1;
+
+            string[] randomizedNPCnames = ((JArray)success.SlotData["randomize_npcs"]).ToObject<string[]>();
+            if (randomizedNPCnames.Length > 0)
+            {
+                world.randomizedNPCs = (from name in randomizedNPCnames select npcNameToID[name]).ToImmutableHashSet();
+                string[] allNPCnames = npcNameToID.Keys.ToArray();
+                var locIDtoNPCname = new Dictionary<long, string>();
+                foreach (string loc in allNPCnames)
+                {
+                    locIDtoNPCname[session.session.Locations.GetLocationIdFromName("Terraria", loc)] = loc;
+                }
+                if (locIDtoNPCname.ContainsKey(-1))
+                {
+                    throw new Exception($"Some retrieved NPC locations turned up -1 ids.");
+                }
+                var task = session.session.Locations.ScoutLocationsAsync(locIDtoNPCname.Keys.ToArray());
+                if (task.Wait(1000))
+                {
+                    world.npcLocTypeToNpcItemType = new();
+                    int playerID = success.Slot;
+                    var npcLocDict = task.Result;
+                    foreach (long key in npcLocDict.Keys)
+                    {
+                        ItemInfo itemInfo = npcLocDict[key];
+                        if (itemInfo.Player.Slot == playerID && allNPCnames.Contains(itemInfo.ItemName))
+                        {
+                            int npcType = npcNameToID[locIDtoNPCname[key]];
+                            world.npcLocTypeToNpcItemType[npcType] = npcNameToID[itemInfo.ItemName];
+                        }
+                    }
+                }
+
+            }
+
+            session.slot = success.Slot;
+            string theSlotName = session.session.Players.GetPlayerName(session.slot);
+            string theSeed = session.session.RoomState.Seed;
+            session.slotName = theSlotName;
+            world.slotName = theSlotName;
+            session.seed = theSeed;
+            world.seed = theSeed;
+
+            foreach (var location in world.locationBacklog) QueueLocation(location);
+            world.locationBacklog.Clear();
+        }
         public override void LoadWorldData(TagCompound tag)
         {
             if (tag.TryGet<WorldState>("ApWorldData", out var worldData) && worldData.seed != "")  // Empty worldstates get saved to new worlds, so we check for that
             {
                 world = worldData;
             }
+        }
+        public override void PostWorldLoad()
+        {
+            if (session is null) return;
+            if (session.slotName != world.slotName || session.seed != world.seed)
+            {
+                status = ConnectStatus.SlotOrSeedMismatch;
+                Reset();
+                return;
+            }
+            bool calamityActive = ModContent.GetInstance<CalamitySystem>() is not null;
+            if (calamityActive != session.calamity)
+            {
+                if (calamityActive) status = ConnectStatus.NoCalamityNeeded;
+                else status = ConnectStatus.CalamityNeeded;
+                Reset();
+                return;
+            }
+            status = ConnectStatus.Valid;
+
             bool worldHasGuide = !world.NPCRandoActive() || world.receivedNPCs.Contains(NPCID.Guide);
             bool sessHasGuide = session is not null && session.session.Items.AllItemsReceived.Any(i => i.ItemName == "Guide");
-            if (!WorldSessionDisparity() && !worldHasGuide && !sessHasGuide)
+            if (!worldHasGuide && !sessHasGuide)
             {
                 int guideIndex = NPC.FindFirstNPC(NPCID.Guide);
                 if (guideIndex != -1)
@@ -212,94 +333,6 @@ namespace SeldomArchipelago.Systems
                 }
             }
             else Chat(colorMsg());
-        }
-        public override void OnWorldLoad()
-        {
-            // Needed for achievements to work right
-            typeof(SocialAPI).GetField("_mode", BindingFlags.Static | BindingFlags.NonPublic).SetValue(null, SocialMode.None);
-
-            if (Main.netMode == NetmodeID.MultiplayerClient) return;
-
-            var config = ModContent.GetInstance<Config.Config>();
-
-            LoginResult result;
-            ArchipelagoSession newSession;
-            try
-            {
-                newSession = ArchipelagoSessionFactory.CreateSession(config.address, config.port);
-
-                result = newSession.TryConnectAndLogin("Terraria", config.name, ItemsHandlingFlags.AllItems, new Version(0, 6, 61), null, null, config.password == "" ? null : config.password);
-                if (result is LoginFailure)
-                {
-                    return;
-                }
-            }
-            catch
-            {
-                return;
-            }
-
-            session = new();
-            session.session = newSession;
-
-            session.collectedLocations = (from id in session.session.Locations.AllLocationsChecked select session.session.Locations.GetLocationNameFromId(id)).ToHashSet();
-
-            var success = (LoginSuccessful)result;
-            session.goals = new List<string>(((JArray)success.SlotData["goal"]).ToObject<string[]>());
-
-            session.session.MessageLog.OnMessageReceived += ApMessageToChat;
-
-            if ((bool)success.SlotData["deathlink"])
-            {
-                session.deathlink = session.session.CreateDeathLinkService();
-                session.deathlink.EnableDeathLink();
-
-                session.deathlink.OnDeathLinkReceived += ReceiveDeathlink;
-            }
-
-            string[] randomizedNPCnames = ((JArray)success.SlotData["randomize_npcs"]).ToObject<string[]>();
-            if (randomizedNPCnames.Length > 0)
-            {
-                world.randomizedNPCs = (from name in randomizedNPCnames select npcNameToID[name]).ToImmutableHashSet();
-                string[] allNPCnames = npcNameToID.Keys.ToArray();
-                var locIDtoNPCname = new Dictionary<long, string>();
-                foreach (string loc in allNPCnames)
-                {
-                    locIDtoNPCname[session.session.Locations.GetLocationIdFromName("Terraria", loc)] = loc;
-                }
-                if (locIDtoNPCname.ContainsKey(-1))
-                {
-                    throw new Exception($"Some retrieved NPC locations turned up -1 ids.");
-                }
-                var task = session.session.Locations.ScoutLocationsAsync(locIDtoNPCname.Keys.ToArray());
-                if (task.Wait(1000))
-                {
-                    world.npcLocTypeToNpcItemType = new();
-                    int playerID = success.Slot;
-                    var npcLocDict = task.Result;
-                    foreach (long key in npcLocDict.Keys)
-                    {
-                        ItemInfo itemInfo = npcLocDict[key];
-                        if (itemInfo.Player.Slot == playerID && allNPCnames.Contains(itemInfo.ItemName))
-                        {
-                            int npcType = npcNameToID[locIDtoNPCname[key]];
-                            world.npcLocTypeToNpcItemType[npcType] = npcNameToID[itemInfo.ItemName];
-                        }
-                    }
-                }
-
-            }
-
-            session.slot = success.Slot;
-            string theSlotName = session.session.Players.GetPlayerName(session.slot);
-            string theSeed = session.session.RoomState.Seed;
-            session.slotName = theSlotName;
-            world.slotName = theSlotName;
-            session.seed = theSeed;
-            world.seed = theSeed;
-
-            foreach (var location in world.locationBacklog) QueueLocation(location);
-            world.locationBacklog.Clear();
         }
         public bool LocationCollected(string loc) => session is null ? world.locationBacklog.Contains(loc) : session.collectedLocations.Contains(loc);
 
@@ -631,13 +664,6 @@ namespace SeldomArchipelago.Systems
                 return;
             }
 
-            if (WorldSessionDisparity())
-            {
-                Chat($"WARNING: Disparity between world & server data detected.\nSERVER SEED: {session.seed}\nSERVER SLOT: {session.slotName}\nWORLD SEED: {world.seed}\nWORLD SLOT: {world.slotName}\nYou have been disconnected from the server. Please load a different world.");
-                Reset();
-                return;
-            }
-
             var unqueue = new List<int>();
             for (var i = 0; i < session.locationQueue.Count; i++)
             {
@@ -705,16 +731,33 @@ namespace SeldomArchipelago.Systems
         public override void OnWorldUnload()
         {
             world = new();
+            status = ConnectStatus.Unset;
             Reset();
         }
-
-        public string[] Status() => (session == null) switch
+        
+        public string[] Status() => (status) switch
         {
-            true => new[] {
+            ConnectStatus.Unset => new[] {
                 @"The world is not connected to Archipelago! Reload the world to try again.",
                 "If you are the host, check your config in the main menu at Workshop > Manage Mods > Config",
             },
-            false => (ModContent.GetInstance<CalamitySystem>()) switch
+            ConnectStatus.SlotOrSeedMismatch => new[]
+            {
+                "This world has save data for a different multiworld/slot.",
+                $"SAVE DATA MULTIWORLD SLOT: {world.slotName}, SEED {world.slotName}",
+                "You have been disconnected from the server. Please load a different world."
+            },
+            ConnectStatus.CalamityNeeded => new[]
+            {
+                "The multiworld slot you connected to has Calamity integration enabled, but you do not have the mod enabled in your modlist.",
+                "You have been disconnected from the server. Please enable Calamity, then load a world."
+            },
+            ConnectStatus.NoCalamityNeeded => new[]
+            {
+                "The multiworld slot you connected to has Calamity integration disabled, but you have the mod enabled in your modlist.",
+                "You have been disconnected from the server. Please disable Calamity, then load a world."
+            },
+            ConnectStatus.Valid => ModContent.GetInstance<CalamitySystem>() switch
             {
                 null => new[] { "Archipelago is active!" },
                 _ => new[] {

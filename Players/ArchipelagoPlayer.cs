@@ -27,34 +27,37 @@ namespace SeldomArchipelago.Players
 
         public override void OnEnterWorld()
         {
-            var achievedWhileLoading = ModContent.GetInstance<ArchipelagoSystem>().GetAchieved();
-
-            inWorld = true;
-
-            var achievements = (Dictionary<string, Achievement>)typeof(AchievementManager).GetField("_achievements", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(Main.Achievements);
-
-            foreach (var achievement in achievements)
+            var archipelagoSystem = ModContent.GetInstance<ArchipelagoSystem>();
+            if (archipelagoSystem.status == ArchipelagoSystem.ConnectStatus.Valid)
             {
-                if (achievedWhileLoading.Contains(achievement.Value.Name)) continue;
+                var achievedWhileLoading = archipelagoSystem.GetAchieved();
 
-                achievement.Value.ClearProgress();
+                inWorld = true;
 
-                var conditions = (Dictionary<string, AchievementCondition>)typeof(Achievement).GetField("_conditions", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(achievement.Value);
-                var serConditions = this.achievements.Get<TagCompound>(achievement.Key);
+                var achievements = (Dictionary<string, Achievement>)typeof(AchievementManager).GetField("_achievements", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(Main.Achievements);
 
-                foreach (var condition in conditions)
+                foreach (var achievement in achievements)
                 {
-                    var serCondition = serConditions.Get<TagCompound>(condition.Key);
-                    if (condition.Value is CustomIntCondition intCondition) intCondition.Value = serCondition.Get<int>("int");
-                    if (condition.Value is CustomFloatCondition floatCondition) floatCondition.Value = serCondition.Get<float>("float");
-                    if (serCondition.Get<bool>("completed"))
-                    {
-                        condition.Value.Complete();
-                    }
-                    SoundEngine.StopTrackedSounds();
-                }
-            }
+                    if (achievedWhileLoading.Contains(achievement.Value.Name)) continue;
 
+                    achievement.Value.ClearProgress();
+
+                    var conditions = (Dictionary<string, AchievementCondition>)typeof(Achievement).GetField("_conditions", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(achievement.Value);
+                    var serConditions = this.achievements.Get<TagCompound>(achievement.Key);
+
+                    foreach (var condition in conditions)
+                    {
+                        var serCondition = serConditions.Get<TagCompound>(condition.Key);
+                        if (condition.Value is CustomIntCondition intCondition) intCondition.Value = serCondition.Get<int>("int");
+                        if (condition.Value is CustomFloatCondition floatCondition) floatCondition.Value = serCondition.Get<float>("float");
+                        if (serCondition.Get<bool>("completed"))
+                        {
+                            condition.Value.Complete();
+                        }
+                    }
+                }
+                SoundEngine.StopTrackedSounds();
+            }
             if (Main.netMode == NetmodeID.MultiplayerClient)
             {
                 var mod = ModContent.GetInstance<SeldomArchipelago>();
@@ -68,7 +71,6 @@ namespace SeldomArchipelago.Players
                 return;
             }
 
-            var archipelagoSystem = ModContent.GetInstance<ArchipelagoSystem>();
             archipelagoSystem.Chat(archipelagoSystem.Status(), Player.whoAmI);
         }
 
