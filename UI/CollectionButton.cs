@@ -36,7 +36,7 @@ namespace SeldomDespArchipelago.UI
         {
             if (Clickable)
             {
-                spriteBatch.Draw((Texture2D)ModContent.Request<Texture2D>(hovered ? "SeldomArchipelago/UI/CollectionButtonHover" : "SeldomArchipelago/UI/CollectionButton"), new Vector2(left, top), new Color(255, 255, 255));
+                spriteBatch.Draw((Texture2D)ModContent.GetInstance<SeldomArchipelago>().Assets.Request<Texture2D>(hovered ? "UI/CollectionButtonHover" : "UI/CollectionButton"), new Vector2(left, top), new Color(255, 255, 255));
                 if (hovered)
                 {
                     Main.LocalPlayer.mouseInterface = true;

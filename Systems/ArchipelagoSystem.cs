@@ -39,6 +39,7 @@ namespace SeldomDespArchipelago.Systems
     class ArchipelagoSystem : ModSystem
     {
         Version version = new Version(0, 6, 61);
+        const string APWorldName = "Terraria_Desp_Beta";
         // Data that's reset between worlds
         public class WorldState : TagSerializable
         {
@@ -177,7 +178,7 @@ namespace SeldomDespArchipelago.Systems
             {
                 newSession = ArchipelagoSessionFactory.CreateSession(config.address, config.port);
 
-                result = newSession.TryConnectAndLogin("Terraria", config.name, ItemsHandlingFlags.AllItems, version, null, null, config.password == "" ? null : config.password);
+                result = newSession.TryConnectAndLogin(APWorldName, config.name, ItemsHandlingFlags.AllItems, version, null, null, config.password == "" ? null : config.password);
                 if (result is LoginFailure)
                 {
                     return;
@@ -216,7 +217,7 @@ namespace SeldomDespArchipelago.Systems
                 var locIDtoNPCname = new Dictionary<long, string>();
                 foreach (string loc in allNPCnames)
                 {
-                    locIDtoNPCname[session.session.Locations.GetLocationIdFromName("Terraria", loc)] = loc;
+                    locIDtoNPCname[session.session.Locations.GetLocationIdFromName(APWorldName, loc)] = loc;
                 }
                 if (locIDtoNPCname.ContainsKey(-1))
                 {
@@ -885,7 +886,7 @@ namespace SeldomDespArchipelago.Systems
                 return;
             }
 
-            var location = session.session.Locations.GetLocationIdFromName("Terraria", locationName);
+            var location = session.session.Locations.GetLocationIdFromName(APWorldName, locationName);
             if (location == -1) return;
 
             if (!session.collectedLocations.Contains(locationName))
