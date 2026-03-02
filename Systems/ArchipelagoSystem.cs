@@ -64,7 +64,7 @@ namespace SeldomDespArchipelago.Systems
             // world.
             public List<int> receivedRewards = new List<int>();
             // List of flags that have been received but not triggered
-            public List<string> suspendedFlags = new List<string>();
+            public HashSet<string> suspendedFlags = new HashSet<string>();
             // All NPCs that have been randomized.
             public ImmutableHashSet<int> randomizedNPCs = null;
             // Set of town NPC items received in this world. Since this is saved to the world and
@@ -87,6 +87,7 @@ namespace SeldomDespArchipelago.Systems
                     [nameof(locationBacklog)] = locationBacklog,
                     [nameof(collectedItems)] = collectedItems,
                     [nameof(receivedRewards)] = receivedRewards,
+                    [nameof(suspendedFlags)] = suspendedFlags,
                 };
                 if (NPCRandoActive())
                 {
@@ -105,6 +106,7 @@ namespace SeldomDespArchipelago.Systems
                 world.locationBacklog = tag.Get<List<string>>(nameof(locationBacklog));
                 world.collectedItems = tag.GetInt(nameof(collectedItems));
                 world.receivedRewards = tag.Get<List<int>>(nameof(receivedRewards));
+                world.suspendedFlags = tag.Get<HashSet<string>(nameof(suspendedFlags));
                 if (tag.TryGet(nameof(randomizedNPCs), out List<int> ranNPC))
                 {
                     world.randomizedNPCs = ranNPC.ToImmutableHashSet();
@@ -279,6 +281,10 @@ namespace SeldomDespArchipelago.Systems
             }
             status = ConnectStatus.Valid;
 
+            // Refresh suspended flags
+            world.suspendedFlags = (from flag in flags where session.collectedLocations.Contains(flag) && !CheckFlag(flag) select flag).ToHashSet();
+
+            // Change Guide to Ghost
             bool worldHasGuide = !world.NPCRandoActive() || world.receivedNPCs.Contains(NPCID.Guide);
             bool sessHasGuide = session is not null && session.session.Items.AllItemsReceived.Any(i => i.ItemName == "Guide");
             if (!worldHasGuide && !sessHasGuide)
