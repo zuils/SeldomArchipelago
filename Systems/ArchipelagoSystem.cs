@@ -86,7 +86,7 @@ namespace SeldomArchipelago.Systems
                     [nameof(locationBacklog)] = locationBacklog,
                     [nameof(collectedItems)] = collectedItems,
                     [nameof(receivedRewards)] = receivedRewards,
-                    [nameof(suspendedFlags)] = suspendedFlags,
+                    [nameof(suspendedFlags)] = suspendedFlags.ToList(),
                 };
                 if (NPCRandoActive())
                 {
@@ -105,7 +105,7 @@ namespace SeldomArchipelago.Systems
                 world.locationBacklog = tag.Get<List<string>>(nameof(locationBacklog));
                 world.collectedItems = tag.GetInt(nameof(collectedItems));
                 world.receivedRewards = tag.Get<List<int>>(nameof(receivedRewards));
-                world.suspendedFlags = tag.Get<HashSet<string>(nameof(suspendedFlags));
+                world.suspendedFlags = tag.Get<List<string>>(nameof(suspendedFlags)).ToHashSet();
                 if (tag.TryGet(nameof(randomizedNPCs), out List<int> ranNPC))
                 {
                     world.randomizedNPCs = ranNPC.ToImmutableHashSet();
@@ -281,7 +281,8 @@ namespace SeldomArchipelago.Systems
             status = ConnectStatus.Valid;
 
             // Refresh suspended flags
-            world.suspendedFlags = (from flag in flags where session.collectedLocations.Contains(flag) && !CheckFlag(flag) select flag).ToHashSet();
+            HashSet<string> collectedItems = (from item in session.session.Items.AllItemsReceived select item.ItemName).ToHashSet();
+            world.suspendedFlags = (from flag in flags where collectedItems.Contains(flag) && !CheckFlag(flag) select flag).ToHashSet();
 
             // Change Guide to Ghost
             bool worldHasGuide = !world.NPCRandoActive() || world.receivedNPCs.Contains(NPCID.Guide);
