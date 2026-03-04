@@ -152,11 +152,6 @@ namespace SeldomArchipelago.Systems
             CalamityNeeded,
             NoCalamityNeeded
         }
-        public bool WorldSessionDisparity()
-        {
-            if (session is null) return false;
-            return session.slotName != world.slotName || session.seed != world.seed;
-        }
 
         // Contains ghosts that require special housing conditions to spawn.
         public readonly static ImmutableHashSet<int> specialSpawnGhosts =
