@@ -28,36 +28,34 @@ namespace SeldomArchipelago.Players
         public override void OnEnterWorld()
         {
             var archipelagoSystem = ModContent.GetInstance<ArchipelagoSystem>();
-            if (archipelagoSystem.status == ArchipelagoSystem.ConnectStatus.Valid)
+            var achievedWhileLoading = archipelagoSystem.GetAchieved();
+
+            inWorld = true;
+
+            var achievements = (Dictionary<string, Achievement>)typeof(AchievementManager).GetField("_achievements", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(Main.Achievements);
+
+            foreach (var achievement in achievements)
             {
-                var achievedWhileLoading = archipelagoSystem.GetAchieved();
+                if (achievedWhileLoading.Contains(achievement.Value.Name)) continue;
 
-                inWorld = true;
+                achievement.Value.ClearProgress();
 
-                var achievements = (Dictionary<string, Achievement>)typeof(AchievementManager).GetField("_achievements", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(Main.Achievements);
+                var conditions = (Dictionary<string, AchievementCondition>)typeof(Achievement).GetField("_conditions", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(achievement.Value);
+                var serConditions = this.achievements.Get<TagCompound>(achievement.Key);
 
-                foreach (var achievement in achievements)
+                foreach (var condition in conditions)
                 {
-                    if (achievedWhileLoading.Contains(achievement.Value.Name)) continue;
-
-                    achievement.Value.ClearProgress();
-
-                    var conditions = (Dictionary<string, AchievementCondition>)typeof(Achievement).GetField("_conditions", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(achievement.Value);
-                    var serConditions = this.achievements.Get<TagCompound>(achievement.Key);
-
-                    foreach (var condition in conditions)
+                    var serCondition = serConditions.Get<TagCompound>(condition.Key);
+                    if (condition.Value is CustomIntCondition intCondition) intCondition.Value = serCondition.Get<int>("int");
+                    if (condition.Value is CustomFloatCondition floatCondition) floatCondition.Value = serCondition.Get<float>("float");
+                    if (serCondition.Get<bool>("completed"))
                     {
-                        var serCondition = serConditions.Get<TagCompound>(condition.Key);
-                        if (condition.Value is CustomIntCondition intCondition) intCondition.Value = serCondition.Get<int>("int");
-                        if (condition.Value is CustomFloatCondition floatCondition) floatCondition.Value = serCondition.Get<float>("float");
-                        if (serCondition.Get<bool>("completed"))
-                        {
-                            condition.Value.Complete();
-                        }
+                        condition.Value.Complete();
                     }
                 }
-                SoundEngine.StopTrackedSounds();
             }
+            SoundEngine.StopTrackedSounds();
+
             if (Main.netMode == NetmodeID.MultiplayerClient)
             {
                 var mod = ModContent.GetInstance<SeldomArchipelago>();
