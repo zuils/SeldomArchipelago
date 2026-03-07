@@ -746,7 +746,7 @@ namespace SeldomArchipelago.Systems
             ConnectStatus.SlotOrSeedMismatch => new[]
             {
                 "This world has save data for a different multiworld/slot.",
-                $"SAVE DATA MULTIWORLD SLOT: {world.slotName}, SEED {world.slotName}",
+                $"SAVE DATA MULTIWORLD SLOT: {world.slotName}, SEED {world.seed}",
                 "You have been disconnected from the server. Please load a different world."
             },
             ConnectStatus.CalamityNeeded => new[]
