@@ -69,6 +69,10 @@ namespace SeldomArchipelago
         public override void Load()
         {
             var archipelagoSystem = ModContent.GetInstance<ArchipelagoSystem>();
+            if (ModLoader.HasMod("SeldomDespArchipelago") || ModLoader.HasMod("SeldomArchipelagoExtended") || ModLoader.HasMod("SpikersArchipelago"))
+            {
+                throw new Exception("Multiple Archipelago mods detected! Make sure only one is enabled at a time.");
+            }
 
             // Begin cursed IL editing
 
@@ -227,6 +231,11 @@ namespace SeldomArchipelago
 
             if (!ModLoader.HasMod("CalamityMod")) return;
             var calamity = ModLoader.GetMod("CalamityMod");
+
+            if (!calamity.Version.Equals(new Version(2, 0, 6, 2)))
+            {
+                throw new Exception("Incompatible Calamity version. This is most likely because you are using the workshop version of Calamity.\nPlease reload with Calamity 2.0.6.2. For information on how to do that, see the pins in the Archipelago discord's #terraria channel");
+            }
 
             var calamityAssembly = calamity.GetType().Assembly;
             foreach (var type in calamityAssembly.GetTypes()) switch (type.Name)
