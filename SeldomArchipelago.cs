@@ -694,6 +694,11 @@ namespace SeldomArchipelago
             if (!ModLoader.HasMod("CalamityMod")) return;
             var calamity = ModLoader.GetMod("CalamityMod");
 
+            if (calamity.Version.Equals(new Version(2, 0, 6)))
+            {
+                throw new Exception("Incompatible Calamity version. Please downpatch to 2.0.6.");
+            }
+
             var calamityAssembly = calamity.GetType().Assembly;
             foreach (var type in calamityAssembly.GetTypes()) switch (type.Name)
                 {
