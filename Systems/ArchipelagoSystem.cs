@@ -737,7 +737,7 @@ namespace SeldomArchipelago.Systems
             Reset();
         }
         
-        public string[] Status() => (status) switch
+        public string[] Status() => status switch
         {
             ConnectStatus.Unset => new[] {
                 @"The world is not connected to Archipelago! Reload the world to try again.",
@@ -749,15 +749,16 @@ namespace SeldomArchipelago.Systems
                 $"SAVE DATA MULTIWORLD SLOT: {world.slotName}, SEED {world.seed}",
                 "You have been disconnected from the server. Please load a different world."
             },
+            // For the next two messages, we instruct the player to reload the current world since it passed the mismatch test
             ConnectStatus.CalamityNeeded => new[]
             {
                 "The multiworld slot you connected to has Calamity integration enabled, but you do not have the mod enabled in your modlist.",
-                "You have been disconnected from the server. Please enable Calamity, then load a world."
+                "You have been disconnected from the server. Please enable Calamity, then reload this world."
             },
             ConnectStatus.NoCalamityNeeded => new[]
             {
                 "The multiworld slot you connected to has Calamity integration disabled, but you have the mod enabled in your modlist.",
-                "You have been disconnected from the server. Please disable Calamity, then load a world."
+                "You have been disconnected from the server. Please disable Calamity, then reload this world."
             },
             ConnectStatus.Valid => ModContent.GetInstance<CalamitySystem>() switch
             {
