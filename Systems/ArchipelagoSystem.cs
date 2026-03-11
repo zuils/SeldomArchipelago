@@ -440,7 +440,7 @@ namespace SeldomArchipelago.Systems
                     FlagStarter flagStarterMod = flagStarter.ModItem as FlagStarter;
                     flagStarterMod.FlagName = item;
                     player.QuickSpawnItem(player.GetSource_GiftOrReward(), flagStarter, 1);
-                    Main.NewText($"Flag Starter for {item} received! If you ever lose a flagstarter item, use '/apflagstart' and '/apflagstart list'.");
+                    Chat($"Flag Starter for {item} received! If you ever lose a flagstarter item, use '/apflagstart' and '/apflagstart list'.");
                 });
                 world.suspendedFlags.Add(item);
                 return;
