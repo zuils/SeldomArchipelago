@@ -536,7 +536,38 @@ namespace SeldomArchipelago
                 cursor.EmitBge(label);
                 cursor.EmitDelegate<Func<NPC>>(() => Main.npc[NPC.FindFirstNPC(NPCID.DemonTaxCollector)]);
             };
+            
+            // Correct Skeletron-spawning Behavior
+            // If the Old Man and the Clothier exist, this method cannot differentiate whether it was summoned via Old Man or voodoo doll.
+            IL_NPC.SpawnSkeletron += il =>
+            {
+                var cursor = new ILCursor(il);
 
+                cursor.GotoNext(i => i.MatchCall(out var mref) && mref.Name == "NewNPC");
+                cursor.Remove();
+                cursor.EmitLdarg0();
+                cursor.EmitDelegate((IEntitySource _, int x, int y, int _, int _, float _, float _, float _, float _, int _, int onWho) =>
+                {
+                    void Broadcast(string msg) => ChatHelper.BroadcastChatMessage(NetworkText.FromLiteral(msg), Color.White);
+                    
+                    int oldManIndex = -1;
+                    int clothierIndex = -1;
+                    for (int i = 0; i < Main.npc.Length; i++)
+                    {
+                        if (Main.npc[i].type == NPCID.OldMan) oldManIndex = i;
+                        else if (Main.npc[i].type == NPCID.Clothier) clothierIndex = i;
+                    }
+                    if (oldManIndex != -1 && clothierIndex != -1)
+                    {
+                        NPC trueSummoner = Main.player[onWho].killClothier ? Main.npc[clothierIndex] : Main.npc[oldManIndex];
+                        return NPC.NewNPC(NPC.GetBossSpawnSource(onWho), (int)trueSummoner.position.X + trueSummoner.width / 2, (int)trueSummoner.position.Y + trueSummoner.height / 2, 35);
+                    }
+                    else
+                    {
+                        return NPC.NewNPC(NPC.GetBossSpawnSource(onWho), x, y, 35);
+                    }
+                });
+            };
 
             // Torch God reward Terraria.Player:13794
             IL_Player.TorchAttack += il =>
