@@ -88,25 +88,6 @@ namespace SeldomDespArchipelago
 
             // Begin cursed IL editing
 
-            // DEBUG: SpawnSkeletron notification
-            On_NPC.SpawnSkeletron += (On_NPC.orig_SpawnSkeletron orig, int onWho) =>
-            {
-                Main.NewText("CLIENT: SpawnSkeletron called");
-                ChatHelper.BroadcastChatMessage(NetworkText.FromLiteral("SERVER: SpawnSkeletron called"), Color.White);
-                orig(onWho);
-                Main.NewText("CLIENT: End of call");
-                ChatHelper.BroadcastChatMessage(NetworkText.FromLiteral("SERVER: End of call"), Color.White);
-            };
-
-            // DEBUG: Skeletron Packet notification
-            On_NetMessage.SendData += (On_NetMessage.orig_SendData orig, int msg_type, int remote, int ignore, NetworkText text, int num, float num2, float num3, float num4, int num5, int num6,  int num7) => {
-                if (msg_type == 51)
-                {
-                    Main.NewText($"CLIENT: Sending Skeletron Spawn Packet (MAGIC NUMBERS: {num}, {num2})");
-                }
-                orig(msg_type, remote, ignore, text, num, num2, num3, num4, num5, num6, num7);
-            };
-
             // Manage Town/Ghost NPC Spawn Conditions
             IL_Main.UpdateTime_SpawnTownNPCs += il =>
             {
