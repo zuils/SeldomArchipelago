@@ -3,8 +3,8 @@ Mods: {
 		Configs: {
 			Config: {
 				manualFlags: {
-					Tooltip: ""
-					Label: Receive Flag As Item
+					Label: Receive Flag As Inventory Item
+					Tooltip: Flag items entered (such as Hardmode, Post-Plantera, etc.) will not activate automatically when received, and instead spawn an inventory item that can manually activate said flag.
 				}
 
 				Headers: {
@@ -48,27 +48,27 @@ Mods: {
 			}
 
 			ChatSetting: {
-				Disable: {
-					Tooltip: ""
-					Label: Disable
-				}
-
-				Filter: {
-					Tooltip: ""
-					Label: Filter
-				}
-
-				Grey: {
-					Tooltip: ""
-					Label: Grey
-				}
+				Tooltip: ""
 
 				All: {
-					Tooltip: ""
+					Tooltip: See all item/location messages in the multiworld normally
 					Label: All
 				}
 
-				Tooltip: ""
+				Grey: {
+					Tooltip: Grey out item/loaction messages unrelated to you
+					Label: Grey
+				}
+
+				Filter: {
+					Tooltip: Filter out item/location messages unrelated to you
+					Label: Filter
+				}
+
+				Disable: {
+					Tooltip: Hide all AP messages
+					Label: Disable
+				}
 			}
 		}
 
