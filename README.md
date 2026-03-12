@@ -1,4 +1,5 @@
 ## Currently Implemented
+For in-depth information on what each feature does, scroll down to the **Feature Explanation** section.
 ### Major Features
 - NPC randomization (Vanilla Town NPCs only, no pets)
 - Wall of Flesh + Princess goals
@@ -35,6 +36,42 @@ If you are playing with Calamity, you will have to manually install that mod in 
 2. Configure the server address, port, slot/player name, password as necessary, and the rest to your liking.
 3. Launch a world (creating a new one is recommended). If the chat displays "Archipelago is Active," you are connected successfully!
 
+# Feature Explanation
+## NPC Randomization
+NPC Randomization is a setting you can enable in your `.yaml` prior to generating a multiworld.
+If enabled: 
+- The ability for each vanilla town NPC to move in becomes an item.
+- Finding and talking to a rescuable NPC (Sleeping Angler, Bound Goblin, etc.) is a location.
+- Meeting the conditions for an NPC to move in (barring receiving them as an AP item) and speaking to the resultant Ghost NPC is a location.
+As of now, these only apply to vanilla Town NPCs that are not pets or wandering merchants.
+### Notes
+For a ghost or rescuable NPC to spawn, you need to meet the conditions that it would normally spawn under in an Archipelago randomizer.
+For example, the Clothier ghost will move in after receiving the Post-Skeletron item, *not* after defeating Skeletron.
+The Bound Tinkerer will appear after receiving Post-Goblin Army, *not* after defeating it in-game.
+
+A real NPC will only move in if the corresponding item is received (you need the "Merchant" item for the Merchant to move in, etc.)
+
+Both the real Truffle and the ghost Truffle will only spawn in a glowing mushroom field.
+## New goals
+These are additional goals you can enable in your `.yaml` prior to generating a multiworld.
+- Wall of Flesh
+- Princess
+### Wall of Flesh
+Victory is earned once the Wall of Flesh is summoned and defeated.
+Note that this is intended for use with NPC randomization. It is strongly recommended you do not enable this goal with NPC randomization disabled, as this will result in an immediately beatable game.
+### Princess
+Victory is earned once the requirements for the Princess is met (all Vanilla town NPCs move in besides Santa Claus & Town Pets).
+This goal randomizes everything up to and including Plantera. While created with NPC Randomization in mind, it is also perfectly playable otherwise.
+## Advanced Manual Flag Configuration
+Accessible through the client-side mod's config.
+This expands upon the "Hardmode Starter" option in stable by allowing all vanilla & Calamity flags to be set for manual activation.
+Setting a flag for manual activation means that once you receive the item, you gain the ability to trigger the corresponding item instead of it activating manually.
+### Notes
+**This option allows you to opt out of receiving flags like Hardmode too early and making early-game difficult. Please make sure to configure it before entering a world.**
+Some good examples of flags to set as manual are Hardmode, Post-Plantera (for the dungeon changes especially) and Post-Moon Lord (which adds incredibly tough enemies to the Hallow and Underworld).
+## Advanced AP Chat Configuration
+Accessible through the client-side mod's config.
+Provides the ability to toggle the color and visibility of AP messages unrelated to your world.
 # License
 
 Archipelago Terraria Client is licensed under MIT. The purple and white Archipelago logo was created by this repo's owner (Desperandos). The icon and collection button image used by this
