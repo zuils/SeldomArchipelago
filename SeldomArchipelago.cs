@@ -74,6 +74,7 @@ namespace SeldomArchipelago
         public static MethodInfo apolloOnKill = null;
         public static MethodInfo thanatosHeadOnKill = null;
         public static MethodInfo supremeCalamitasOnKill = null;
+        public static MethodInfo trasherOnKill = null;
         public static MethodInfo calamityGlobalNpcSetNewBossJustDowned = null;
 
         public override void Load()
@@ -771,6 +772,7 @@ namespace SeldomArchipelago
                     case "Apollo": apolloOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
                     case "ThanatosHead": thanatosHeadOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
                     case "SupremeCalamitas": supremeCalamitasOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
+                    case "Trasher": trasherOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
                 }
 
             onDesertScourgeHeadOnKill += OnDesertScourgeHeadOnKill;
@@ -809,6 +811,7 @@ namespace SeldomArchipelago
             onApolloOnKill += OnApolloOnKill;
             onThanatosHeadOnKill += OnThanatosHeadOnKill;
             onSupremeCalamitasOnKill += OnSupremeCalamitasOnKill;
+            onTrasherOnKill += OverrideTrasherAnglerDrop;
             onCalamityGlobalNpcSetNewBossJustDowned += OnCalamityGlobalNpcSetNewBossJustDowned;
         }
 
@@ -905,6 +908,7 @@ namespace SeldomArchipelago
             onApolloOnKill -= OnApolloOnKill;
             onThanatosHeadOnKill -= OnThanatosHeadOnKill;
             onSupremeCalamitasOnKill -= OnSupremeCalamitasOnKill;
+            onTrasherOnKill -= OverrideTrasherAnglerDrop;
             onCalamityGlobalNpcSetNewBossJustDowned -= OnCalamityGlobalNpcSetNewBossJustDowned;
         }
 
@@ -1254,6 +1258,20 @@ namespace SeldomArchipelago
             else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Supreme Witch, Calamitas");
         }
 
+        void OverrideTrasherAnglerDrop(OnKill orig, ModNPC self)
+        {
+            var archipelagoSystem = ModContent.GetInstance<ArchipelagoSystem>();
+            if (archipelagoSystem.world.NPCRandoActive())
+            {
+                if (!NPC.savedAngler && Main.netMode != NetmodeID.MultiplayerClient && !NPC.AnyNPCs(NPCID.SleepingAngler))
+                {
+                    NPC trasher = self.NPC;
+                    NPC.NewNPC(trasher.GetSource_Death(), (int)trasher.Center.X, (int)trasher.Center.Y, NPCID.SleepingAngler);
+                }
+            }
+            else orig(self);
+        }
+
         delegate void CalamityGlobalNpcSetNewBossJustDowned(NPC npc);
         void OnCalamityGlobalNpcSetNewBossJustDowned(CalamityGlobalNpcSetNewBossJustDowned orig, NPC npc) { }
 
@@ -1474,6 +1492,12 @@ namespace SeldomArchipelago
         static event OnOnKill onSupremeCalamitasOnKill
         {
             add => MonoModHooks.Add(supremeCalamitasOnKill, value);
+            remove { }
+        }
+
+        static event OnOnKill onTrasherOnKill
+        {
+            add => MonoModHooks.Add(trasherOnKill, value);
             remove { }
         }
 
