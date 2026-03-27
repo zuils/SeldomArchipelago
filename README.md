@@ -8,6 +8,15 @@ For in-depth information on what each feature does, scroll down to the **Feature
 ### Minor Features
 - Fixed early activation of "Begone, Evil!"
 - Mute achievements on world load
+
+## Known Bugs
+- Modded NPCs may rarely stop moving into a world connected to a slot with NPC Rando enabled.
+  - This bug will persist on the world between reloads.
+  - It is unknown whether this bug persists between different worlds attached to the same multiworld slot. *(Reports greatly appreciated)*
+  - **WHAT TO DO:** Using the [Census - Town NPC Checklist](https://steamcommunity.com/sharedfiles/filedetails/?id=2687866031) mod will confirm if a modded NPC's conditions are met. If you see that a modded NPC can move in but won't spawn after a prolonged period:
+    - Load another world with the Archipelago mod disabled and meet the conditions for them to spawn naturally
+    - Spawn the NPC in manually with [Cheat Sheet](https://steamcommunity.com/sharedfiles/filedetails/?id=2563784437)
+
 # About This Fork
 
 This is a public beta for some features that may one day be included in Terraria's core Archipelago implementation.
