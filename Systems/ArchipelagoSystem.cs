@@ -38,7 +38,7 @@ namespace SeldomDespArchipelago.Systems
 {
     class ArchipelagoSystem : ModSystem
     {
-        Version version = new Version(0, 6, 61);
+        readonly Version APversion = new Version(0, 6, 62);
         const string APWorldName = "Terraria_Desp_Beta";
         // Data that's reset between worlds
         public class WorldState : TagSerializable
@@ -175,7 +175,7 @@ namespace SeldomDespArchipelago.Systems
             {
                 newSession = ArchipelagoSessionFactory.CreateSession(config.address, config.port);
 
-                result = newSession.TryConnectAndLogin(APWorldName, config.name, ItemsHandlingFlags.AllItems, version, null, null, config.password == "" ? null : config.password);
+                result = newSession.TryConnectAndLogin(APWorldName, config.name, ItemsHandlingFlags.AllItems, APversion, null, null, config.password == "" ? null : config.password);
                 if (result is LoginFailure)
                 {
                     return;
