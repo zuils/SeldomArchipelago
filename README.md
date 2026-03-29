@@ -1,7 +1,7 @@
 ## Currently Implemented
 For in-depth information on what each feature does, scroll down to the **Feature Explanation** section.
 ### Major Features
-- NPC randomization (Vanilla Town NPCs only, no pets)
+- NPC randomization (Vanilla Town NPCs only, no pets, **GFB compatibility untested!**)
 - Wall of Flesh + Princess goals
 - Advanced configuration for manual flag activation (building off of Hardmode Starter)
 - Advanced configuration for AP chat
