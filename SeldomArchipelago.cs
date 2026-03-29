@@ -83,6 +83,11 @@ namespace SeldomArchipelago
 
             // Begin cursed IL editing
 
+            // Old Man helper method
+            // Note that the two IL edits pertaining to the Old Man are currently redundant.
+            // However they will be preserved in case of future changes to his spawn conditions
+            bool OldManSpawnBlocked() => NPC.downedBoss3;
+
             // Manage Town/Ghost NPC Spawn Conditions
             IL_Main.UpdateTime_SpawnTownNPCs += il =>
             {
@@ -132,8 +137,7 @@ namespace SeldomArchipelago
                 cursor.EmitPop();
                 cursor.EmitDelegate(() =>
                 {
-                    if (archipelagoSystem.session is null) return NPC.downedBoss3 || NPC.AnyNPCs(NPCID.OldMan);
-                    return archipelagoSystem.LocationCollected("Skeletron") || NPC.AnyNPCs(NPCID.OldMan);
+                    return OldManSpawnBlocked() || NPC.AnyNPCs(NPCID.OldMan);
                 });
 
                 // Town NPCs
@@ -424,9 +428,7 @@ namespace SeldomArchipelago
                 cursor.GotoNext(i => i.MatchLdsfld(typeof(NPC).GetField(nameof(NPC.downedBoss3))));
                 cursor.Index++;
                 cursor.EmitPop();
-                cursor.EmitDelegate<Func<bool>>(() => {
-                    return archipelagoSystem.session is null ? NPC.downedBoss3 : archipelagoSystem.LocationCollected("Skeletron");
-                });
+                cursor.EmitDelegate(OldManSpawnBlocked);
             };
 
             // Add Checks To Bound NPCs + Enable Saved Bools For Vanilla
