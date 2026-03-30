@@ -33,6 +33,7 @@ using Terraria.GameContent.UI.States;
 using Archipelago.MultiClient.Net.MessageLog.Parts;
 using Terraria.ModLoader.Config;
 using System.Text;
+using Archipelago.MultiClient.Net.Helpers;
 
 namespace SeldomDespArchipelago.Systems
 {
@@ -151,7 +152,8 @@ namespace SeldomDespArchipelago.Systems
             Valid,
             SlotOrSeedMismatch,
             CalamityNeeded,
-            NoCalamityNeeded
+            NoCalamityNeeded,
+            WrongGame,
         }
 
         // Contains ghosts that require special housing conditions to spawn.
@@ -176,8 +178,13 @@ namespace SeldomDespArchipelago.Systems
                 newSession = ArchipelagoSessionFactory.CreateSession(config.address, config.port);
 
                 result = newSession.TryConnectAndLogin(APWorldName, config.name, ItemsHandlingFlags.AllItems, APversion, null, null, config.password == "" ? null : config.password);
-                if (result is LoginFailure)
+                if (result is LoginFailure failure)
                 {
+                    foreach (var error in failure.ErrorCodes) if (error == ConnectionRefusedError.InvalidGame)
+                    {
+                        status = ConnectStatus.WrongGame;
+                        break;
+                    }
                     return;
                 }
             }
@@ -743,6 +750,11 @@ namespace SeldomDespArchipelago.Systems
             ConnectStatus.Unset => new[] {
                 @"The world is not connected to Archipelago! Reload the world to try again.",
                 "If you are the host, check your config in the main menu at Workshop > Manage Mods > Config",
+            },
+            ConnectStatus.WrongGame => new[]
+            {
+                $"The slot \"{ModContent.GetInstance<Config.Config>().name}\" is set to a different game on the server, not \"{APWorldName}\".",
+                "You have been disconnected from the server.",
             },
             ConnectStatus.SlotOrSeedMismatch => new[]
             {
