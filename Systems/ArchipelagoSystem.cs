@@ -34,6 +34,7 @@ using Archipelago.MultiClient.Net.MessageLog.Parts;
 using Terraria.ModLoader.Config;
 using System.Text;
 using Archipelago.MultiClient.Net.Helpers;
+using System.Data;
 
 namespace SeldomDespArchipelago.Systems
 {
@@ -153,8 +154,14 @@ namespace SeldomDespArchipelago.Systems
             SlotOrSeedMismatch,
             CalamityNeeded,
             NoCalamityNeeded,
+            WrongSlot,
+            WrongPass,
             WrongGame,
+            ClientOlder,
+            ClientNewer,
         }
+        // Keeps track of the last APworld version the game tried to connect to for player convenience
+        public int[] desiredAPversion = null;
 
         // Contains ghosts that require special housing conditions to spawn.
         public readonly static ImmutableHashSet<int> specialSpawnGhosts =
@@ -180,11 +187,15 @@ namespace SeldomDespArchipelago.Systems
                 result = newSession.TryConnectAndLogin(APWorldName, config.name, ItemsHandlingFlags.AllItems, APversion, null, null, config.password == "" ? null : config.password);
                 if (result is LoginFailure failure)
                 {
-                    foreach (var error in failure.ErrorCodes) if (error == ConnectionRefusedError.InvalidGame)
+                    var error = failure.ErrorCodes.First();  // don't think it's important to get multiple
+                    status = error switch
                     {
-                        status = ConnectStatus.WrongGame;
-                        break;
-                    }
+                        ConnectionRefusedError.InvalidSlot => ConnectStatus.WrongSlot,
+                        ConnectionRefusedError.InvalidGame => ConnectStatus.WrongGame,
+                        ConnectionRefusedError.IncompatibleVersion => ConnectStatus.ClientOlder,
+                        ConnectionRefusedError.InvalidPassword => ConnectStatus.WrongPass,
+                        _ => ConnectStatus.Unset,
+                    };
                     return;
                 }
             }
@@ -199,6 +210,22 @@ namespace SeldomDespArchipelago.Systems
             session.collectedLocations = (from id in session.session.Locations.AllLocationsChecked select session.session.Locations.GetLocationNameFromId(id)).ToHashSet();
 
             var success = (LoginSuccessful)result;
+
+            bool versionSlotData = success.SlotData.TryGetValue("version", out var versionObj);
+            bool newerVersion = false;
+            if (versionSlotData)
+            {
+                desiredAPversion = ((JArray)versionObj).ToObject<int[]>();
+                newerVersion = desiredAPversion[0] != APversion.Major || desiredAPversion[1] != APversion.Minor || desiredAPversion[2] != APversion.Build;
+            }
+
+            if (!versionSlotData || newerVersion)
+            {
+                status = ConnectStatus.ClientNewer;
+                Reset();
+                return;
+            }
+
             session.goals = new List<string>(((JArray)success.SlotData["goal"]).ToObject<string[]>());
 
             session.session.MessageLog.OnMessageReceived += ApMessageToChat;
@@ -742,6 +769,7 @@ namespace SeldomDespArchipelago.Systems
         {
             world = new();
             status = ConnectStatus.Unset;
+            desiredAPversion = null;
             Reset();
         }
         
@@ -750,6 +778,16 @@ namespace SeldomDespArchipelago.Systems
             ConnectStatus.Unset => new[] {
                 @"The world is not connected to Archipelago! Reload the world to try again.",
                 "If you are the host, check your config in the main menu at Workshop > Manage Mods > Config",
+            },
+            ConnectStatus.WrongSlot => new[]
+            {
+                $"Could not find a slot named \"{ModContent.GetInstance<Config.Config>().name}\" registered in the multiworld.",
+                "If you are the host, check your config in the main menu at Workshop > Manage Mods > Config, then reload the world."
+            },
+            ConnectStatus.WrongPass => new[]
+            {
+                $"The password for the Archipelago server is incorrect.",
+                "If you are the host, check your config in the main menu at Workshop > Manage Mods > Config, then reload the world."
             },
             ConnectStatus.WrongGame => new[]
             {
@@ -762,7 +800,7 @@ namespace SeldomDespArchipelago.Systems
                 $"SAVE DATA MULTIWORLD SLOT: {world.slotName}, SEED {world.seed}",
                 "You have been disconnected from the server. Please load a different world."
             },
-            // For the next two messages, we instruct the player to reload the current world since it passed the mismatch test
+            // For the next messages, we instruct the player to reload the current world since it passed the mismatch test
             ConnectStatus.CalamityNeeded => new[]
             {
                 "The multiworld slot you connected to has Calamity integration enabled, but you do not have the mod enabled in your modlist.",
@@ -772,6 +810,17 @@ namespace SeldomDespArchipelago.Systems
             {
                 "The multiworld slot you connected to has Calamity integration disabled, but you have the mod enabled in your modlist.",
                 "You have been disconnected from the server. Please disable Calamity, then reload this world."
+            },
+            ConnectStatus.ClientOlder => new[]
+            {
+                "The multiworld slot you connected to requires a newer version of the client.",
+                "You have been disconnected from the server. Please upgrade your client, then reload this world."
+            },
+            ConnectStatus.ClientNewer => new[]
+            {
+                "The multiworld slot you connected to requires an older version of the client.",
+                $"Look on the releases page for the latest client compatible with APWorld version {(desiredAPversion is null ? "0.6.61, then if that fails to connect, 0.6.62." : $"{desiredAPversion[0]}.{desiredAPversion[1]}.{desiredAPversion[2]}.")}",
+                "You have been disconnected from the server. Please downpatch your client, then reload this world."
             },
             ConnectStatus.Valid => ModContent.GetInstance<CalamitySystem>() switch
             {
