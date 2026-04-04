@@ -39,7 +39,7 @@ namespace SeldomDespArchipelago.Systems
 {
     class ArchipelagoSystem : ModSystem
     {
-        readonly Version APversion = new Version(0, 6, 62);
+        public readonly Version APversion = new Version(0, 6, 62);
         const string APWorldName = "Terraria_Desp_Beta";
         // Data that's reset between worlds
         public class WorldState : TagSerializable
