@@ -1,6 +1,6 @@
 displayName = Archipelago Randomizer (Desp's Beta)
 author = Desp
-version = 2.0.3.0
+version = 2.0.3.1
 homepage = https://github.com/desperandos101/SeldomArchipelago/tree/release
 includeSource = true
 dllReferences = Archipelago.MultiClient.Net, Newtonsoft.Json
