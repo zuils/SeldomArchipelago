@@ -220,7 +220,8 @@ namespace SeldomDespArchipelago
                         if (archipelagoSystem.session is not null)
                             foreach (int type in validGhostTypes)
                             {
-                                if (!archipelagoSystem.world.ghostNPCqueue.Contains(type) && !archipelagoSystem.LocationCollected(ArchipelagoSystem.npcIDtoName[type]))
+                                long npcAsLoc = archipelagoSystem.session.session.Locations.GetLocationIdFromName(ArchipelagoSystem.APWorldName, ArchipelagoSystem.npcIDtoName[type]);
+                                if (!archipelagoSystem.world.ghostNPCqueue.Contains(type) && !archipelagoSystem.session.session.Locations.AllLocationsChecked.Contains(npcAsLoc))
                                     archipelagoSystem.world.ghostNPCqueue.Enqueue(type);
                             }
                     }

@@ -137,7 +137,6 @@ namespace SeldomDespArchipelago.Systems
             // instead of collecting them. This is needed bc AP just gives us a list of items that
             // we have, and it's up to us to keep track of which ones we've already applied.
             public int currentItem;
-            public HashSet<string> collectedLocations = new HashSet<string>();
             public List<string> goals = new List<string>();
 
             public bool victory;
@@ -206,8 +205,6 @@ namespace SeldomDespArchipelago.Systems
 
             session = new();
             session.session = newSession;
-
-            session.collectedLocations = (from id in session.session.Locations.AllLocationsChecked select session.session.Locations.GetLocationNameFromId(id)).ToHashSet();
 
             var success = (LoginSuccessful)result;
 
@@ -371,7 +368,6 @@ namespace SeldomDespArchipelago.Systems
             }
             else Chat(colorMsg());
         }
-        public bool LocationCollected(string loc) => session is null ? world.locationBacklog.Contains(loc) : session.collectedLocations.Contains(loc);
 
         public static string[] flags = { "Post-King Slime", "Post-Desert Scourge", "Post-Giant Clam", "Post-Eye of Cthulhu", "Post-Acid Rain Tier 1", "Post-Crabulon", "Post-Evil Boss", "Post-Old One's Army Tier 1", "Post-Goblin Army", "Post-Queen Bee", "Post-The Hive Mind", "Post-The Perforators", "Post-Skeletron", "Post-Deerclops", "Post-The Slime God", "Hardmode", "Post-Dreadnautilus", "Post-Hardmode Giant Clam", "Post-Pirate Invasion", "Post-Queen Slime", "Post-Aquatic Scourge", "Post-Cragmaw Mire", "Post-Acid Rain Tier 2", "Post-The Twins", "Post-Old One's Army Tier 2", "Post-Brimstone Elemental", "Post-The Destroyer", "Post-Cryogen", "Post-Skeletron Prime", "Post-Calamitas Clone", "Post-Plantera", "Post-Great Sand Shark", "Post-Leviathan and Anahita", "Post-Astrum Aureus", "Post-Golem", "Post-Old One's Army Tier 3", "Post-Martian Madness", "Post-The Plaguebringer Goliath", "Post-Duke Fishron", "Post-Mourning Wood", "Post-Pumpking", "Post-Everscream", "Post-Santa-NK1", "Post-Ice Queen", "Post-Frost Legion", "Post-Ravager", "Post-Empress of Light", "Post-Lunatic Cultist", "Post-Astrum Deus", "Post-Lunar Events", "Post-Moon Lord", "Post-Profaned Guardians", "Post-The Dragonfolly", "Post-Providence, the Profaned Goddess", "Post-Storm Weaver", "Post-Ceaseless Void", "Post-Signus, Envoy of the Devourer", "Post-Polterghast", "Post-Mauler", "Post-Nuclear Terror", "Post-The Old Duke", "Post-The Devourer of Gods", "Post-Yharon, Dragon of Rebirth", "Post-Exo Mechs", "Post-Supreme Witch, Calamitas", "Post-Primordial Wyrm", "Post-Boss Rush" };
 
@@ -737,7 +733,7 @@ namespace SeldomDespArchipelago.Systems
 
             if (session.victory) return;
 
-            foreach (var goal in session.goals) if (!session.collectedLocations.Contains(goal)) return;
+            foreach (var goal in session.goals) if (!session.session.Locations.AllLocationsChecked.Contains(session.session.Locations.GetLocationIdFromName(APWorldName, goal))) return;
 
             var victoryPacket = new StatusUpdatePacket()
             {
@@ -913,7 +909,6 @@ namespace SeldomDespArchipelago.Systems
 
                 info.Add($"DeathLink is {(session.deathlink == null ? "dis" : "en")}abled");
                 info.Add($"{session.currentItem} items have been applied");
-                info.Add($"Collected locations: [{string.Join("; ", session.collectedLocations)}]");
                 info.Add($"Goals: [{string.Join("; ", session.goals)}]");
                 info.Add($"Victory has {(session.victory ? "been achieved! Hooray!" : "not been achieved. Alas.")}");
                 info.Add($"You are slot {session.slot}");
@@ -953,18 +948,12 @@ namespace SeldomDespArchipelago.Systems
             var location = session.session.Locations.GetLocationIdFromName(APWorldName, locationName);
             if (location == -1) return;
 
-            if (!session.collectedLocations.Contains(locationName))
+            if (!session.session.Locations.AllMissingLocations.Contains(location))
             {
-                if (session.session.Locations.AllLocationsChecked.Contains(location))
-                {
-                    Chat($"Location {locationName} already collected.");
-                    session.collectedLocations.Add(locationName);
-                    return;
-                }
-                session.locationQueue.Add(session.session.Locations.ScoutLocationsAsync(new[] { location }));
-                session.collectedLocations.Add(locationName);
+                Chat($"Location {locationName} already collected.");
+                return;
             }
-
+            session.locationQueue.Add(session.session.Locations.ScoutLocationsAsync(new[] { location }));
             session.session.Locations.CompleteLocationChecks(new[] { location });
         }
 
