@@ -735,9 +735,9 @@ namespace SeldomDespArchipelago
             if (!ModLoader.HasMod("CalamityMod")) return;
             var calamity = ModLoader.GetMod("CalamityMod");
 
-            if (!calamity.Version.Equals(new Version(2, 0, 6, 2)))
+            if (!calamity.Version.Equals(new Version(2, 1, 2)))
             {
-                throw new Exception("Incompatible Calamity version. This is most likely because you are using the workshop version of Calamity.\nPlease reload with Calamity 2.0.6.2. For information on how to do that, see the pins in the Archipelago discord's #terraria channel");
+                throw new Exception("Incompatible Calamity version. This is most likely because you are using the workshop version of Calamity.\nPlease reload with Calamity 2.1.2. For information on how to do that, see the pins in the Archipelago discord's #terraria channel");
             }
 
             var calamityAssembly = calamity.GetType().Assembly;
@@ -757,7 +757,7 @@ namespace SeldomDespArchipelago
                         break;
                     case "AquaticScourgeHead": aquaticScourgeHeadOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
                     case "Mauler": maulerOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
-                    case "BrimstoneElemental": brimstoneElementalOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
+                    case "BrimstoneElemental": if (brimstoneElementalOnKill == null) brimstoneElementalOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
                     case "Cryogen": cryogenOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
                     case "CalamitasClone": calamitasCloneOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
                     case "GreatSandShark": greatSandSharkOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
@@ -767,7 +767,7 @@ namespace SeldomDespArchipelago
                     case "RavagerBody": ravagerBodyOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
                     case "AstrumDeusHead": astrumDeusHeadOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
                     case "ProfanedGuardianCommander": profanedGuardianCommanderOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
-                    case "Bumblefuck": bumblefuckOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
+                    case "Dragonfolly": bumblefuckOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
                     case "Providence": providenceOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
                     case "StormWeaverHead": stormWeaverHeadOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
                     case "CeaselessVoid": ceaselessVoidOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
