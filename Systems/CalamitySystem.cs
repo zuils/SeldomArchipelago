@@ -54,9 +54,15 @@ namespace SeldomDespArchipelago.Systems
         public void GiveSpritGlyph() => ModContent.GetInstance<ArchipelagoSystem>().GiveItem<CalamityMod.Items.Accessories.SpiritGlyph>();
         public void GiveAbyssalAmulet() => ModContent.GetInstance<ArchipelagoSystem>().GiveItem<CalamityMod.Items.Accessories.SeaSpiritAmulet>();
 
+        public bool ranBossRush = false;
+
         public void CalamityPostUpdateWorld()
         {
-            if (CalamityMod.DownedBossSystem.downedBossRush) ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Boss Rush");
+            if (CalamityMod.DownedBossSystem.downedBossRush && !ranBossRush) 
+            {
+                ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Boss Rush");
+                ranBossRush = true;
+            }
         }
 
         public bool CheckCalamityFlag(string flag) => flag switch
