@@ -948,7 +948,7 @@ namespace SeldomDespArchipelago.Systems
             var location = session.session.Locations.GetLocationIdFromName(APWorldName, locationName);
             if (location == -1) return;
 
-            if (!session.session.Locations.AllMissingLocations.Contains(location))
+            if (session.session.Locations.AllLocationsChecked.Contains(location))
             {
                 Mod.Logger.Info($"[AP] Location {locationName} already collected.");
                 return;
