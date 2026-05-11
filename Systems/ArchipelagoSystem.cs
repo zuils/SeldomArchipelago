@@ -950,7 +950,7 @@ namespace SeldomDespArchipelago.Systems
 
             if (!session.session.Locations.AllMissingLocations.Contains(location))
             {
-                Chat($"Location {locationName} already collected.");
+                Mod.Logger.Info($"[AP] Location {locationName} already collected.");
                 return;
             }
             session.locationQueue.Add(session.session.Locations.ScoutLocationsAsync(new[] { location }));
