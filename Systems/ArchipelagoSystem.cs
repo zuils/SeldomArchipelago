@@ -643,8 +643,8 @@ namespace SeldomDespArchipelago.Systems
                 case "Reward: Cosmolight": ModContent.GetInstance<CalamitySystem>().GiveCosmolight(); break;
                 case "Reward: Diving Helmet": GiveItem(ItemID.DivingHelmet); break;
                 case "Reward: Jellyfish Necklace": GiveItem(ItemID.JellyfishNecklace); break;
-                case "Reward: Corrupt Flask": ModContent.GetInstance<CalamitySystem>().GiveCorruptFlask(); break;
-                case "Reward: Crimson Flask": ModContent.GetInstance<CalamitySystem>().GiveCrimsonFlask(); break;
+                case "Reward: Unholy Tonic": ModContent.GetInstance<CalamitySystem>().GiveUnholyTonic(); break;
+                case "Reward: Vicious Tonic": ModContent.GetInstance<CalamitySystem>().GiveViciousTonic(); break;
                 case "Reward: Craw Carapace": ModContent.GetInstance<CalamitySystem>().GiveCrawCarapace(); break;
                 case "Reward: Giant Shell": ModContent.GetInstance<CalamitySystem>().GiveGiantShell(); break;
                 case "Reward: Life Jelly": ModContent.GetInstance<CalamitySystem>().GiveLifeJelly(); break;
@@ -660,7 +660,7 @@ namespace SeldomDespArchipelago.Systems
                 case "Reward: Rotten Dogtooth": ModContent.GetInstance<CalamitySystem>().GiveRottenDogtooth(); break;
                 case "Reward: Scuttler's Jewel": ModContent.GetInstance<CalamitySystem>().GiveScuttlersJewel(); break;
                 case "Reward: Unstable Granite Core": ModContent.GetInstance<CalamitySystem>().GiveUnstableGraniteCore(); break;
-                case "Reward: Amidias' Spark": ModContent.GetInstance<CalamitySystem>().GiveAmidiasSpark(); break;
+                case "Reward: Ilmeris' Spark": ModContent.GetInstance<CalamitySystem>().GiveIlmerisSpark(); break;
                 case "Reward: Ursa Sergeant": ModContent.GetInstance<CalamitySystem>().GiveUrsaSergeant(); break;
                 case "Reward: Trinket of Chi": ModContent.GetInstance<CalamitySystem>().GiveTrinketOfChi(); break;
                 case "Reward: The Transformer": ModContent.GetInstance<CalamitySystem>().GiveTheTransformer(); break;
@@ -676,7 +676,7 @@ namespace SeldomDespArchipelago.Systems
                 case "Reward: Anechoic Plating": ModContent.GetInstance<CalamitySystem>().GiveAnechoicPlating(); break;
                 case "Reward: Iron Boots": ModContent.GetInstance<CalamitySystem>().GiveIronBoots(); break;
                 case "Reward: Sprit Glyph": ModContent.GetInstance<CalamitySystem>().GiveSpritGlyph(); break;
-                case "Reward: Abyssal Amulet": ModContent.GetInstance<CalamitySystem>().GiveAbyssalAmulet(); break;
+                case "Reward: Sea Spirit Amulet": ModContent.GetInstance<CalamitySystem>().GiveSeaSpiritAmulet(); break;
                 case "Reward: Life Crystal": GiveItem(ItemID.LifeCrystal); break;
                 case "Reward: Enchanted Sword": GiveItem(ItemID.EnchantedSword); break;
                 case "Reward: Starfury": GiveItem(ItemID.Starfury); break;
