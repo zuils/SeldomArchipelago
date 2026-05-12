@@ -19,8 +19,8 @@ namespace SeldomDespArchipelago.Systems
 
         public void GiveCosmolight() => ModContent.GetInstance<ArchipelagoSystem>().GiveItem<CalamityMod.Items.Tools.ClimateChange.Cosmolight>();
 
-        public void GiveCorruptFlask() => ModContent.GetInstance<ArchipelagoSystem>().GiveItem<CalamityMod.Items.Accessories.UnholyTonic>();
-        public void GiveCrimsonFlask() => ModContent.GetInstance<ArchipelagoSystem>().GiveItem<CalamityMod.Items.Accessories.ViciousTonic>();
+        public void GiveUnholyTonic() => ModContent.GetInstance<ArchipelagoSystem>().GiveItem<CalamityMod.Items.Accessories.UnholyTonic>();
+        public void GiveViciousTonic() => ModContent.GetInstance<ArchipelagoSystem>().GiveItem<CalamityMod.Items.Accessories.ViciousTonic>();
         public void GiveCrawCarapace() => ModContent.GetInstance<ArchipelagoSystem>().GiveItem<CalamityMod.Items.Accessories.CrawCarapace>();
         public void GiveGiantShell() => ModContent.GetInstance<ArchipelagoSystem>().GiveItem<CalamityMod.Items.Accessories.GiantShell>();
         public void GiveLifeJelly() => ModContent.GetInstance<ArchipelagoSystem>().GiveItem<CalamityMod.Items.Accessories.LifeJelly>();
@@ -36,7 +36,7 @@ namespace SeldomDespArchipelago.Systems
         public void GiveRottenDogtooth() => ModContent.GetInstance<ArchipelagoSystem>().GiveItem<CalamityMod.Items.Accessories.RottenDogtooth>();
         public void GiveScuttlersJewel() => ModContent.GetInstance<ArchipelagoSystem>().GiveItem<CalamityMod.Items.Accessories.ScuttlersJewel>();
         public void GiveUnstableGraniteCore() => ModContent.GetInstance<ArchipelagoSystem>().GiveItem<CalamityMod.Items.Accessories.UnstableGraniteCore>();
-        public void GiveAmidiasSpark() => ModContent.GetInstance<ArchipelagoSystem>().GiveItem<CalamityMod.Items.Accessories.IlmerisSpark>();
+        public void GiveIlmerisSpark() => ModContent.GetInstance<ArchipelagoSystem>().GiveItem<CalamityMod.Items.Accessories.IlmerisSpark>();
         public void GiveUrsaSergeant() => ModContent.GetInstance<ArchipelagoSystem>().GiveItem<CalamityMod.Items.Fishing.AstralCatches.UrsaSergeant>();
         public void GiveTrinketOfChi() => ModContent.GetInstance<ArchipelagoSystem>().GiveItem<CalamityMod.Items.Accessories.TrinketofChi>();
         public void GiveTheTransformer() => ModContent.GetInstance<ArchipelagoSystem>().GiveItem<CalamityMod.Items.Accessories.TheTransformer>();
@@ -52,7 +52,7 @@ namespace SeldomDespArchipelago.Systems
         public void GiveAnechoicPlating() => ModContent.GetInstance<ArchipelagoSystem>().GiveItem<CalamityMod.Items.Accessories.AnechoicPlating>();
         public void GiveIronBoots() => ModContent.GetInstance<ArchipelagoSystem>().GiveItem<CalamityMod.Items.Accessories.IronBoots>();
         public void GiveSpritGlyph() => ModContent.GetInstance<ArchipelagoSystem>().GiveItem<CalamityMod.Items.Accessories.SpiritGlyph>();
-        public void GiveAbyssalAmulet() => ModContent.GetInstance<ArchipelagoSystem>().GiveItem<CalamityMod.Items.Accessories.SeaSpiritAmulet>();
+        public void GiveSeaSpiritAmulet() => ModContent.GetInstance<ArchipelagoSystem>().GiveItem<CalamityMod.Items.Accessories.SeaSpiritAmulet>();
 
         public bool ranBossRush = false;
 
@@ -209,7 +209,7 @@ namespace SeldomDespArchipelago.Systems
         public void CalamityOnKillRavager() => CalamityOnKill<CalamityMod.NPCs.Ravager.RavagerBody>(SeldomArchipelago.ravagerBodyOnKill);
         public void CalamityOnKillAstrumDeus() => CalamityOnKill<CalamityMod.NPCs.AstrumDeus.AstrumDeusHead>(SeldomArchipelago.astrumDeusHeadOnKill, new float[] { 3, 0, 0, 0 });
         public void CalamityOnKillProfanedGuardians() => CalamityOnKill<CalamityMod.NPCs.ProfanedGuardians.ProfanedGuardianCommander>(SeldomArchipelago.profanedGuardianCommanderOnKill);
-        public void CalamityOnKillTheDragonfolly() => CalamityOnKill<CalamityMod.NPCs.Bumblebirb.Dragonfolly>(SeldomArchipelago.bumblefuckOnKill);
+        public void CalamityOnKillTheDragonfolly() => CalamityOnKill<CalamityMod.NPCs.Bumblebirb.Dragonfolly>(SeldomArchipelago.dragonfollyOnKill);
         public void CalamityOnKillProvidenceTheProfanedGoddess() => CalamityOnKill<CalamityMod.NPCs.Providence.Providence>(SeldomArchipelago.providenceOnKill);
         public void CalamityOnKillStormWeaver() => CalamityOnKill<CalamityMod.NPCs.StormWeaver.StormWeaverHead>(SeldomArchipelago.stormWeaverHeadOnKill);
         public void CalamityOnKillCeaselessVoid() => CalamityOnKill<CalamityMod.NPCs.CeaselessVoid.CeaselessVoid>(SeldomArchipelago.ceaselessVoidOnKill);

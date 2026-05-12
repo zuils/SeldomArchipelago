@@ -62,7 +62,7 @@ namespace SeldomDespArchipelago
         public static MethodInfo ravagerBodyOnKill = null;
         public static MethodInfo astrumDeusHeadOnKill = null;
         public static MethodInfo profanedGuardianCommanderOnKill = null;
-        public static MethodInfo bumblefuckOnKill = null;
+        public static MethodInfo dragonfollyOnKill = null;
         public static MethodInfo providenceOnKill = null;
         public static MethodInfo stormWeaverHeadOnKill = null;
         public static MethodInfo ceaselessVoidOnKill = null;
@@ -767,7 +767,7 @@ namespace SeldomDespArchipelago
                     case "RavagerBody": ravagerBodyOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
                     case "AstrumDeusHead": astrumDeusHeadOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
                     case "ProfanedGuardianCommander": profanedGuardianCommanderOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
-                    case "Dragonfolly": bumblefuckOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
+                    case "Dragonfolly": dragonfollyOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
                     case "Providence": providenceOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
                     case "StormWeaverHead": stormWeaverHeadOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
                     case "CeaselessVoid": ceaselessVoidOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
@@ -806,7 +806,7 @@ namespace SeldomDespArchipelago
             onRavagerBodyOnKill += OnRavagerBodyOnKill;
             onAstrumDeusHeadOnKill += OnAstrumDeusHeadOnKill;
             onProfanedGuardianCommanderOnKill += OnProfanedGuardianCommanderOnKill;
-            onBumblefuckOnKill += OnBumblefuckOnKill;
+            onDragonfollyOnKill += OnDragonfollyOnKill;
             onProvidenceOnKill += OnProvidenceOnKill;
             onStormWeaverHeadOnKill += OnStormWeaverHeadOnKill;
             onCeaselessVoidOnKill += OnCeaselessVoidOnKill;
@@ -903,7 +903,7 @@ namespace SeldomDespArchipelago
             onRavagerBodyOnKill -= OnRavagerBodyOnKill;
             onAstrumDeusHeadOnKill -= OnAstrumDeusHeadOnKill;
             onProfanedGuardianCommanderOnKill -= OnProfanedGuardianCommanderOnKill;
-            onBumblefuckOnKill -= OnBumblefuckOnKill;
+            onDragonfollyOnKill -= OnDragonfollyOnKill;
             onProvidenceOnKill -= OnProvidenceOnKill;
             onStormWeaverHeadOnKill -= OnStormWeaverHeadOnKill;
             onCeaselessVoidOnKill -= OnCeaselessVoidOnKill;
@@ -1183,7 +1183,7 @@ namespace SeldomDespArchipelago
             else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Profaned Guardians");
         }
 
-        void OnBumblefuckOnKill(OnKill orig, ModNPC self)
+        void OnDragonfollyOnKill(OnKill orig, ModNPC self)
         {
             if (temp) orig(self);
             else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("The Dragonfolly");
@@ -1420,9 +1420,9 @@ namespace SeldomDespArchipelago
             remove { }
         }
 
-        static event OnOnKill onBumblefuckOnKill
+        static event OnOnKill onDragonfollyOnKill
         {
-            add => MonoModHooks.Add(bumblefuckOnKill, value);
+            add => MonoModHooks.Add(dragonfollyOnKill, value);
             remove { }
         }
 
