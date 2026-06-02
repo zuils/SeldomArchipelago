@@ -757,7 +757,11 @@ namespace SeldomDespArchipelago
                         break;
                     case "AquaticScourgeHead": aquaticScourgeHeadOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
                     case "Mauler": maulerOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
-                    case "BrimstoneElemental": brimstoneElementalOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
+                    case "BrimstoneElemental":  // since there are multiple types named BrimstoneELemental, we need a more thorough check
+                        var method = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public);
+                        if (method is not null)
+                            brimstoneElementalOnKill = method;
+                        break;
                     case "Cryogen": cryogenOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
                     case "CalamitasClone": calamitasCloneOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
                     case "GreatSandShark": greatSandSharkOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
