@@ -1,8 +1,11 @@
 ## Currently Implemented
 For in-depth information on what each feature does, scroll down to the **Feature Explanation** section.
 ### Major Features
+- Compatibility with Calamity 2.1.2 (Brainstorm update)
 - NPC randomization (Vanilla Town NPCs only, no pets, **GFB compatibility untested!**)
 - Wall of Flesh + Princess goals
+  - Additional configuration for randomizing checks after the set goal
+- Additional achievement classifications
 - Advanced configuration for manual flag activation (building off of Hardmode Starter)
 - Advanced configuration for AP chat
 ### Minor Features

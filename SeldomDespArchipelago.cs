@@ -62,7 +62,7 @@ namespace SeldomDespArchipelago
         public static MethodInfo ravagerBodyOnKill = null;
         public static MethodInfo astrumDeusHeadOnKill = null;
         public static MethodInfo profanedGuardianCommanderOnKill = null;
-        public static MethodInfo bumblefuckOnKill = null;
+        public static MethodInfo dragonfollyOnKill = null;
         public static MethodInfo providenceOnKill = null;
         public static MethodInfo stormWeaverHeadOnKill = null;
         public static MethodInfo ceaselessVoidOnKill = null;
@@ -486,7 +486,7 @@ namespace SeldomDespArchipelago
                     }
                     if (!archipelagoSystem.world.randomizedNPCs.Contains(npcType)) return npcType;
                     archipelagoSystem.QueueLocationClient(locName);
-                    if (archipelagoSystem.world.npcLocTypeToNpcItemType is not null && archipelagoSystem.world.npcLocTypeToNpcItemType.TryGetValue(npcType, out int newNpcType))
+                    if (archipelagoSystem.world.npcLocTypeToNpcItemType is not null && archipelagoSystem.world.npcLocTypeToNpcItemType.TryGetValue(npcType, out int newNpcType) && !NPC.AnyNPCs(newNpcType)) 
                         return newNpcType;
                     NPC npc = Main.npc[NPC.FindFirstNPC(boundNPCtype)];
                     if (Main.netMode == NetmodeID.MultiplayerClient)
@@ -735,9 +735,14 @@ namespace SeldomDespArchipelago
             if (!ModLoader.HasMod("CalamityMod")) return;
             var calamity = ModLoader.GetMod("CalamityMod");
 
-            if (!calamity.Version.Equals(new Version(2, 0, 6, 2)))
+            int relativeVersion = calamity.Version.CompareTo(new Version(2, 1, 2));
+            if (relativeVersion < 0)
             {
-                throw new Exception("Incompatible Calamity version. This is most likely because you are using the workshop version of Calamity.\nPlease reload with Calamity 2.0.6.2. For information on how to do that, see the pins in the Archipelago discord's #terraria channel");
+                throw new Exception("You are using an older version of Calamity. Please reload with 2.1.2.");
+            }
+            else if (relativeVersion > 0)
+            {
+                throw new Exception("You are using a newer version of calamity.\nThis is probably because the mod recently received an update.\nPlease downpatch to 2.1.2.");
             }
 
             var calamityAssembly = calamity.GetType().Assembly;
@@ -757,7 +762,11 @@ namespace SeldomDespArchipelago
                         break;
                     case "AquaticScourgeHead": aquaticScourgeHeadOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
                     case "Mauler": maulerOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
-                    case "BrimstoneElemental": brimstoneElementalOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
+                    case "BrimstoneElemental":  // since there are multiple types named BrimstoneELemental, we need a more thorough check
+                        var method = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public);
+                        if (method is not null)
+                            brimstoneElementalOnKill = method;
+                        break;
                     case "Cryogen": cryogenOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
                     case "CalamitasClone": calamitasCloneOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
                     case "GreatSandShark": greatSandSharkOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
@@ -767,7 +776,7 @@ namespace SeldomDespArchipelago
                     case "RavagerBody": ravagerBodyOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
                     case "AstrumDeusHead": astrumDeusHeadOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
                     case "ProfanedGuardianCommander": profanedGuardianCommanderOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
-                    case "Bumblefuck": bumblefuckOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
+                    case "Dragonfolly": dragonfollyOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
                     case "Providence": providenceOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
                     case "StormWeaverHead": stormWeaverHeadOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
                     case "CeaselessVoid": ceaselessVoidOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
@@ -806,7 +815,7 @@ namespace SeldomDespArchipelago
             onRavagerBodyOnKill += OnRavagerBodyOnKill;
             onAstrumDeusHeadOnKill += OnAstrumDeusHeadOnKill;
             onProfanedGuardianCommanderOnKill += OnProfanedGuardianCommanderOnKill;
-            onBumblefuckOnKill += OnBumblefuckOnKill;
+            onDragonfollyOnKill += OnDragonfollyOnKill;
             onProvidenceOnKill += OnProvidenceOnKill;
             onStormWeaverHeadOnKill += OnStormWeaverHeadOnKill;
             onCeaselessVoidOnKill += OnCeaselessVoidOnKill;
@@ -903,7 +912,7 @@ namespace SeldomDespArchipelago
             onRavagerBodyOnKill -= OnRavagerBodyOnKill;
             onAstrumDeusHeadOnKill -= OnAstrumDeusHeadOnKill;
             onProfanedGuardianCommanderOnKill -= OnProfanedGuardianCommanderOnKill;
-            onBumblefuckOnKill -= OnBumblefuckOnKill;
+            onDragonfollyOnKill -= OnDragonfollyOnKill;
             onProvidenceOnKill -= OnProvidenceOnKill;
             onStormWeaverHeadOnKill -= OnStormWeaverHeadOnKill;
             onCeaselessVoidOnKill -= OnCeaselessVoidOnKill;
@@ -1183,7 +1192,7 @@ namespace SeldomDespArchipelago
             else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Profaned Guardians");
         }
 
-        void OnBumblefuckOnKill(OnKill orig, ModNPC self)
+        void OnDragonfollyOnKill(OnKill orig, ModNPC self)
         {
             if (temp) orig(self);
             else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("The Dragonfolly");
@@ -1420,9 +1429,9 @@ namespace SeldomDespArchipelago
             remove { }
         }
 
-        static event OnOnKill onBumblefuckOnKill
+        static event OnOnKill onDragonfollyOnKill
         {
-            add => MonoModHooks.Add(bumblefuckOnKill, value);
+            add => MonoModHooks.Add(dragonfollyOnKill, value);
             remove { }
         }
 
