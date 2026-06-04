@@ -135,7 +135,7 @@ namespace SeldomDespArchipelago.NPCs
                 return;
             }
             GhostNPC ghost = Main.npc[index].ModNPC as GhostNPC;
-            if (ghost.transformType > 0)
+            if (ghost.transformType > 0 && !NPC.AnyNPCs(ghost.transformType))
             {
                 Main.npc[index].Transform(ghost.transformType);
                 if (ghost.transformType == NPCID.Truffle) AchievementsHelper.NotifyProgressionEvent(18);

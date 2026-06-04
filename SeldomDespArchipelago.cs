@@ -486,7 +486,7 @@ namespace SeldomDespArchipelago
                     }
                     if (!archipelagoSystem.world.randomizedNPCs.Contains(npcType)) return npcType;
                     archipelagoSystem.QueueLocationClient(locName);
-                    if (archipelagoSystem.world.npcLocTypeToNpcItemType is not null && archipelagoSystem.world.npcLocTypeToNpcItemType.TryGetValue(npcType, out int newNpcType))
+                    if (archipelagoSystem.world.npcLocTypeToNpcItemType is not null && archipelagoSystem.world.npcLocTypeToNpcItemType.TryGetValue(npcType, out int newNpcType) && !NPC.AnyNPCs(newNpcType)) 
                         return newNpcType;
                     NPC npc = Main.npc[NPC.FindFirstNPC(boundNPCtype)];
                     if (Main.netMode == NetmodeID.MultiplayerClient)
