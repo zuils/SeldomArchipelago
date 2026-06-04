@@ -735,9 +735,14 @@ namespace SeldomDespArchipelago
             if (!ModLoader.HasMod("CalamityMod")) return;
             var calamity = ModLoader.GetMod("CalamityMod");
 
-            if (!calamity.Version.Equals(new Version(2, 1, 2)))
+            int relativeVersion = calamity.Version.CompareTo(new Version(2, 1, 2));
+            if (relativeVersion < 0)
             {
-                throw new Exception("Incompatible Calamity version. This is most likely because you are using the workshop version of Calamity.\nPlease reload with Calamity 2.1.2. For information on how to do that, see the pins in the Archipelago discord's #terraria channel");
+                throw new Exception("You are using an older version of Calamity. Please reload with 2.1.2.");
+            }
+            else if (relativeVersion > 0)
+            {
+                throw new Exception("You are using a newer version of calamity.\nThis is probably because the mod recently received an update.\nPlease downpatch to 2.1.2.");
             }
 
             var calamityAssembly = calamity.GetType().Assembly;
