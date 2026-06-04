@@ -88,6 +88,7 @@ The following achievement classifications are added and can be toggled in the `.
 ### Notes
 Some achievements may fall into multiple categories.
 - For example, 'The Great Slime Mitosis' will only be shuffled if both 'Rare' and 'Time' are enabled, as it requires both the spawn of a rare NPC (mystic frog for mystic slime) and the occurance of a random event (natural party for cool slime).
+
 Additionally, the logic for some achievements may change depending on which categories are enabled.
 - For example, 'Kill the Sun' requires access to a solar tablet *unless* 'Time' is enabled, in which case it only requires the conditions for a naturally spawning eclipse to be met.
 ## Shimmer Logic Toggle
