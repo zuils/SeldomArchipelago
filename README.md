@@ -24,7 +24,7 @@ For in-depth information on what each feature does, scroll down to the **Feature
 
 This is a public beta for some features that may one day be included in Terraria's core Archipelago implementation.
 
-Only compatible with Calamity v2.0.6.2.
+Compatible with Calamity 2.1.2 (Workshop version)
 
 Built off of the [official Archipelago branch](https://github.com/Seldom-SE/archipelago_terraria_client), developed and managed by Seldom.
 If you're unclear about what Archipelago is, check out that page's README.
@@ -42,7 +42,6 @@ This process is identical to that of most custom games:
 ## Installing the Mod
 The simplest way to install the mod is to subscribe to it [here](https://steamcommunity.com/sharedfiles/filedetails/?id=3676602360).
 Alternatively, you can download the `SeldomDespArchipelago.tmod` file in the corresponding release and place that in C:/Users/**YourPCName**/Documents/My Games/Terraria/tModLoader/Mods.
-If you are playing with Calamity, you will have to manually install that mod in the same way. See the pins in the Archipelago discord's `#terraria` channel.
 ## Connecting to a Game
 1. Launch tModLoader, navigate to Workshop > Manage Mods, and check to see if Archipelago Randomizer (Desp's Beta) is properly installed.
 2. Configure the server address, port, slot/player name, password as necessary, and the rest to your liking.
