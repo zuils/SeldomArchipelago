@@ -6,6 +6,7 @@ For in-depth information on what each feature does, scroll down to the **Feature
 - Wall of Flesh + Princess goals
   - Additional configuration for randomizing checks after the set goal
 - Additional achievement classifications
+- Shimmer logic toggle
 - Advanced configuration for manual flag activation (building off of Hardmode Starter)
 - Advanced configuration for AP chat
 ### Minor Features
