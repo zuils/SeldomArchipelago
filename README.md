@@ -74,6 +74,27 @@ Note that this is intended for use with NPC randomization. It is strongly recomm
 ### Princess
 Victory is earned once the requirements for the Princess is met (all Vanilla town NPCs move in besides Santa Claus & Town Pets).
 This goal randomizes everything up to and including Plantera. While created with NPC Randomization in mind, it is also perfectly playable otherwise.
+## "Shuffle To" Configuration
+This option is present in your `.yaml` and allows you to shuffle checks *past* your set goal.
+For example, setting it to 'Moon Lord' will randomize all checks up to Moon Lord, even if an earlier boss is chosen for the goal.
+### Notes
+- Certain configurations may result in 'post-game' checks, or checks that are only accessible after the goal condition is reached.
+- This option can *not* be set to a boss earlier than the chosen goal. If it is, the generator will simply ignore this option.
+## Additional Achievement Classifications
+The following achievement classifications are added and can be toggled in the `.yaml`:
+- Rare: Achievements involving rare enemies/drops
+- Time: Achievements based on random time-based events
+- Crafting: Achievements dedicated to crafting complex items
+### Notes
+Some achievements may fall into multiple categories.
+- For example, 'The Great Slime Mitosis' will only be shuffled if both 'Rare' and 'Time' are enabled, as it requires both the spawn of a rare NPC (mystic frog for mystic slime) and the occurance of a random event (natural party for cool slime).
+Additionally, the logic for some achievements may change depending on which categories are enabled.
+- For example, 'Kill the Sun' requires access to a solar tablet *unless* 'Time' is enabled, in which case it only requires the conditions for a naturally spawning eclipse to be met.
+## Shimmer Logic Toggle
+Sequence breaks involving shimmer transmutations can now be disabled or enabled in the `.yaml`.
+If disabled, all transmutations or decrafting using Shimmer are disregarded in logic.
+### Notes
+This option only covers optional transmutations via Shimmer. The player may still be expected to utilize the Shimmer when mandatory, i.e. transmuting a sparkle slime balloon into the diva slime.
 ## Advanced Manual Flag Configuration
 Accessible through the client-side mod's config.
 This expands upon the "Hardmode Starter" option in stable by allowing all vanilla & Calamity flags to be set for manual activation.
