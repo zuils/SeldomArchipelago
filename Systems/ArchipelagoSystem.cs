@@ -788,6 +788,8 @@ namespace SeldomDespArchipelago.Systems
             ConnectStatus.WrongGame => new[]
             {
                 $"The slot \"{ModContent.GetInstance<Config.Config>().name}\" is set to a different game on the server, not \"{APWorldName}\".",
+                "If this is the correct slot, make sure that you did not use the website to generate your YAML.",
+                "See this page for more information: https://github.com/desperandos101/SeldomArchipelago/tree/release",
                 "You have been disconnected from the server.",
             },
             ConnectStatus.SlotOrSeedMismatch => new[]

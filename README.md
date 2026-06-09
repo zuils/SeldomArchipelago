@@ -1,3 +1,31 @@
+# Usage
+To play using this branch, you must generate and host a game **using the packaged `.apworld` found on the releases page**, and subscribe to (or manually install) the corresponding tModLoader mods.
+**The workshop mod will NOT work with a YAML generated from the website.**
+## Generating a Game
+This process is identical to that of most custom games:
+1. Download the .apworld and place it in the `custom_worlds` directory of your Archipelago installation.
+2. Launch `ArchipelagoLauncher.exe` and click `Generate Template YAMLs` in the menu.
+- This should open the `Players/Templates` folder that should contain a new `Terraria_Desp_Beta.yaml` file for configuration.
+3. Configure this file, save a copy, and place it in the `Players` directory, along with whichever `.yaml` files you want to generate with.
+4. Navigate back to `ArchipelagoLauncher.exe` and click `Generate`.
+5. Find the resulting `.zip` file in the `output` directory. From there, you can host the game easily on `archipelago.gg`.
+## Installing the Mod
+The simplest way to install the mod is to subscribe to it [here](https://steamcommunity.com/sharedfiles/filedetails/?id=3676602360).
+Alternatively, you can download the `SeldomDespArchipelago.tmod` file in the corresponding release and place that in C:/Users/**YourPCName**/Documents/My Games/Terraria/tModLoader/Mods.
+## Connecting to a Game
+1. Launch tModLoader, navigate to Workshop > Manage Mods, and check to see if Archipelago Randomizer (Desp's Beta) is properly installed.
+2. Configure the server address, port, slot/player name, password as necessary, and the rest to your liking.
+3. Launch a world (creating a new one is recommended). If the chat displays "Archipelago is Active," you are connected successfully!
+
+# About This Fork
+
+This is a public beta for some features that may one day be included in Terraria's core Archipelago implementation.
+
+Compatible with Calamity 2.1.2 (Workshop version)
+
+Built off of the [official Archipelago branch](https://github.com/Seldom-SE/archipelago_terraria_client), developed and managed by Seldom.
+If you're unclear about what Archipelago is, check out that page's README.
+
 ## Currently Implemented
 For in-depth information on what each feature does, scroll down to the **Feature Explanation** section.
 ### Major Features
@@ -20,33 +48,6 @@ For in-depth information on what each feature does, scroll down to the **Feature
   - **WHAT TO DO:** Using the [Census - Town NPC Checklist](https://steamcommunity.com/sharedfiles/filedetails/?id=2687866031) mod will confirm if a modded NPC's conditions are met. If you see that a modded NPC can move in but won't spawn after a prolonged period:
     - Load another world with the Archipelago mod disabled and meet the conditions for them to spawn naturally
     - Spawn the NPC in manually with [Cheat Sheet](https://steamcommunity.com/sharedfiles/filedetails/?id=2563784437)
-
-# About This Fork
-
-This is a public beta for some features that may one day be included in Terraria's core Archipelago implementation.
-
-Compatible with Calamity 2.1.2 (Workshop version)
-
-Built off of the [official Archipelago branch](https://github.com/Seldom-SE/archipelago_terraria_client), developed and managed by Seldom.
-If you're unclear about what Archipelago is, check out that page's README.
-
-# Usage
-To play with all features listed, you must generate and host a game using the packaged `.apworld` found on the releases page, and subscribe to (or manually install) the corresponding tModLoader mods.
-## Generating a Game
-This process is identical to that of most custom games:
-1. Download the .apworld and place it in the `custom_worlds` directory of your Archipelago installation.
-2. Launch `ArchipelagoLauncher.exe` and click `Generate Template YAMLs` in the menu.
-- This should open the `Players/Templates` folder that should contain a new `Terraria_Desp_Beta.yaml` file for configuration.
-3. Configure this file, save a copy, and place it in the `Players` directory, along with whichever `.yaml` files you want to generate with.
-4. Navigate back to `ArchipelagoLauncher.exe` and click `Generate`.
-5. Find the resulting `.zip` file in the `output` directory. From there, you can host the game easily on `archipelago.gg`.
-## Installing the Mod
-The simplest way to install the mod is to subscribe to it [here](https://steamcommunity.com/sharedfiles/filedetails/?id=3676602360).
-Alternatively, you can download the `SeldomDespArchipelago.tmod` file in the corresponding release and place that in C:/Users/**YourPCName**/Documents/My Games/Terraria/tModLoader/Mods.
-## Connecting to a Game
-1. Launch tModLoader, navigate to Workshop > Manage Mods, and check to see if Archipelago Randomizer (Desp's Beta) is properly installed.
-2. Configure the server address, port, slot/player name, password as necessary, and the rest to your liking.
-3. Launch a world (creating a new one is recommended). If the chat displays "Archipelago is Active," you are connected successfully!
 
 # Feature Explanation
 ## NPC Randomization
