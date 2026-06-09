@@ -4,4 +4,4 @@ This is a beta branch intended for use on games running the Desp Beta. For more 
 
 https://github.com/desperandos101/SeldomArchipelago/tree/release
 
-**Please note that this mod will NOT work with YAMLs generated from the website. You will have to use the latest APWorld file in the previous link.**
+Please note that this mod will NOT work with YAMLs generated from the website. You will have to use the latest APWorld file in the previous link.
