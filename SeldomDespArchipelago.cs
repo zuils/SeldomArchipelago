@@ -41,6 +41,8 @@ namespace SeldomDespArchipelago
         // the game naturally (false) or run by us (true). Terraria is single-threaded, don't worry.
         public bool temp;
 
+        readonly Version calVersion = new Version(2, 2);
+
         public static MethodInfo desertScourgeHeadOnKill = null;
         public static MethodInfo giantClamOnKill = null; // downedCLAM and downedCLAMHardMode
         public static MethodInfo cragmawMireOnKill = null;
@@ -735,14 +737,14 @@ namespace SeldomDespArchipelago
             if (!ModLoader.HasMod("CalamityMod")) return;
             var calamity = ModLoader.GetMod("CalamityMod");
 
-            int relativeVersion = calamity.Version.CompareTo(new Version(2, 1, 2));
+            int relativeVersion = calamity.Version.CompareTo(calVersion);
             if (relativeVersion < 0)
             {
-                throw new Exception("You are using an older version of Calamity. Please reload with 2.1.2.");
+                throw new Exception($"You are using an older version of Calamity. Please reload with {calVersion}.");
             }
             else if (relativeVersion > 0)
             {
-                throw new Exception("You are using a newer version of calamity.\nThis is probably because the mod recently received an update.\nPlease downpatch to 2.1.2.");
+                throw new Exception($"You are using a newer version of calamity.\nThis is probably because the mod recently received an update.\nPlease downpatch to {calVersion}.");
             }
 
             var calamityAssembly = calamity.GetType().Assembly;
