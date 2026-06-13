@@ -120,7 +120,10 @@ namespace SeldomDespArchipelago.Systems
         {
             var npc = new NPC { type = boss };
             var calamityNpc = new CalamityGlobalNPC();
-            typeof(NPC).GetField("_globals", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(npc, new GlobalNPC[] { calamityNpc });
+            int globalIndex = ModContent.GetInstance<CalamityGlobalNPC>().PerEntityIndex;
+            GlobalNPC[] dummyArray = new GlobalNPC[globalIndex + 1];
+            dummyArray[globalIndex] = calamityNpc;
+            typeof(NPC).GetField("_globals", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(npc, dummyArray);
             var seldomArchipelago = ModContent.GetInstance<SeldomArchipelago>();
             seldomArchipelago.temp = true;
             calamityNpc.OnKill(npc);
