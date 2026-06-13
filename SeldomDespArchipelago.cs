@@ -804,7 +804,6 @@ namespace SeldomDespArchipelago
             onPerforatorHiveOnKill += OnPerforatorHiveOnKill;
             onSlimeGodCoreOnKill += OnSlimeGodCoreOnKill;
             onCalamityGlobalNpcOnKill += OnCalamityGlobalNpcOnKill;
-            editCalamityGlobalNPCOnKill += EditCalamityGlobalNPCOnKill;
             onAquaticScourgeHeadOnKill += OnAquaticScourgeHeadOnKill;
             onMaulerOnKill += OnMaulerOnKill;
             onBrimstoneElementalOnKill += OnBrimstoneElementalOnKill;
@@ -901,7 +900,6 @@ namespace SeldomDespArchipelago
             onPerforatorHiveOnKill -= OnPerforatorHiveOnKill;
             onSlimeGodCoreOnKill -= OnSlimeGodCoreOnKill;
             onCalamityGlobalNpcOnKill -= OnCalamityGlobalNpcOnKill;
-            editCalamityGlobalNPCOnKill -= EditCalamityGlobalNPCOnKill;
             onAquaticScourgeHeadOnKill -= OnAquaticScourgeHeadOnKill;
             onMaulerOnKill -= OnMaulerOnKill;
             onBrimstoneElementalOnKill -= OnBrimstoneElementalOnKill;
@@ -1109,16 +1107,6 @@ namespace SeldomDespArchipelago
         {
             if (temp || !vanillaBosses.Contains(npc.type)) orig(self, npc);
             else ModContent.GetInstance<CalamitySystem>().HandleBossRush(npc);
-        }
-
-        void EditCalamityGlobalNPCOnKill(ILContext il)
-        {
-            var seldomArchipelago = ModContent.GetInstance<ArchipelagoSystem>();
-            var cursor = new ILCursor(il);
-
-            cursor.GotoNext(i => i.MatchLdcI4(NPCID.WallofFlesh));
-            cursor.Emit(OpCodes.Pop);
-            cursor.Emit(OpCodes.Ldc_I4_0);
         }
 
         void OnAquaticScourgeHeadOnKill(OnKill orig, ModNPC self)
@@ -1349,12 +1337,6 @@ namespace SeldomDespArchipelago
         static event OnCalamityGlobalNpcOnKillTy onCalamityGlobalNpcOnKill
         {
             add => MonoModHooks.Add(calamityGlobalNpcOnKill, value);
-            remove { }
-        }
-
-        static event ILContext.Manipulator editCalamityGlobalNPCOnKill
-        {
-            add => MonoModHooks.Modify(calamityGlobalNpcOnKill, value);
             remove { }
         }
 
