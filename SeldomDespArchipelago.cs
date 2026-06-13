@@ -41,7 +41,7 @@ namespace SeldomDespArchipelago
         // the game naturally (false) or run by us (true). Terraria is single-threaded, don't worry.
         public bool temp;
 
-        readonly Version calVersion = new Version(2, 2);
+        readonly Version calVersion = new Version(2, 2, 1);
 
         public static MethodInfo desertScourgeHeadOnKill = null;
         public static MethodInfo giantClamOnKill = null; // downedCLAM and downedCLAMHardMode
