@@ -138,7 +138,7 @@ namespace SeldomDespArchipelago
                     }
                       return count;
                 });
-                cursor.EmitStloc(40);
+                cursor.EmitStloc(40);  // NPC Count
 
                 // Old Man
                 cursor.Index++;
@@ -153,7 +153,8 @@ namespace SeldomDespArchipelago
                 cursor.GotoNext(i => i.MatchLdsfld(typeof(WorldGen).GetField(nameof(WorldGen.prioritizedTownNPCType))));
                 cursor.Index++;
                 cursor.EmitPop();
-                cursor.EmitDelegate(() =>
+                cursor.EmitLdloc(40);
+                cursor.EmitDelegate((int npcCount) =>
                 {
                     // Collect NPCs & Ghosts
                     HashSet<int> existingTownTypes = new();
@@ -227,20 +228,14 @@ namespace SeldomDespArchipelago
                                     archipelagoSystem.world.ghostNPCqueue.Enqueue(type);
                             }
                     }
-                    // Check Modded NPCs
-                    for (int i = NPCID.Count; i < NPCLoader.NPCCount; i++)
-                    {
-                        ModNPC modNPC = NPCLoader.GetNPC(i);
-                        if (modNPC.CanTownNPCSpawn(i))
-                        {
-                            Main.townNPCCanSpawn[i] = true;
-                        }
-                    }
                     // Block Duplicate Normal NPCs
                     foreach (int type in existingTownTypes)
                     {
                         Main.townNPCCanSpawn[type] = false;
                     }
+                    // Check Modded NPCs and set prioritizedNPC if Modded NPC can spawn
+                    NPCLoader.CanTownNPCSpawn(npcCount);
+                    if (WorldGen.prioritizedTownNPCType > 0) return;
                     // Set prioritizedNPC if Vanilla NPC can spawn
                     for (int i = 0; i < Main.townNPCCanSpawn.Length; i++)
                     {
@@ -264,8 +259,7 @@ namespace SeldomDespArchipelago
                         return;
                     };
                 });
-                cursor.EmitLdsfld(typeof(WorldGen).GetField(nameof(WorldGen.prioritizedTownNPCType)));
-                cursor.Index--;
+                cursor.EmitRet();
             };
 
             // Bypass AnyNPCs Blocks
