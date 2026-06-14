@@ -227,6 +227,15 @@ namespace SeldomDespArchipelago
                                     archipelagoSystem.world.ghostNPCqueue.Enqueue(type);
                             }
                     }
+                    // Check Modded NPCs
+                    for (int i = NPCID.Count; i < NPCLoader.NPCCount; i++)
+                    {
+                        ModNPC modNPC = NPCLoader.GetNPC(i);
+                        if (modNPC.CanTownNPCSpawn(i))
+                        {
+                            Main.townNPCCanSpawn[i] = true;
+                        }
+                    }
                     // Block Duplicate Normal NPCs
                     foreach (int type in existingTownTypes)
                     {
