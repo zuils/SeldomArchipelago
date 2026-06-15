@@ -21,8 +21,6 @@ Alternatively, you can download the `SeldomDespArchipelago.tmod` file in the cor
 
 This is a public beta for some features that may one day be included in Terraria's core Archipelago implementation.
 
-Compatible with Calamity 2.1.2 (Workshop version)
-
 Built off of the [official Archipelago branch](https://github.com/Seldom-SE/archipelago_terraria_client), developed and managed by Seldom.
 If you're unclear about what Archipelago is, check out that page's README.
 
