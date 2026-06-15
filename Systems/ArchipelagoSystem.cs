@@ -561,7 +561,7 @@ namespace SeldomDespArchipelago.Systems
                 case "Post-Exo Mechs": ModContent.GetInstance<CalamitySystem>().CalamityOnKillExoMechs(); break;
                 case "Post-Supreme Witch, Calamitas": ModContent.GetInstance<CalamitySystem>().CalamityOnKillSupremeWitchCalamitas(); break;
                 case "Post-Primordial Wyrm": ModContent.GetInstance<CalamitySystem>().CalamityPrimordialWyrmDowned(); break;
-                case "Post-Boss Rush": ModContent.GetInstance<CalamitySystem>().CalamityBossRushDowned(); break;
+                case "Post-Boss Rush": break;  // TODO: fix Post-Boss Rush sending the boss rush location check
                 case "Reward: Hermes Boots": GiveItem(ItemID.HermesBoots); break;
                 case "Reward: Magic Mirror": GiveItem(ItemID.MagicMirror); break;
                 case "Reward: Demon Conch": GiveItem(ItemID.DemonConch); break;
