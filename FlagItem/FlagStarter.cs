@@ -58,15 +58,12 @@ namespace SeldomDespArchipelago.FlagItem
                 tooltips.Add(new TooltipLine(Mod, "Tooltip1", "In this state, it's sad and pointless. Please discard."));
             }
         }
-        public override void SetStaticDefaults()
-        {
-            Item.ResearchUnlockCount = 999;
-        }
         public override void SetDefaults()
         {
             Item.CloneDefaults(ItemID.DemonHeart);
         }
         public override bool CanStack(Item source) => false;
+        public override bool CanResearch() => false;
         public override bool? UseItem(Player player)
         {
             var system = ModContent.GetInstance<ArchipelagoSystem>();
