@@ -29,25 +29,18 @@ If you're unclear about what Archipelago is, check out that page's README.
 ## Currently Implemented
 For in-depth information on what each feature does, scroll down to the **Feature Explanation** section.
 ### Major Features
-- Compatibility with Calamity 2.1.2 (Brainstorm update)
+- Compatibility with Calamity 2.2.1 (Hog Wild update)
 - NPC randomization (Vanilla Town NPCs only, no pets, **GFB compatibility untested!**)
 - Wall of Flesh + Princess goals
   - Additional configuration for randomizing checks after the set goal
 - Additional achievement classifications
 - Shimmer logic toggle
+- Health logic
 - Advanced configuration for manual flag activation (building off of Hardmode Starter)
 - Advanced configuration for AP chat
 ### Minor Features
 - Fixed early activation of "Begone, Evil!"
 - Mute achievements on world load
-
-## Known Bugs
-- Modded NPCs may rarely stop moving into a world connected to a slot with NPC Rando enabled.
-  - This bug will persist on the world between reloads.
-  - It is unknown whether this bug persists between different worlds attached to the same multiworld slot. *(Reports greatly appreciated)*
-  - **WHAT TO DO:** Using the [Census - Town NPC Checklist](https://steamcommunity.com/sharedfiles/filedetails/?id=2687866031) mod will confirm if a modded NPC's conditions are met. If you see that a modded NPC can move in but won't spawn after a prolonged period:
-    - Load another world with the Archipelago mod disabled and meet the conditions for them to spawn naturally
-    - Spawn the NPC in manually with [Cheat Sheet](https://steamcommunity.com/sharedfiles/filedetails/?id=2563784437)
 
 # Feature Explanation
 ## NPC Randomization
@@ -97,6 +90,14 @@ Sequence breaks involving shimmer transmutations can now be disabled or enabled 
 If disabled, all transmutations or decrafting using Shimmer are disregarded in logic.
 ### Notes
 This option only covers optional transmutations via Shimmer. The player may still be expected to utilize the Shimmer when mandatory, i.e. transmuting a sparkle slime balloon into the diva slime.
+## Health Logic
+The randomizer considers a maximum health requirement for each boss, requiring access to prior health upgrades depending on their intended stage of progression in vanilla.
+### Notes
+- This option is intended for use with Calamity, and guarantees that early bosses like Leviathan & Anahita and Primordial Wyrm will not have to be fought with extremely inadequate gear.
+  - It is ON by default.
+- All amounts are based off [the walkthrough from the official Calamity wiki](https://calamitymod.wiki.gg/wiki/Guide:Mod_progression).
+- Currently, each boss's health requirement cannot be fine-tuned. However, there is an additional handicap setting that allows you to decrease how many different types of max HP upgrades are needed for each boss.
+  - For example, with Calamity enabled, setting the handicap to -2 would remove both the Sanguine Tangerine and Life Fruit requirement for Plantera, while Yharon would only require Life Crystals, Fruits, and one Calamity health upgrade (chosen between Sanguine Tangerine, Miracle Fruit, or Tainted Cloudberry)
 ## Advanced Manual Flag Configuration
 Accessible through the client-side mod's config.
 This expands upon the "Hardmode Starter" option in stable by allowing all vanilla & Calamity flags to be set for manual activation.
