@@ -30,7 +30,6 @@ namespace SeldomArchipelago.Config
 
         [Header("Miscellaneous")]
 
-        [Label("Receive Hardmode As Item")]
         [DefaultValue(false)]
         public bool hardmodeAsItem;
     }

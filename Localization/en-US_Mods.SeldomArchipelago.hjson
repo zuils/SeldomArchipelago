@@ -29,7 +29,7 @@ Configs: {
 		}
 
 		hardmodeAsItem: {
-			Label: Receive Hardmode As Item
+			Label: Receive Manual Hardmode Trigger
 			Tooltip: ""
 		}
 	}
