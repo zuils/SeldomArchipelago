@@ -131,7 +131,7 @@ namespace SeldomArchipelago.Systems
             session = new();
             session.session = newSession;
 
-            long clamLoc = session.session.Locations.GetLocationIdFromName(APWorldName, "Post-Giant Clam");
+            long clamLoc = session.session.Locations.GetLocationIdFromName(APWorldName, "Giant Clam");
             bool calamitySlot = session.session.Locations.AllLocations.Contains(clamLoc);  // SlotData AP-side should have a calamity field so we don't have to do this
             bool calamityActive = ModLoader.HasMod("CalamityMod");
             if (calamityActive != calamitySlot)
