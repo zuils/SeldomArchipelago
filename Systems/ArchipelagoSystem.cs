@@ -23,6 +23,7 @@ using Terraria.ModLoader.IO;
 using Terraria.Social;
 using Terraria.WorldBuilding;
 using SeldomArchipelago.HardmodeItem;
+using Archipelago.MultiClient.Net.MessageLog.Messages;
 
 namespace SeldomArchipelago.Systems
 {
@@ -69,6 +70,17 @@ namespace SeldomArchipelago.Systems
 
         WorldState world = new();
         SessionState session;
+        public ConnectStatus status = ConnectStatus.Unset;
+        public enum ConnectStatus
+        {
+            Unset,
+            Valid,
+            CalamityNeeded,
+            NoCalamityNeeded,
+            WrongSlot,
+            WrongPass,
+            WrongGame,
+        }
 
         public override void LoadWorldData(TagCompound tag)
         {
@@ -92,8 +104,16 @@ namespace SeldomArchipelago.Systems
                 newSession = ArchipelagoSessionFactory.CreateSession(config.address, config.port);
 
                 result = newSession.TryConnectAndLogin(APWorldName, config.name, ItemsHandlingFlags.AllItems, null, null, null, config.password == "" ? null : config.password);
-                if (result is LoginFailure)
+                if (result is LoginFailure failure)
                 {
+                    var error = failure.ErrorCodes[0];  // don't think it's important to get multiple
+                    status = error switch
+                    {
+                        ConnectionRefusedError.InvalidSlot => ConnectStatus.WrongSlot,
+                        ConnectionRefusedError.InvalidGame => ConnectStatus.WrongGame,
+                        ConnectionRefusedError.InvalidPassword => ConnectStatus.WrongPass,
+                        _ => ConnectStatus.Unset,
+                    };
                     return;
                 }
             }
@@ -104,6 +124,18 @@ namespace SeldomArchipelago.Systems
 
             session = new();
             session.session = newSession;
+
+            long clamLoc = session.session.Locations.GetLocationIdFromName(APWorldName, "Post-Giant Clam");
+            bool calamitySlot = session.session.Locations.AllLocations.Contains(clamLoc);  // SlotData AP-side should have a calamity field so we don't have to do this
+            bool calamityActive = ModLoader.HasMod("CalamityMod");
+            if (calamityActive != calamitySlot)
+            {
+                if (calamityActive) status = ConnectStatus.NoCalamityNeeded;
+                else status = ConnectStatus.CalamityNeeded;
+                Reset();
+                return;
+            }
+            status = ConnectStatus.Valid;
 
             var success = (LoginSuccessful)result;
             session.goals = new List<string>(((JArray)success.SlotData["goal"]).ToObject<string[]>());
@@ -473,22 +505,52 @@ namespace SeldomArchipelago.Systems
         public override void OnWorldUnload()
         {
             world = new();
+            status = ConnectStatus.Unset;
             Reset();
         }
 
-        public string[] Status() => (session == null) switch
+        public string[] Status() => status switch
         {
-            true => new[] {
+            ConnectStatus.Unset => new[] {
                 @"The world is not connected to Archipelago! Reload the world to try again.",
                 "If you are the host, check your config in the main menu at Workshop > Manage Mods > Config",
             },
-            false => (ModContent.GetInstance<CalamitySystem>()) switch
+            ConnectStatus.WrongSlot => new[]
+            {
+                $"Could not find a slot named \"{ModContent.GetInstance<Config.Config>().name}\" registered in the multiworld.",
+                "If you are the host, check your config in the main menu at Workshop > Manage Mods > Config, then reload the world."
+            },
+            ConnectStatus.WrongPass => new[]
+            {
+                $"The password for the Archipelago server is incorrect.",
+                "If you are the host, check your config in the main menu at Workshop > Manage Mods > Config, then reload the world."
+            },
+            ConnectStatus.WrongGame => new[]
+            {
+                $"The slot \"{ModContent.GetInstance<Config.Config>().name}\" is set to a different game on the server, not \"{APWorldName}\".",
+                "You have been disconnected from the server.",
+            },
+            ConnectStatus.CalamityNeeded => new[]
+            {
+                "The multiworld slot you connected to has Calamity integration enabled, but you do not have the mod enabled in your modlist.",
+                "You have been disconnected from the server. Please enable Calamity, then reload this world."
+            },
+            ConnectStatus.NoCalamityNeeded => new[]
+            {
+                "The multiworld slot you connected to has Calamity integration disabled, but you have the mod enabled in your modlist.",
+                "You have been disconnected from the server. Please disable Calamity, then reload this world."
+            },
+            ConnectStatus.Valid => ModContent.GetInstance<CalamitySystem>() switch
             {
                 null => new[] { "Archipelago is active!" },
                 _ => new[] {
                     "Archipelago is active!",
                     "Calamity Archipelago detected. If you beat a Calamity boss and it doesn't give you a check, restart your game and beat it again. It is a rare, unsolved bug."
                 }
+            },
+            _ => new[]
+            {
+                "Indeterminate connection status received. How are you seeing this right now?"
             },
         };
 
