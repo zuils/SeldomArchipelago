@@ -1,4 +1,4 @@
-displayName = Archipelago Randomizer (OFFICIAL IMPLEMENTATION)
+displayName = Archipelago Randomizer (OFFICIAL)
 author = Seldom
 version = 2.1
 homepage = https://github.com/Seldom-SE/archipelago_terraria_client
