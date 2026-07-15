@@ -28,6 +28,7 @@ namespace SeldomArchipelago.Systems
 {
     public class ArchipelagoSystem : ModSystem
     {
+        public const string APWorldName = "Terraria";
         // Data that's reset between worlds
         class WorldState
         {
@@ -90,7 +91,7 @@ namespace SeldomArchipelago.Systems
             {
                 newSession = ArchipelagoSessionFactory.CreateSession(config.address, config.port);
 
-                result = newSession.TryConnectAndLogin("Terraria", config.name, ItemsHandlingFlags.AllItems, null, null, null, config.password == "" ? null : config.password);
+                result = newSession.TryConnectAndLogin(APWorldName, config.name, ItemsHandlingFlags.AllItems, null, null, null, config.password == "" ? null : config.password);
                 if (result is LoginFailure)
                 {
                     return;
@@ -434,7 +435,7 @@ namespace SeldomArchipelago.Systems
 
             if (session.victory) return;
 
-            foreach (var goal in session.goals) if (!session.session.Locations.AllLocationsChecked.Contains(session.session.Locations.GetLocationIdFromName("Terraria", goal))) return;
+            foreach (var goal in session.goals) if (!session.session.Locations.AllLocationsChecked.Contains(session.session.Locations.GetLocationIdFromName(APWorldName, goal))) return;
 
             var victoryPacket = new StatusUpdatePacket()
             {
@@ -607,7 +608,7 @@ namespace SeldomArchipelago.Systems
                 return;
             }
 
-            var location = session.session.Locations.GetLocationIdFromName("Terraria", locationName);
+            var location = session.session.Locations.GetLocationIdFromName(APWorldName, locationName);
             if (location == -1 || !session.session.Locations.AllMissingLocations.Contains(location)) return;
 
             session.locationQueue.Add(session.session.Locations.ScoutLocationsAsync(new[] { location }));
