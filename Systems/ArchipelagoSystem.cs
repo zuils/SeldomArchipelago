@@ -29,6 +29,7 @@ using Terraria.GameContent.UI.States;
 using Archipelago.MultiClient.Net.MessageLog.Parts;
 using Terraria.ModLoader.Config;
 using System.Text;
+using System.Linq;
 
 namespace SeldomArchipelago.Systems
 {
@@ -188,7 +189,7 @@ namespace SeldomArchipelago.Systems
                 if (part.Type == MessagePartType.Player)
                 {
                     playerPart = true;
-                    if (part.Text == session.slotName) thisSlotMentioned = true;
+                    if (part.Text == config.name) thisSlotMentioned = true;
                 }
             }
             if (playerPart && !thisSlotMentioned)
@@ -196,7 +197,7 @@ namespace SeldomArchipelago.Systems
                 switch (config.chatSettings)
                 {
                     case Config.ChatSetting.All: Chat(colorMsg()); break;
-                    case Config.ChatSetting.Grey: Chat(normalMsg(), Color.Gray); break;
+                    case Config.ChatSetting.Grey: Chat(normalMsg(), -1, Color.Gray); break;
                     case Config.ChatSetting.Filter: break;
                     default: throw new Exception("Unhandled chat configuration");
                 }
@@ -680,7 +681,7 @@ namespace SeldomArchipelago.Systems
             return info.ToArray();
         }
 
-        public void Chat(string message, Color color, int player = -1, Color? color = null)
+        public void Chat(string message, int player = -1, Color? color = null)
         {
             var resolvedColor = color ?? Color.White;
 
@@ -700,7 +701,6 @@ namespace SeldomArchipelago.Systems
         {
             foreach (var message in messages) Chat(message, player, color);
         }
-        public void Chat(string message, int player = -1) => Chat(message, Color.White, player);
 
         public void QueueLocation(string locationName)
         {
