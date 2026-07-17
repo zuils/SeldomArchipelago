@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.Serialization;
 using SeldomDespArchipelago.Systems;
+using System.Runtime.Serialization;
 using Terraria.ModLoader.Config;
 using static SeldomDespArchipelago.Systems.ArchipelagoSystem;
 
@@ -53,6 +54,10 @@ namespace SeldomDespArchipelago.Config
         [OnDeserialized]
         internal void CheckItems(StreamingContext _)
         {
+            name = name.Trim(' ', '\n', '\t');
+            address = address.Trim(' ', '\n', '\t');
+            password = password.Trim(' ', '\n', '\t');
+
             string[] flags = ArchipelagoSystem.flags;
             if (manualFlags is null) return;
             int counter = 0;
