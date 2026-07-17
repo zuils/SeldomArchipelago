@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Runtime.Serialization;
 using Terraria.ModLoader.Config;
 
 namespace SeldomArchipelago.Config
@@ -41,6 +42,13 @@ namespace SeldomArchipelago.Config
 
         [DefaultValue(false)]
         public bool hardmodeAsItem;
+        [OnDeserialized]
+        internal void CheckItems(StreamingContext _)
+        {
+            name = name.Trim(' ', '\n', '\t');
+            address = address.Trim(' ', '\n', '\t');
+            password = password.Trim(' ', '\n', '\t');
+        }
     }
     public enum ChatSetting
     {
