@@ -1,5 +1,6 @@
 using CalamityMod.Items.LabFinders;
 using CalamityMod.Items.Weapons.Rogue;
+using CalamityMod.Projectiles.Boss;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 using Microsoft.Xna.Framework;
@@ -43,44 +44,7 @@ namespace SeldomDespArchipelago
 
         readonly Version calVersion = new Version(2, 2, 1);
 
-        public static MethodInfo desertScourgeHeadOnKill = null;
-        public static MethodInfo giantClamOnKill = null; // downedCLAM and downedCLAMHardMode
-        public static MethodInfo cragmawMireOnKill = null;
-        public static MethodInfo acidRainEventUpdateInvasion = null; // downedEoCAcidRain and downedAquaticScourgeAcidRain
-        public static MethodInfo crabulonOnKill = null;
-        public static MethodInfo hiveMindOnKill = null;
-        public static MethodInfo perforatorHiveOnKill = null;
-        public static MethodInfo slimeGodCoreOnKill = null;
-        public static MethodInfo calamityGlobalNpcOnKill = null;
-        public static MethodInfo aquaticScourgeHeadOnKill = null;
-        public static MethodInfo maulerOnKill = null;
-        public static MethodInfo brimstoneElementalOnKill = null;
-        public static MethodInfo cryogenOnKill = null;
-        public static MethodInfo calamitasCloneOnKill = null;
-        public static MethodInfo greatSandSharkOnKill = null;
         public static MethodInfo leviathanRealOnKill = null;
-        public static MethodInfo astrumAureusOnKill = null;
-        public static MethodInfo plaguebringerGoliathOnKill = null;
-        public static MethodInfo ravagerBodyOnKill = null;
-        public static MethodInfo astrumDeusHeadOnKill = null;
-        public static MethodInfo profanedGuardianCommanderOnKill = null;
-        public static MethodInfo dragonfollyOnKill = null;
-        public static MethodInfo providenceOnKill = null;
-        public static MethodInfo stormWeaverHeadOnKill = null;
-        public static MethodInfo ceaselessVoidOnKill = null;
-        public static MethodInfo signusOnKill = null;
-        public static MethodInfo polterghastOnKill = null;
-        public static MethodInfo nuclearTerrorOnKill = null;
-        public static MethodInfo oldDukeOnKill = null;
-        public static MethodInfo devourerofGodsHeadOnKill = null;
-        public static MethodInfo yharonOnKill = null;
-        public static MethodInfo aresBodyOnKill = null;
-        public static MethodInfo apolloOnKill = null;
-        public static MethodInfo thanatosHeadOnKill = null;
-        public static MethodInfo supremeCalamitasOnKill = null;
-        public static MethodInfo trasherOnKill = null;
-        public static MethodInfo calamityGlobalNpcSetNewBossJustDowned = null;
-
         public override void Load()
         {
             var archipelagoSystem = ModContent.GetInstance<ArchipelagoSystem>();
@@ -90,7 +54,7 @@ namespace SeldomDespArchipelago
             }
 
             // Begin cursed IL editing
-
+            #region Vanilla IL Edits
             // Old Man helper method
             // Note that the two IL edits pertaining to the Old Man are currently redundant.
             // However they will be preserved in case of future changes to his spawn conditions
@@ -734,9 +698,9 @@ namespace SeldomDespArchipelago
             };
 
             if (Main.netMode != NetmodeID.Server) Main.Achievements.OnAchievementCompleted += OnAchievementCompleted;
-
+            #endregion
             // Unmaintainable reflection
-
+            #region  Calamity Reflection
             if (!ModLoader.HasMod("CalamityMod")) return;
             var calamity = ModLoader.GetMod("CalamityMod");
 
@@ -749,92 +713,170 @@ namespace SeldomDespArchipelago
             {
                 throw new Exception($"You are using a newer version of calamity.\nThis is probably because the mod recently received an update.\nPlease downpatch to {calVersion}.");
             }
-
+            Dictionary<string, string> defaultOnKillChecks = new()
+            {
+                {"DesertScourgeHead", "Desert Scourge"},
+                {"CragmawMire", "Cragmaw Mire"},
+                {"Crabulon", "Crabulon"},
+                {"HiveMind", "The Hive Mind"},
+                {"PerforatorHive", "The Perforators"},
+                {"SlimeGodCore", "The Slime God"},
+                {"AquaticScourgeHead", "Aquatic Scourge"},
+                {"Mauler", "Mauler"},
+                {"BrimstoneElemental", "Brimstone Elemental"},
+                {"Cryogen", "Cryogen"},
+                {"CalamitasClone", "Calamitas Clone"},
+                {"GreatSandShark", "Great Sand Shark"},
+                {"AstrumAureus", "Astrum Aureus"},
+                {"PlaguebringerGoliath", "The Plaguebringer Goliath"},
+                {"RavagerBody", "Ravager"},
+                {"AstrumDeusHead", "Astrum Deus"},
+                {"ProfanedGuardianCommander", "Profaned Guardians"},
+                {"Dragonfolly", "The Dragonfolly"},
+                {"Providence", "Providence"},
+                {"StormWeaverHead", "Storm Weaver"},
+                {"CeaselessVoid", "Ceaseless Void"},
+                {"Signus", "Signus, Envoy of the Devourer"},
+                {"Polterghast", "Polterghast"},
+                {"NuclearTerror", "Nuclear Terror"},
+                {"OldDuke", "The Old Duke"},
+                {"DevourerofGodsHead", "The Devourer of Gods"},
+                {"Yharon", "Yharon, Dragon of Rebirth"},
+                {"SupremeCalamitas", "Supreme Witch, Calamitas"},
+            };
             var calamityAssembly = calamity.GetType().Assembly;
-            foreach (var type in calamityAssembly.GetTypes()) switch (type.Name)
+            foreach (var type in calamityAssembly.GetTypes())
+            {
+                MethodInfo GetOnKill() => type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public);
+                if (defaultOnKillChecks.TryGetValue(type.Name, out string loc))
                 {
-                    case "DesertScourgeHead": desertScourgeHeadOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
-                    case "GiantClam": giantClamOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
-                    case "CragmawMire": cragmawMireOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
-                    case "AcidRainEvent": acidRainEventUpdateInvasion = type.GetMethod("UpdateInvasion", BindingFlags.Static | BindingFlags.Public); break;
-                    case "Crabulon": crabulonOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
-                    case "HiveMind": hiveMindOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
-                    case "PerforatorHive": perforatorHiveOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
-                    case "SlimeGodCore": slimeGodCoreOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
-                    case "CalamityGlobalNPC":
-                        calamityGlobalNpcOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public);
-                        calamityGlobalNpcSetNewBossJustDowned = type.GetMethod("SetNewBossJustDowned", BindingFlags.Static | BindingFlags.Public);
-                        break;
-                    case "AquaticScourgeHead": aquaticScourgeHeadOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
-                    case "Mauler": maulerOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
-                    case "BrimstoneElemental":  // since there are multiple types named BrimstoneELemental, we need a more thorough check
-                        var method = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public);
-                        if (method is not null)
-                            brimstoneElementalOnKill = method;
-                        break;
-                    case "Cryogen": cryogenOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
-                    case "CalamitasClone": calamitasCloneOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
-                    case "GreatSandShark": greatSandSharkOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
-                    case "Leviathan": leviathanRealOnKill = type.GetMethod("RealOnKill", BindingFlags.Static | BindingFlags.Public); break;
-                    case "AstrumAureus": astrumAureusOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
-                    case "PlaguebringerGoliath": plaguebringerGoliathOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
-                    case "RavagerBody": ravagerBodyOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
-                    case "AstrumDeusHead": astrumDeusHeadOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
-                    case "ProfanedGuardianCommander": profanedGuardianCommanderOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
-                    case "Dragonfolly": dragonfollyOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
-                    case "Providence": providenceOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
-                    case "StormWeaverHead": stormWeaverHeadOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
-                    case "CeaselessVoid": ceaselessVoidOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
-                    case "Signus": signusOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
-                    case "Polterghast": polterghastOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
-                    case "NuclearTerror": nuclearTerrorOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
-                    case "OldDuke": oldDukeOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
-                    case "DevourerofGodsHead": devourerofGodsHeadOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
-                    case "Yharon": yharonOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
-                    case "AresBody": aresBodyOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
-                    case "Apollo": apolloOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
-                    case "ThanatosHead": thanatosHeadOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
-                    case "SupremeCalamitas": supremeCalamitasOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
-                    case "Trasher": trasherOnKill = type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public); break;
+                    MethodInfo onKill = GetOnKill();
+                    if (onKill is null) continue;
+                    MonoModHooks.Add(GetOnKill(), DefaultSendLocOnKill(loc));
                 }
+                else
+                {
+                    switch (type.Name)
+                    {
+                        case "GiantClam":
+                            {
+                                void hook(OnKill orig, ModNPC self)
+                                {
+                                    Logger.Info($"Giant Clam hook triggered. Temp is {temp}.");
+                                    if (temp) orig(self);
+                                    else
+                                    {
+                                        ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Giant Clam");
+                                        if (Main.hardMode) ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Hardmode Giant Clam");
+                                    }
+                                }
+                                MonoModHooks.Add(GetOnKill(), hook);
+                                break;
+                            }
+                        case "AcidRainEvent":
+                            {
+                                MethodInfo invasionUpdate = type.GetMethod("UpdateInvasion", BindingFlags.Static | BindingFlags.Public);
+                                void ilHook(ILContext il)
+                                {
+                                    var archipelagoSystem = ModContent.GetInstance<ArchipelagoSystem>();
+                                    var cursor = new ILCursor(il);
 
-            onDesertScourgeHeadOnKill += OnDesertScourgeHeadOnKill;
-            onGiantClamOnKill += OnGiantClamOnKill;
-            onCragmawMireOnKill += OnCragmawMireOnKill;
-            editAcidRainEventUpdateInvasion += EditAcidRainEventUpdateInvasion;
-            onCrabulonOnKill += OnCrabulonOnKill;
-            onHiveMindOnKill += OnHiveMindOnKill;
-            onPerforatorHiveOnKill += OnPerforatorHiveOnKill;
-            onSlimeGodCoreOnKill += OnSlimeGodCoreOnKill;
-            onCalamityGlobalNpcOnKill += OnCalamityGlobalNpcOnKill;
-            onAquaticScourgeHeadOnKill += OnAquaticScourgeHeadOnKill;
-            onMaulerOnKill += OnMaulerOnKill;
-            onBrimstoneElementalOnKill += OnBrimstoneElementalOnKill;
-            onCryogenOnKill += OnCryogenOnKill;
-            onCalamitasCloneOnKill += OnCalamitasCloneOnKill;
-            onGreatSandSharkOnKill += OnGreatSandSharkOnKill;
-            onLeviathanRealOnKill += OnLeviathanRealOnKill;
-            onAstrumAureusOnKill += OnAstrumAureusOnKill;
-            onPlaguebringerGoliathOnKill += OnPlaguebringerGoliathOnKill;
-            onRavagerBodyOnKill += OnRavagerBodyOnKill;
-            onAstrumDeusHeadOnKill += OnAstrumDeusHeadOnKill;
-            onProfanedGuardianCommanderOnKill += OnProfanedGuardianCommanderOnKill;
-            onDragonfollyOnKill += OnDragonfollyOnKill;
-            onProvidenceOnKill += OnProvidenceOnKill;
-            onStormWeaverHeadOnKill += OnStormWeaverHeadOnKill;
-            onCeaselessVoidOnKill += OnCeaselessVoidOnKill;
-            onSignusOnKill += OnSignusOnKill;
-            onPolterghastOnKill += OnPolterghastOnKill;
-            onNuclearTerrorOnKill += OnNuclearTerrorOnKill;
-            onOldDukeOnKill += OnOldDukeOnKill;
-            onDevourerofGodsHeadOnKill += OnDevourerofGodsHeadOnKill;
-            onYharonOnKill += OnYharonOnKill;
-            onAresBodyOnKill += OnAresBodyOnKill;
-            onApolloOnKill += OnApolloOnKill;
-            onThanatosHeadOnKill += OnThanatosHeadOnKill;
-            onSupremeCalamitasOnKill += OnSupremeCalamitasOnKill;
-            onTrasherOnKill += OverrideTrasherAnglerDrop;
-            onCalamityGlobalNpcSetNewBossJustDowned += OnCalamityGlobalNpcSetNewBossJustDowned;
+                                    cursor.GotoNext(i => i.MatchLdarg(0));
+                                    cursor.Index++;
+                                    cursor.EmitDelegate<Action<bool>>(won =>
+                                    {
+                                        Logger.Info($"Acid Rain IL edit reached. Won is {won}.");
+                                        if (won)
+                                        {
+                                            archipelagoSystem.QueueLocation("Acid Rain Tier 1");
+                                            if (CalamitySystem.DownedAquaticScourge()) archipelagoSystem.QueueLocation("Acid Rain Tier 2");
+                                        }
+                                    });
+                                    cursor.Emit(OpCodes.Ldc_I4_0);
+                                }
+                                MonoModHooks.Modify(invasionUpdate, ilHook);
+                                break;
+                            }
+                        case "CalamityGlobalNPC":
+                            {
+                                MethodInfo globalOnKill = GetOnKill();
+                                void hook(CalamityGlobalNpcOnKill orig, object self, NPC npc)
+                                {
+                                    if (temp || !vanillaBosses.Contains(npc.type)) orig(self, npc);
+                                    else CalamitySystem.HandleBossRush(npc);
+                                }
+                                MonoModHooks.Add(globalOnKill, hook);
+                                break;
+                            }
+                        case "Leviathan":
+                            {
+                                MethodInfo realOnKill = type.GetMethod("RealOnKill", BindingFlags.Static | BindingFlags.Public);
+                                leviathanRealOnKill = realOnKill;
+                                void hook(RealOnKill orig, NPC npc)
+                                {
+                                    Logger.Info($"Leviathan RealOnKill hook triggered. Temp is {temp}.");
+                                    if (temp) orig(npc);
+                                    else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Leviathan and Anahita");
+                                }
+                                MonoModHooks.Add(realOnKill, hook);
+                                break;
+                            }
+                        case "AresBody":
+                            {
+                                void hook(OnKill orig, ModNPC self)
+                                {
+                                    Logger.Info($"Ares hook triggered. Temp is {temp}.");
+                                    if (temp) orig(self);
+                                    else if (CalamitySystem.AreExosDead(0)) ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Exo Mechs");
+                                }
+                                MonoModHooks.Add(GetOnKill(), hook);
+                                break;
+                            }
+                        case "Apollo":
+                            {
+                                void hook(OnKill orig, ModNPC self)
+                                {
+                                    Logger.Info($"Apollo hook triggered. Temp is {temp}.");
+                                    if (temp) orig(self);
+                                    else if (CalamitySystem.AreExosDead(1)) ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Exo Mechs");
+                                }
+                                MonoModHooks.Add(GetOnKill(), hook);
+                                break;
+                            }
+                        case "ThanatosHead":
+                            {
+                                void hook(OnKill orig, ModNPC self)
+                                {
+                                    Logger.Info($"Thanatos hook triggered. Temp is {temp}.");
+                                    if (temp) orig(self);
+                                    else if (CalamitySystem.AreExosDead(2)) ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Exo Mechs");
+                                }
+                                MonoModHooks.Add(GetOnKill(), hook);
+                                break;
+                            }
+                        case "Trasher":
+                            {
+                                void hook(OnKill orig, ModNPC self)
+                                {
+                                    Logger.Info($"Trasher hook triggered. Temp is {temp}.");
+                                    var archipelagoSystem = ModContent.GetInstance<ArchipelagoSystem>();
+                                    if (archipelagoSystem.world.NPCRandoActive())
+                                    {
+                                        if (!NPC.savedAngler && Main.netMode != NetmodeID.MultiplayerClient && !NPC.AnyNPCs(NPCID.SleepingAngler))
+                                        {
+                                            NPC trasher = self.NPC;
+                                            NPC.NewNPC(trasher.GetSource_Death(), (int)trasher.Center.X, (int)trasher.Center.Y, NPCID.SleepingAngler);
+                                        }
+                                    }
+                                    else orig(self);
+                                }
+                                MonoModHooks.Add(GetOnKill(), hook);
+                                break;
+                            }
+                    }
+                }
+            }
+            #endregion
         }
 
         public override void HandlePacket(BinaryReader reader, int whoAmI)
@@ -891,46 +933,6 @@ namespace SeldomDespArchipelago
         public override void Unload()
         {
             if (Main.netMode != NetmodeID.Server) Main.Achievements.OnAchievementCompleted -= OnAchievementCompleted;
-
-            if (!ModLoader.HasMod("CalamityMod")) return;
-
-            onDesertScourgeHeadOnKill -= OnDesertScourgeHeadOnKill;
-            onGiantClamOnKill -= OnGiantClamOnKill;
-            onCragmawMireOnKill -= OnCragmawMireOnKill;
-            editAcidRainEventUpdateInvasion -= EditAcidRainEventUpdateInvasion;
-            onCrabulonOnKill -= OnCrabulonOnKill;
-            onHiveMindOnKill -= OnHiveMindOnKill;
-            onPerforatorHiveOnKill -= OnPerforatorHiveOnKill;
-            onSlimeGodCoreOnKill -= OnSlimeGodCoreOnKill;
-            onCalamityGlobalNpcOnKill -= OnCalamityGlobalNpcOnKill;
-            onAquaticScourgeHeadOnKill -= OnAquaticScourgeHeadOnKill;
-            onMaulerOnKill -= OnMaulerOnKill;
-            onBrimstoneElementalOnKill -= OnBrimstoneElementalOnKill;
-            onCryogenOnKill -= OnCryogenOnKill;
-            onCalamitasCloneOnKill -= OnCalamitasCloneOnKill;
-            onGreatSandSharkOnKill -= OnGreatSandSharkOnKill;
-            onLeviathanRealOnKill -= OnLeviathanRealOnKill;
-            onAstrumAureusOnKill -= OnAstrumAureusOnKill;
-            onPlaguebringerGoliathOnKill -= OnPlaguebringerGoliathOnKill;
-            onRavagerBodyOnKill -= OnRavagerBodyOnKill;
-            onAstrumDeusHeadOnKill -= OnAstrumDeusHeadOnKill;
-            onProfanedGuardianCommanderOnKill -= OnProfanedGuardianCommanderOnKill;
-            onDragonfollyOnKill -= OnDragonfollyOnKill;
-            onProvidenceOnKill -= OnProvidenceOnKill;
-            onStormWeaverHeadOnKill -= OnStormWeaverHeadOnKill;
-            onCeaselessVoidOnKill -= OnCeaselessVoidOnKill;
-            onSignusOnKill -= OnSignusOnKill;
-            onPolterghastOnKill -= OnPolterghastOnKill;
-            onNuclearTerrorOnKill -= OnNuclearTerrorOnKill;
-            onOldDukeOnKill -= OnOldDukeOnKill;
-            onDevourerofGodsHeadOnKill -= OnDevourerofGodsHeadOnKill;
-            onYharonOnKill -= OnYharonOnKill;
-            onAresBodyOnKill -= OnAresBodyOnKill;
-            onApolloOnKill -= OnApolloOnKill;
-            onThanatosHeadOnKill -= OnThanatosHeadOnKill;
-            onSupremeCalamitasOnKill -= OnSupremeCalamitasOnKill;
-            onTrasherOnKill -= OverrideTrasherAnglerDrop;
-            onCalamityGlobalNpcSetNewBossJustDowned -= OnCalamityGlobalNpcSetNewBossJustDowned;
         }
 
         void OnAchievementCompleted(Achievement achievement)
@@ -1037,480 +1039,16 @@ namespace SeldomDespArchipelago
         }
 
         delegate void OnKill(ModNPC self);
-
-        void OnDesertScourgeHeadOnKill(OnKill orig, ModNPC self)
+        Action<OnKill, ModNPC> DefaultSendLocOnKill(string location) => (orig, self) =>
         {
+            Logger.Info($"{location} hook triggered. Temp is {temp}.");
             if (temp) orig(self);
-            else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Desert Scourge");
-        }
-
-        void OnGiantClamOnKill(OnKill orig, ModNPC self)
-        {
-            if (temp) orig(self);
-            else
-            {
-                ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Giant Clam");
-                if (Main.hardMode) ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Hardmode Giant Clam");
-            }
-        }
-
-        void OnCragmawMireOnKill(OnKill orig, ModNPC self)
-        {
-            if (temp) orig(self);
-            else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Cragmaw Mire");
-        }
-
-        void EditAcidRainEventUpdateInvasion(ILContext il)
-        {
-            var archipelagoSystem = ModContent.GetInstance<ArchipelagoSystem>();
-            var calamitySystem = ModContent.GetInstance<CalamitySystem>();
-            var cursor = new ILCursor(il);
-
-            cursor.GotoNext(i => i.MatchLdarg(0));
-            cursor.Index++;
-            cursor.EmitDelegate<Action<bool>>(won =>
-            {
-                if (won)
-                {
-                    archipelagoSystem.QueueLocation("Acid Rain Tier 1");
-                    if (calamitySystem.DownedAquaticScourge()) archipelagoSystem.QueueLocation("Acid Rain Tier 2");
-                }
-            });
-            cursor.Emit(OpCodes.Ldc_I4_0);
-        }
-
-        void OnCrabulonOnKill(OnKill orig, ModNPC self)
-        {
-            if (temp) orig(self);
-            else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Crabulon");
-        }
-
-        void OnHiveMindOnKill(OnKill orig, ModNPC self)
-        {
-            if (temp) orig(self);
-            else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("The Hive Mind");
-        }
-
-        void OnPerforatorHiveOnKill(OnKill orig, ModNPC self)
-        {
-            if (temp) orig(self);
-            else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("The Perforators");
-        }
-
-        void OnSlimeGodCoreOnKill(OnKill orig, ModNPC self)
-        {
-            if (temp) orig(self);
-            else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("The Slime God");
-        }
-
+            else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation(location);
+        };
         int[] vanillaBosses = { NPCID.KingSlime, NPCID.EyeofCthulhu, NPCID.EaterofWorldsHead, NPCID.EaterofWorldsBody, NPCID.EaterofWorldsTail, NPCID.BrainofCthulhu, NPCID.QueenBee, NPCID.SkeletronHead, NPCID.Deerclops, NPCID.WallofFlesh, NPCID.BloodNautilus, NPCID.QueenSlimeBoss, NPCID.Retinazer, NPCID.Spazmatism, NPCID.TheDestroyer, NPCID.SkeletronPrime, NPCID.Plantera, NPCID.Golem, NPCID.DukeFishron, NPCID.MourningWood, NPCID.Pumpking, NPCID.Everscream, NPCID.SantaNK1, NPCID.IceQueen, NPCID.HallowBoss, NPCID.CultistBoss, NPCID.MoonLordCore };
 
         delegate void CalamityGlobalNpcOnKill(object self, NPC npc);
-        void OnCalamityGlobalNpcOnKill(CalamityGlobalNpcOnKill orig, object self, NPC npc)
-        {
-            if (temp || !vanillaBosses.Contains(npc.type)) orig(self, npc);
-            else ModContent.GetInstance<CalamitySystem>().HandleBossRush(npc);
-        }
-
-        void OnAquaticScourgeHeadOnKill(OnKill orig, ModNPC self)
-        {
-            if (temp) orig(self);
-            else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Aquatic Scourge");
-        }
-
-        void OnMaulerOnKill(OnKill orig, ModNPC self)
-        {
-            if (temp) orig(self);
-            else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Mauler");
-        }
-
-        void OnBrimstoneElementalOnKill(OnKill orig, ModNPC self)
-        {
-            if (temp) orig(self);
-            else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Brimstone Elemental");
-        }
-
-        void OnCryogenOnKill(OnKill orig, ModNPC self)
-        {
-            if (temp) orig(self);
-            else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Cryogen");
-        }
-
-        void OnCalamitasCloneOnKill(OnKill orig, ModNPC self)
-        {
-            if (temp) orig(self);
-            else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Calamitas Clone");
-        }
-
-        void OnGreatSandSharkOnKill(OnKill orig, ModNPC self)
-        {
-            if (temp) orig(self);
-            else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Great Sand Shark");
-        }
 
         delegate void RealOnKill(NPC npc);
-        void OnLeviathanRealOnKill(RealOnKill orig, NPC npc)
-        {
-            if (temp) orig(npc);
-            else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Leviathan and Anahita");
-        }
-
-        void OnAstrumAureusOnKill(OnKill orig, ModNPC self)
-        {
-            if (temp) orig(self);
-            else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Astrum Aureus");
-        }
-
-        void OnPlaguebringerGoliathOnKill(OnKill orig, ModNPC self)
-        {
-            if (temp) orig(self);
-            else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("The Plaguebringer Goliath");
-        }
-
-        void OnRavagerBodyOnKill(OnKill orig, ModNPC self)
-        {
-            if (temp) orig(self);
-            else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Ravager");
-        }
-
-        void OnAstrumDeusHeadOnKill(OnKill orig, ModNPC self)
-        {
-            if (temp) orig(self);
-            else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Astrum Deus");
-        }
-
-        void OnProfanedGuardianCommanderOnKill(OnKill orig, ModNPC self)
-        {
-            if (temp) orig(self);
-            else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Profaned Guardians");
-        }
-
-        void OnDragonfollyOnKill(OnKill orig, ModNPC self)
-        {
-            if (temp) orig(self);
-            else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("The Dragonfolly");
-        }
-
-        void OnProvidenceOnKill(OnKill orig, ModNPC self)
-        {
-            if (temp) orig(self);
-            else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Providence, the Profaned Goddess");
-        }
-
-        void OnStormWeaverHeadOnKill(OnKill orig, ModNPC self)
-        {
-            if (temp) orig(self);
-            else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Storm Weaver");
-        }
-
-        void OnCeaselessVoidOnKill(OnKill orig, ModNPC self)
-        {
-            if (temp) orig(self);
-            else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Ceaseless Void");
-        }
-
-        void OnSignusOnKill(OnKill orig, ModNPC self)
-        {
-            if (temp) orig(self);
-            else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Signus, Envoy of the Devourer");
-        }
-
-        void OnPolterghastOnKill(OnKill orig, ModNPC self)
-        {
-            if (temp) orig(self);
-            else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Polterghast");
-        }
-
-        void OnNuclearTerrorOnKill(OnKill orig, ModNPC self)
-        {
-            if (temp) orig(self);
-            else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Nuclear Terror");
-        }
-
-        void OnOldDukeOnKill(OnKill orig, ModNPC self)
-        {
-            if (temp) orig(self);
-            else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("The Old Duke");
-        }
-
-        void OnDevourerofGodsHeadOnKill(OnKill orig, ModNPC self)
-        {
-            if (temp) orig(self);
-            else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("The Devourer of Gods");
-        }
-
-        void OnYharonOnKill(OnKill orig, ModNPC self)
-        {
-            if (temp) orig(self);
-            else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Yharon, Dragon of Rebirth");
-        }
-
-        void OnAresBodyOnKill(OnKill orig, ModNPC self)
-        {
-            if (temp) orig(self);
-            else if (ModContent.GetInstance<CalamitySystem>().AreExosDead(0)) ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Exo Mechs");
-        }
-
-        void OnApolloOnKill(OnKill orig, ModNPC self)
-        {
-            if (temp) orig(self);
-            else if (ModContent.GetInstance<CalamitySystem>().AreExosDead(1)) ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Exo Mechs");
-        }
-
-        void OnThanatosHeadOnKill(OnKill orig, ModNPC self)
-        {
-            if (temp) orig(self);
-            else if (ModContent.GetInstance<CalamitySystem>().AreExosDead(2)) ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Exo Mechs");
-        }
-
-        void OnSupremeCalamitasOnKill(OnKill orig, ModNPC self)
-        {
-            if (temp) orig(self);
-            else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Supreme Witch, Calamitas");
-        }
-
-        void OverrideTrasherAnglerDrop(OnKill orig, ModNPC self)
-        {
-            var archipelagoSystem = ModContent.GetInstance<ArchipelagoSystem>();
-            if (archipelagoSystem.world.NPCRandoActive())
-            {
-                if (!NPC.savedAngler && Main.netMode != NetmodeID.MultiplayerClient && !NPC.AnyNPCs(NPCID.SleepingAngler))
-                {
-                    NPC trasher = self.NPC;
-                    NPC.NewNPC(trasher.GetSource_Death(), (int)trasher.Center.X, (int)trasher.Center.Y, NPCID.SleepingAngler);
-                }
-            }
-            else orig(self);
-        }
-
-        delegate void CalamityGlobalNpcSetNewBossJustDowned(NPC npc);
-        void OnCalamityGlobalNpcSetNewBossJustDowned(CalamityGlobalNpcSetNewBossJustDowned orig, NPC npc) { }
-
-        delegate void OnOnKill(OnKill orig, ModNPC self);
-
-        static event OnOnKill onDesertScourgeHeadOnKill
-        {
-            add => MonoModHooks.Add(desertScourgeHeadOnKill, value);
-            remove { }
-        }
-
-        static event OnOnKill onGiantClamOnKill
-        {
-            add => MonoModHooks.Add(giantClamOnKill, value);
-            remove { }
-        }
-
-        static event OnOnKill onCragmawMireOnKill
-        {
-            add => MonoModHooks.Add(cragmawMireOnKill, value);
-            remove { }
-        }
-
-        static event ILContext.Manipulator editAcidRainEventUpdateInvasion
-        {
-            add => MonoModHooks.Modify(acidRainEventUpdateInvasion, value);
-            remove { }
-        }
-
-        static event OnOnKill onCrabulonOnKill
-        {
-            add => MonoModHooks.Add(crabulonOnKill, value);
-            remove { }
-        }
-
-        static event OnOnKill onHiveMindOnKill
-        {
-            add => MonoModHooks.Add(hiveMindOnKill, value);
-            remove { }
-        }
-
-        static event OnOnKill onPerforatorHiveOnKill
-        {
-            add => MonoModHooks.Add(perforatorHiveOnKill, value);
-            remove { }
-        }
-
-        static event OnOnKill onSlimeGodCoreOnKill
-        {
-            add => MonoModHooks.Add(slimeGodCoreOnKill, value);
-            remove { }
-        }
-
-        delegate void OnCalamityGlobalNpcOnKillTy(CalamityGlobalNpcOnKill orig, object self, NPC npc);
-        static event OnCalamityGlobalNpcOnKillTy onCalamityGlobalNpcOnKill
-        {
-            add => MonoModHooks.Add(calamityGlobalNpcOnKill, value);
-            remove { }
-        }
-
-        static event OnOnKill onAquaticScourgeHeadOnKill
-        {
-            add => MonoModHooks.Add(aquaticScourgeHeadOnKill, value);
-            remove { }
-        }
-
-        static event OnOnKill onMaulerOnKill
-        {
-            add => MonoModHooks.Add(maulerOnKill, value);
-            remove { }
-        }
-
-        static event OnOnKill onBrimstoneElementalOnKill
-        {
-            add => MonoModHooks.Add(brimstoneElementalOnKill, value);
-            remove { }
-        }
-
-        static event OnOnKill onCryogenOnKill
-        {
-            add => MonoModHooks.Add(cryogenOnKill, value);
-            remove { }
-        }
-
-        static event OnOnKill onCalamitasCloneOnKill
-        {
-            add => MonoModHooks.Add(calamitasCloneOnKill, value);
-            remove { }
-        }
-
-        static event OnOnKill onGreatSandSharkOnKill
-        {
-            add => MonoModHooks.Add(greatSandSharkOnKill, value);
-            remove { }
-        }
-
-        delegate void OnRealOnKill(RealOnKill orig, NPC npc);
-        static event OnRealOnKill onLeviathanRealOnKill
-        {
-            add => MonoModHooks.Add(leviathanRealOnKill, value);
-            remove { }
-        }
-
-        static event OnOnKill onAstrumAureusOnKill
-        {
-            add => MonoModHooks.Add(astrumAureusOnKill, value);
-            remove { }
-        }
-
-        static event OnOnKill onPlaguebringerGoliathOnKill
-        {
-            add => MonoModHooks.Add(plaguebringerGoliathOnKill, value);
-            remove { }
-        }
-
-        static event OnOnKill onRavagerBodyOnKill
-        {
-            add => MonoModHooks.Add(ravagerBodyOnKill, value);
-            remove { }
-        }
-
-        static event OnOnKill onAstrumDeusHeadOnKill
-        {
-            add => MonoModHooks.Add(astrumDeusHeadOnKill, value);
-            remove { }
-        }
-
-        static event OnOnKill onProfanedGuardianCommanderOnKill
-        {
-            add => MonoModHooks.Add(profanedGuardianCommanderOnKill, value);
-            remove { }
-        }
-
-        static event OnOnKill onDragonfollyOnKill
-        {
-            add => MonoModHooks.Add(dragonfollyOnKill, value);
-            remove { }
-        }
-
-        static event OnOnKill onProvidenceOnKill
-        {
-            add => MonoModHooks.Add(providenceOnKill, value);
-            remove { }
-        }
-
-        static event OnOnKill onStormWeaverHeadOnKill
-        {
-            add => MonoModHooks.Add(stormWeaverHeadOnKill, value);
-            remove { }
-        }
-
-        static event OnOnKill onCeaselessVoidOnKill
-        {
-            add => MonoModHooks.Add(ceaselessVoidOnKill, value);
-            remove { }
-        }
-
-        static event OnOnKill onSignusOnKill
-        {
-            add => MonoModHooks.Add(signusOnKill, value);
-            remove { }
-        }
-
-        static event OnOnKill onPolterghastOnKill
-        {
-            add => MonoModHooks.Add(polterghastOnKill, value);
-            remove { }
-        }
-
-        static event OnOnKill onNuclearTerrorOnKill
-        {
-            add => MonoModHooks.Add(nuclearTerrorOnKill, value);
-            remove { }
-        }
-
-        static event OnOnKill onOldDukeOnKill
-        {
-            add => MonoModHooks.Add(oldDukeOnKill, value);
-            remove { }
-        }
-
-        static event OnOnKill onDevourerofGodsHeadOnKill
-        {
-            add => MonoModHooks.Add(devourerofGodsHeadOnKill, value);
-            remove { }
-        }
-
-        static event OnOnKill onYharonOnKill
-        {
-            add => MonoModHooks.Add(yharonOnKill, value);
-            remove { }
-        }
-
-        static event OnOnKill onAresBodyOnKill
-        {
-            add => MonoModHooks.Add(aresBodyOnKill, value);
-            remove { }
-        }
-
-        static event OnOnKill onApolloOnKill
-        {
-            add => MonoModHooks.Add(apolloOnKill, value);
-            remove { }
-        }
-
-        static event OnOnKill onThanatosHeadOnKill
-        {
-            add => MonoModHooks.Add(thanatosHeadOnKill, value);
-            remove { }
-        }
-
-        static event OnOnKill onSupremeCalamitasOnKill
-        {
-            add => MonoModHooks.Add(supremeCalamitasOnKill, value);
-            remove { }
-        }
-
-        static event OnOnKill onTrasherOnKill
-        {
-            add => MonoModHooks.Add(trasherOnKill, value);
-            remove { }
-        }
-
-        delegate void OnCalamityGlobalNpcSetNewBossJustDownedTy(CalamityGlobalNpcSetNewBossJustDowned orig, NPC npc);
-        static event OnCalamityGlobalNpcSetNewBossJustDownedTy onCalamityGlobalNpcSetNewBossJustDowned
-        {
-            add => MonoModHooks.Add(calamityGlobalNpcSetNewBossJustDowned, value);
-            remove { }
-        }
     }
 }
