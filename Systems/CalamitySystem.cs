@@ -139,9 +139,9 @@ namespace SeldomDespArchipelago.Systems
             dummyArray[globalIndex] = calamityNpc;
             typeof(NPC).GetField("_globals", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(npc, dummyArray);
             var seldomArchipelago = ModContent.GetInstance<SeldomArchipelago>();
-            seldomArchipelago.temp = true;
+            seldomArchipelago.Temp = true;
             calamityNpc.OnKill(npc);
-            seldomArchipelago.temp = false;
+            seldomArchipelago.Temp = false;
         }
 
         public static void CalamityOnKill<T>() where T : ModNPC, new() => CalamityOnKill<T>(new float[] { 0, 0, 0, 0 });
@@ -164,9 +164,9 @@ namespace SeldomDespArchipelago.Systems
             typeof(NPC).GetField("_globals", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(entity, dummyArray);
             typeof(ModType<NPC>).GetProperty("Entity").SetValue(npc, entity);
             var seldomArchipelago = ModContent.GetInstance<SeldomArchipelago>();
-            seldomArchipelago.temp = true;
+            seldomArchipelago.Temp = true;
             npc.OnKill();
-            seldomArchipelago.temp = false;
+            seldomArchipelago.Temp = false;
         }
 
         public static void CalamityOnKillGiantClam(bool hardmode)
@@ -183,9 +183,9 @@ namespace SeldomDespArchipelago.Systems
         public static void CalamityOnKillLeviathanAndAnahita()
         {
             var seldomArchipelago = ModContent.GetInstance<SeldomArchipelago>();
-            seldomArchipelago.temp = true;
+            seldomArchipelago.Temp = true;
             SeldomArchipelago.leviathanRealOnKill.Invoke(new CalamityMod.NPCs.Leviathan.Leviathan(), new object[] { new NPC() {type = ModContent.NPCType<CalamityMod.NPCs.Leviathan.Leviathan>()}});
-            seldomArchipelago.temp = false;
+            seldomArchipelago.Temp = false;
         }
 
         public static void CalamityOnKillCryogen()

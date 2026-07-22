@@ -40,7 +40,16 @@ namespace SeldomDespArchipelago
         // after receiving a boss flag as an item, so we have to not prevent the code from making
         // such changes in that case. So, we use this flag to determine whether the code is run by
         // the game naturally (false) or run by us (true). Terraria is single-threaded, don't worry.
-        public bool temp;
+        public bool tempValue;
+        public bool Temp
+        {
+            get => tempValue;
+            set
+            {
+                Logger.Info($"TEMP VALUE SET TO: {value}");
+                tempValue = value;
+            }
+        }
 
         readonly Version calVersion = new Version(2, 2, 1);
 
@@ -637,11 +646,11 @@ namespace SeldomDespArchipelago
                 {
                     var flag = typeof(DD2Event).GetField(flagName);
                     cursor.GotoNext(i => i.MatchStsfld(flag));
-                    cursor.EmitDelegate<Action>(() => temp = (bool)flag.GetValue(null));
+                    cursor.EmitDelegate<Action>(() => Temp = (bool)flag.GetValue(null));
                     cursor.Index++;
                     cursor.EmitDelegate(() =>
                     {
-                        flag.SetValue(null, temp);
+                        flag.SetValue(null, Temp);
                         archipelagoSystem.QueueLocation($"Old One's Army Tier {tier}");
                     });
                 }
@@ -657,28 +666,28 @@ namespace SeldomDespArchipelago
                     var field = typeof(NPC).GetField(flag, BindingFlags.Static | BindingFlags.Public);
                     cursor.GotoNext(i => i.MatchStsfld(field));
                     // Crimes
-                    cursor.EmitDelegate<Action>(() => temp = (bool)field.GetValue(null));
+                    cursor.EmitDelegate<Action>(() => Temp = (bool)field.GetValue(null));
                     cursor.Index++;
-                    cursor.EmitDelegate(() => field.SetValue(null, temp));
+                    cursor.EmitDelegate(() => field.SetValue(null, Temp));
                 }
 
                 // Prevent NPC.downedMechBossAny from being set
                 while (cursor.TryGotoNext(i => i.MatchStsfld(typeof(NPC).GetField(nameof(NPC.downedMechBossAny)))))
                 {
-                    cursor.EmitDelegate<Action>(() => temp = NPC.downedMechBossAny);
+                    cursor.EmitDelegate<Action>(() => Temp = NPC.downedMechBossAny);
                     cursor.Index++;
-                    cursor.EmitDelegate<Action>(() => NPC.downedMechBossAny = temp);
+                    cursor.EmitDelegate<Action>(() => NPC.downedMechBossAny = Temp);
                 }
 
                 // Prevent Hardmode generation Terraria.NPC:69104
                 cursor.GotoNext(i => i.MatchCall(typeof(WorldGen).GetMethod(nameof(WorldGen.StartHardmode))));
                 cursor.EmitDelegate(() =>
                 {
-                    temp = Main.hardMode;
+                    Temp = Main.hardMode;
                     Main.hardMode = true;
                 });
                 cursor.Index++;
-                cursor.EmitDelegate<Action>(() => Main.hardMode = temp);
+                cursor.EmitDelegate<Action>(() => Main.hardMode = Temp);
             };
 
             IL_WorldGen.UpdateLunarApocalypse += il =>
@@ -762,8 +771,8 @@ namespace SeldomDespArchipelago
                             {
                                 void hook(OnKill orig, ModNPC self)
                                 {
-                                    Logger.Info($"Giant Clam hook triggered. Temp is {temp}.");
-                                    if (temp) orig(self);
+                                    Logger.Info($"Giant Clam hook triggered. Temp is {Temp}.");
+                                    if (Temp) orig(self);
                                     else
                                     {
                                         ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Giant Clam");
@@ -802,7 +811,7 @@ namespace SeldomDespArchipelago
                                 MethodInfo globalOnKill = GetOnKill();
                                 void hook(CalamityGlobalNpcOnKill orig, object self, NPC npc)
                                 {
-                                    if (temp || !vanillaBosses.Contains(npc.type)) orig(self, npc);
+                                    if (Temp || !vanillaBosses.Contains(npc.type)) orig(self, npc);
                                     else CalamitySystem.HandleBossRush(npc);
                                 }
                                 MonoModHooks.Add(globalOnKill, hook);
@@ -814,8 +823,8 @@ namespace SeldomDespArchipelago
                                 leviathanRealOnKill = realOnKill;
                                 void hook(RealOnKill orig, NPC npc)
                                 {
-                                    Logger.Info($"Leviathan RealOnKill hook triggered. Temp is {temp}.");
-                                    if (temp) orig(npc);
+                                    Logger.Info($"Leviathan RealOnKill hook triggered. Temp is {Temp}.");
+                                    if (Temp) orig(npc);
                                     else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Leviathan and Anahita");
                                 }
                                 MonoModHooks.Add(realOnKill, hook);
@@ -825,8 +834,8 @@ namespace SeldomDespArchipelago
                             {
                                 void hook(OnKill orig, ModNPC self)
                                 {
-                                    Logger.Info($"Ares hook triggered. Temp is {temp}.");
-                                    if (temp) orig(self);
+                                    Logger.Info($"Ares hook triggered. Temp is {Temp}.");
+                                    if (Temp) orig(self);
                                     else if (CalamitySystem.AreExosDead(0)) ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Exo Mechs");
                                 }
                                 MonoModHooks.Add(GetOnKill(), hook);
@@ -836,8 +845,8 @@ namespace SeldomDespArchipelago
                             {
                                 void hook(OnKill orig, ModNPC self)
                                 {
-                                    Logger.Info($"Apollo hook triggered. Temp is {temp}.");
-                                    if (temp) orig(self);
+                                    Logger.Info($"Apollo hook triggered. Temp is {Temp}.");
+                                    if (Temp) orig(self);
                                     else if (CalamitySystem.AreExosDead(1)) ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Exo Mechs");
                                 }
                                 MonoModHooks.Add(GetOnKill(), hook);
@@ -847,8 +856,8 @@ namespace SeldomDespArchipelago
                             {
                                 void hook(OnKill orig, ModNPC self)
                                 {
-                                    Logger.Info($"Thanatos hook triggered. Temp is {temp}.");
-                                    if (temp) orig(self);
+                                    Logger.Info($"Thanatos hook triggered. Temp is {Temp}.");
+                                    if (Temp) orig(self);
                                     else if (CalamitySystem.AreExosDead(2)) ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Exo Mechs");
                                 }
                                 MonoModHooks.Add(GetOnKill(), hook);
@@ -858,7 +867,7 @@ namespace SeldomDespArchipelago
                             {
                                 void hook(OnKill orig, ModNPC self)
                                 {
-                                    Logger.Info($"Trasher hook triggered. Temp is {temp}.");
+                                    Logger.Info($"Trasher hook triggered. Temp is {Temp}.");
                                     var archipelagoSystem = ModContent.GetInstance<ArchipelagoSystem>();
                                     if (archipelagoSystem.world.NPCRandoActive())
                                     {
@@ -1041,8 +1050,8 @@ namespace SeldomDespArchipelago
         delegate void OnKill(ModNPC self);
         Action<OnKill, ModNPC> DefaultSendLocOnKill(string location) => (orig, self) =>
         {
-            Logger.Info($"{location} hook triggered. Temp is {temp}.");
-            if (temp) orig(self);
+            Logger.Info($"{location} hook triggered. Temp is {Temp}.");
+            if (Temp) orig(self);
             else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation(location);
         };
         int[] vanillaBosses = { NPCID.KingSlime, NPCID.EyeofCthulhu, NPCID.EaterofWorldsHead, NPCID.EaterofWorldsBody, NPCID.EaterofWorldsTail, NPCID.BrainofCthulhu, NPCID.QueenBee, NPCID.SkeletronHead, NPCID.Deerclops, NPCID.WallofFlesh, NPCID.BloodNautilus, NPCID.QueenSlimeBoss, NPCID.Retinazer, NPCID.Spazmatism, NPCID.TheDestroyer, NPCID.SkeletronPrime, NPCID.Plantera, NPCID.Golem, NPCID.DukeFishron, NPCID.MourningWood, NPCID.Pumpking, NPCID.Everscream, NPCID.SantaNK1, NPCID.IceQueen, NPCID.HallowBoss, NPCID.CultistBoss, NPCID.MoonLordCore };
