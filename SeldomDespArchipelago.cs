@@ -749,7 +749,6 @@ namespace SeldomDespArchipelago
                 {"AstrumAureus", "Astrum Aureus"},
                 {"PlaguebringerGoliath", "The Plaguebringer Goliath"},
                 {"RavagerBody", "Ravager"},
-                {"AstrumDeusHead", "Astrum Deus"},
                 {"ProfanedGuardianCommander", "Profaned Guardians"},
                 {"Dragonfolly", "The Dragonfolly"},
                 {"Providence", "Providence"},
@@ -838,6 +837,27 @@ namespace SeldomDespArchipelago
                                     else ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Leviathan and Anahita");
                                 }
                                 MonoModHooks.Add(realOnKill, hook);
+                                break;
+                            }
+                        case "AstrumDeusHead":
+                            {
+                                MethodInfo info = GetOnKill();
+                                void ilHook(ILContext il)
+                                {
+                                    var archipelagoSystem = ModContent.GetInstance<ArchipelagoSystem>();
+                                    var cursor = new ILCursor(il);
+
+                                    cursor.GotoNext(i => i.MatchLdsfld(calamityAssembly.GetTypes().First(i => i.Name == "BossRushEvent").GetField("BossRushActive")));  // yuck
+                                    cursor.Index++;
+                                    cursor.EmitDelegate<Func<bool, bool>>(skip =>
+                                    {
+                                        Logger.Info($"Astrum Deus IL edit reached. Boss rush is {skip} and Temp is {Temp}.");
+                                        bool locTrigger = !Temp;
+                                        if (locTrigger) ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Astrum Deus");
+                                        return skip || locTrigger;
+                                    });
+                                }
+                                MonoModHooks.Modify(info, ilHook);
                                 break;
                             }
                         case "AresBody":
