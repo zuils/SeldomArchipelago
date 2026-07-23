@@ -147,6 +147,11 @@ namespace SeldomDespArchipelago.NPCs
             }
             ModContent.GetInstance<ArchipelagoSystem>().QueueLocation(ArchipelagoSystem.npcIDtoName[ghost.ghostType]);
         }
+        public override bool ModifyDeathMessage(ref NetworkText customText, ref Color color)
+        {
+            customText = NetworkText.FromLiteral(GetChat());
+            return false;
+        }
         public override void SaveData(TagCompound tag)
         {
             tag[nameof(ghostType)] = ghostType;
