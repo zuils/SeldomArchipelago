@@ -751,7 +751,7 @@ namespace SeldomDespArchipelago
                 {"RavagerBody", "Ravager"},
                 {"ProfanedGuardianCommander", "Profaned Guardians"},
                 {"Dragonfolly", "The Dragonfolly"},
-                {"Providence", "Providence"},
+                {"Providence", "Providence, the Profaned Goddess"},
                 {"StormWeaverHead", "Storm Weaver"},
                 {"CeaselessVoid", "Ceaseless Void"},
                 {"Signus", "Signus, Envoy of the Devourer"},
