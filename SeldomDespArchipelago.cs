@@ -652,6 +652,7 @@ namespace SeldomDespArchipelago
                     {
                         flag.SetValue(null, Temp);
                         archipelagoSystem.QueueLocation($"Old One's Army Tier {tier}");
+                        Temp = false;
                     });
                 }
             };
@@ -668,7 +669,10 @@ namespace SeldomDespArchipelago
                     // Crimes
                     cursor.EmitDelegate<Action>(() => Temp = (bool)field.GetValue(null));
                     cursor.Index++;
-                    cursor.EmitDelegate(() => field.SetValue(null, Temp));
+                    cursor.EmitDelegate(() => {
+                        field.SetValue(null, Temp);
+                        Temp = false;
+                    });
                 }
 
                 // Prevent NPC.downedMechBossAny from being set
@@ -676,7 +680,10 @@ namespace SeldomDespArchipelago
                 {
                     cursor.EmitDelegate<Action>(() => Temp = NPC.downedMechBossAny);
                     cursor.Index++;
-                    cursor.EmitDelegate<Action>(() => NPC.downedMechBossAny = Temp);
+                    cursor.EmitDelegate<Action>(() => {
+                        NPC.downedMechBossAny = Temp;
+                        Temp = false;
+                    });
                 }
 
                 // Prevent Hardmode generation Terraria.NPC:69104
@@ -687,7 +694,10 @@ namespace SeldomDespArchipelago
                     Main.hardMode = true;
                 });
                 cursor.Index++;
-                cursor.EmitDelegate<Action>(() => Main.hardMode = Temp);
+                cursor.EmitDelegate<Action>(() => {
+                    Main.hardMode = Temp;
+                    Temp = false;
+                });
             };
 
             IL_WorldGen.UpdateLunarApocalypse += il =>
