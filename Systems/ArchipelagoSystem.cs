@@ -79,7 +79,7 @@ namespace SeldomDespArchipelago.Systems
             // If this is the case, we can transform the ghost/bound npc into the item npc as soon as it is activated, for both expediency and cuteness.
             public Dictionary<int, int> npcLocTypeToNpcItemType = null;
 
-            public bool NPCRandoActive() => randomizedNPCs is not null;
+            public bool NPCRandoActive() => !ModContent.GetInstance<Config.Config>().forceOffNPC && randomizedNPCs is not null;
             public TagCompound SerializeData()
             {
                 var tag = new TagCompound
@@ -745,6 +745,11 @@ namespace SeldomDespArchipelago.Systems
                 List<string> msg = ["Archipelago is active!"];
                 if (ModLoader.HasMod("CalamityMod"))
                     msg.Add("Calamity Archipelago detected. If you beat a Calamity boss and it doesn't give you a check, restart your game and beat it again. It is a rare, unsolved bug.");
+                if (ModContent.GetInstance<Config.Config>().forceOffNPC)
+                {
+                    msg.Add("[c/FF5757:NOTICE:] You have forced off NPC Randomization.");
+                    msg.Add("Please verify that your slot has NPC Randomization disabled, or you may run into unexpected errors.");
+                }
                 return msg.ToArray();
                     
             }

@@ -12,6 +12,7 @@ Mods: {
 					Chat: Chat Header
 					Advanced: Advanced Header
 					Common: Common Header
+					Debug: Debug Header
 				}
 
 				chatSettings: {
@@ -42,6 +43,11 @@ Mods: {
 				name: {
 					Tooltip: ""
 					Label: Name
+				}
+
+				forceOffNPC: {
+					Label: Force NPC Randomization Off
+					Tooltip: Force this mod to use vanilla behavior for NPC spawning. If your slot has NPC Randomization enabled, leave this setting off.
 				}
 
 				DisplayName: Config
