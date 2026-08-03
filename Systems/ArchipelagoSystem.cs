@@ -739,66 +739,68 @@ namespace SeldomDespArchipelago.Systems
             Reset();
         }
         
-        public string[] Status() => status switch
-        {
-            ConnectStatus.Unset => new[] {
-                @"The world is not connected to Archipelago! Reload the world to try again.",
-                "If you are the host, check your config in the main menu at Workshop > Manage Mods > Config",
-            },
-            ConnectStatus.WrongSlot => new[]
+        public string[] Status() {
+            if (status == ConnectStatus.Valid)
             {
-                $"Could not find a slot named \"{ModContent.GetInstance<Config.Config>().name}\" registered in the multiworld.",
-                "If you are the host, check your config in the main menu at Workshop > Manage Mods > Config, then reload the world."
-            },
-            ConnectStatus.WrongPass => new[]
+                List<string> msg = ["Archipelago is active!"];
+                if (ModLoader.HasMod("CalamityMod"))
+                    msg.Add("Calamity Archipelago detected. If you beat a Calamity boss and it doesn't give you a check, restart your game and beat it again. It is a rare, unsolved bug.");
+                return msg.ToArray();
+                    
+            }
+            return status switch
             {
-                $"The password for the Archipelago server is incorrect.",
-                "If you are the host, check your config in the main menu at Workshop > Manage Mods > Config, then reload the world."
-            },
-            ConnectStatus.WrongGame => new[]
-            {
-                $"The slot \"{ModContent.GetInstance<Config.Config>().name}\" is set to a different game on the server, not \"{APWorldName}\".",
-                "If this is the correct slot, make sure that you did not use the website to generate your YAML.",
-                "See this page for more information: https://github.com/desperandos101/SeldomArchipelago/tree/release",
-                "You have been disconnected from the server.",
-            },
-            ConnectStatus.SlotOrSeedMismatch => new[]
-            {
-                "This world has save data for a different multiworld/slot.",
-                $"SAVE DATA MULTIWORLD SLOT: {world.slotName}, SEED {world.seed}",
-                "You have been disconnected from the server. Please load a different world."
-            },
-            // For the next messages, we instruct the player to reload the current world since it passed the mismatch test
-            ConnectStatus.CalamityNeeded => new[]
-            {
-                "The multiworld slot you connected to has Calamity integration enabled, but you do not have the mod enabled in your modlist.",
-                "You have been disconnected from the server. Please enable Calamity, then reload this world."
-            },
-            ConnectStatus.NoCalamityNeeded => new[]
-            {
-                "The multiworld slot you connected to has Calamity integration disabled, but you have the mod enabled in your modlist.",
-                "You have been disconnected from the server. Please disable Calamity, then reload this world."
-            },
-            ConnectStatus.ClientOlder => new[]
-            {
-                "The multiworld slot you connected to requires a newer version of the client.",
-                "You have been disconnected from the server. Please upgrade your client, then reload this world."
-            },
-            ConnectStatus.ClientNewer => new[]
-            {
-                "The multiworld slot you connected to requires an older version of the client.",
-                $"Look on the releases page for the latest client compatible with APWorld version {(desiredAPversion is null ? "0.6.61, then if that fails to connect, 0.6.62." : $"{desiredAPversion[0]}.{desiredAPversion[1]}.{desiredAPversion[2]}.")}",
-                "You have been disconnected from the server. Please downpatch your client, then reload this world."
-            },
-            ConnectStatus.Valid => ModLoader.HasMod("CalamityMod") switch
-            {
-                false => new[] { "Archipelago is active!" },
-                true => new[] {
-                    "Archipelago is active!",
-                    "Calamity Archipelago detected. If you beat a Calamity boss and it doesn't give you a check, restart your game and beat it again. It is a rare, unsolved bug."
-                }
-            },
-        };
+                ConnectStatus.Unset => new[] {
+                    @"The world is not connected to Archipelago! Reload the world to try again.",
+                    "If you are the host, check your config in the main menu at Workshop > Manage Mods > Config",
+                },
+                ConnectStatus.WrongSlot => new[]
+                {
+                    $"Could not find a slot named \"{ModContent.GetInstance<Config.Config>().name}\" registered in the multiworld.",
+                    "If you are the host, check your config in the main menu at Workshop > Manage Mods > Config, then reload the world."
+                },
+                ConnectStatus.WrongPass => new[]
+                {
+                    $"The password for the Archipelago server is incorrect.",
+                    "If you are the host, check your config in the main menu at Workshop > Manage Mods > Config, then reload the world."
+                },
+                ConnectStatus.WrongGame => new[]
+                {
+                    $"The slot \"{ModContent.GetInstance<Config.Config>().name}\" is set to a different game on the server, not \"{APWorldName}\".",
+                    "If this is the correct slot, make sure that you did not use the website to generate your YAML.",
+                    "See this page for more information: https://github.com/desperandos101/SeldomArchipelago/tree/release",
+                    "You have been disconnected from the server.",
+                },
+                ConnectStatus.SlotOrSeedMismatch => new[]
+                {
+                    "This world has save data for a different multiworld/slot.",
+                    $"SAVE DATA MULTIWORLD SLOT: {world.slotName}, SEED {world.seed}",
+                    "You have been disconnected from the server. Please load a different world."
+                },
+                // For the next messages, we instruct the player to reload the current world since it passed the mismatch test
+                ConnectStatus.CalamityNeeded => new[]
+                {
+                    "The multiworld slot you connected to has Calamity integration enabled, but you do not have the mod enabled in your modlist.",
+                    "You have been disconnected from the server. Please enable Calamity, then reload this world."
+                },
+                ConnectStatus.NoCalamityNeeded => new[]
+                {
+                    "The multiworld slot you connected to has Calamity integration disabled, but you have the mod enabled in your modlist.",
+                    "You have been disconnected from the server. Please disable Calamity, then reload this world."
+                },
+                ConnectStatus.ClientOlder => new[]
+                {
+                    "The multiworld slot you connected to requires a newer version of the client.",
+                    "You have been disconnected from the server. Please upgrade your client, then reload this world."
+                },
+                ConnectStatus.ClientNewer => new[]
+                {
+                    "The multiworld slot you connected to requires an older version of the client.",
+                    $"Look on the releases page for the latest client compatible with APWorld version {(desiredAPversion is null ? "0.6.61, then if that fails to connect, 0.6.62." : $"{desiredAPversion[0]}.{desiredAPversion[1]}.{desiredAPversion[2]}.")}",
+                    "You have been disconnected from the server. Please downpatch your client, then reload this world."
+                },
+            };
+        }
 
         public bool SendCommand(string command)
         {
