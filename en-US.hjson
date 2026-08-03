@@ -46,8 +46,8 @@ Mods: {
 				}
 
 				forceOffNPC: {
-					Label: Force NPC Randomization Off
-					Tooltip: Force this mod to use vanilla behavior for NPC spawning. If your slot has NPC Randomization enabled, leave this setting off.
+					Label: Force NPC Ghosting Off
+					Tooltip: Force this mod to use vanilla behavior for NPCs. If your slot has NPC Randomization enabled, leave this setting off.
 				}
 
 				DisplayName: Config

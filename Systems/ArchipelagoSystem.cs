@@ -747,8 +747,7 @@ namespace SeldomDespArchipelago.Systems
                     msg.Add("Calamity Archipelago detected. If you beat a Calamity boss and it doesn't give you a check, restart your game and beat it again. It is a rare, unsolved bug.");
                 if (ModContent.GetInstance<Config.Config>().forceOffNPC)
                 {
-                    msg.Add("[c/FF5757:NOTICE:] You have forced off NPC Randomization.");
-                    msg.Add("Please verify that your slot has NPC Randomization disabled, or you may run into unexpected errors.");
+                    msg.Add("[c/FF5757:NOTICE:] You have forced off NPC Ghosting. Please verify that your slot has NPC Randomization disabled.");
                 }
                 return msg.ToArray();
                     
