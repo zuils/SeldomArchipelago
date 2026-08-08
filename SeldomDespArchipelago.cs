@@ -51,7 +51,7 @@ namespace SeldomDespArchipelago
             }
         }
 
-        readonly Version calVersion = new Version(2, 2, 1);
+        readonly Version calVersion = new Version(2, 2, 2);
 
         public static MethodInfo leviathanRealOnKill = null;
         public override void Load()
