@@ -237,8 +237,9 @@ namespace SeldomDespArchipelago.Systems
 
             session.calamity = (long)success.SlotData["calamity"] == 1;
 
+            bool randomizedNPCs = (long)success.SlotData["npc_rando"] == 1;
             string[] randomizedNPCnames = ((JArray)success.SlotData["randomize_npcs"]).ToObject<string[]>();
-            if (randomizedNPCnames.Length > 0)
+            if (randomizedNPCs)
             {
                 world.randomizedNPCs = (from name in randomizedNPCnames select npcNameToID[name]).ToImmutableHashSet();
                 string[] allNPCnames = npcNameToID.Keys.ToArray();
@@ -842,6 +843,7 @@ namespace SeldomDespArchipelago.Systems
 
                 info.Add($"You've collected {world.collectedItems} items");
                 info.Add($"NPC randomization is {(world.NPCRandoActive() ? "en" : "dis")}abled");
+                info.Add($"NPCs randomized: [{(world.randomizedNPCs is not null ? string.Join(", ", from npc in world.randomizedNPCs select npcIDtoName[npc]) : "None")}]");
                 info.Add($"Received NPC IDs: [{string.Join(", ", from npc in world.receivedNPCs select npcIDtoName[npc])}]");
             }
 
