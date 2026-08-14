@@ -31,7 +31,7 @@ using Terraria.ModLoader;
 namespace SeldomDespArchipelago
 {
     // TODO Use a data-oriented approach to get rid of all this repetition
-    
+
     public class SeldomArchipelago : Mod
     {
         // We reuse some parts of Terraria's code for multiple purposes in this mod. For example,
@@ -109,7 +109,7 @@ namespace SeldomDespArchipelago
                             count++;
                         }
                     }
-                      return count;
+                    return count;
                 });
                 cursor.EmitStloc(40);  // NPC Count
 
@@ -118,6 +118,7 @@ namespace SeldomDespArchipelago
                 cursor.EmitPop();
                 cursor.EmitDelegate(() =>
                 {
+                    return OldManSpawnBlocked() || NPC.AnyNPCs(NPCID.OldMan);
                     return OldManSpawnBlocked() || NPC.AnyNPCs(NPCID.OldMan);
                 });
 
@@ -176,7 +177,7 @@ namespace SeldomDespArchipelago
                             NPCID.Steampunker,
                             NPCID.Cyborg
                         ];
-                         if (princessNPCs.IsSubsetOf(existingTownTypes))
+                        if (princessNPCs.IsSubsetOf(existingTownTypes))
                         {
                             Main.townNPCCanSpawn[NPCID.Princess] = true;
                         }
@@ -191,7 +192,7 @@ namespace SeldomDespArchipelago
                                 validGhostTypes.Add(type);
                             Main.townNPCCanSpawn[type] = archipelagoSystem.world.receivedNPCs.Contains(type);
                         }
-                            
+
                         // Enqueue Ghosts
                         if (archipelagoSystem.session is not null)
                             foreach (int type in validGhostTypes)
@@ -230,7 +231,8 @@ namespace SeldomDespArchipelago
                         Main.townNPCCanSpawn[NPCID.BlueSlime] = true;
                         WorldGen.prioritizedTownNPCType = NPCID.BlueSlime;
                         return;
-                    };
+                    }
+                    ;
                 });
                 cursor.EmitRet();
             };
@@ -238,7 +240,8 @@ namespace SeldomDespArchipelago
             // Bypass AnyNPCs Blocks
             // The method we subscribe here checks multiple times whether an NPC of the type prioritizedTownNPCType exists.
             // If any of those return true, it blocks that NPC from spawning, which is a problem especially for special spawn ghosts that need to spawn while their real counterpart is alive.
-            On_WorldGen.IsThereASpawnablePrioritizedTownNPC += (On_WorldGen.orig_IsThereASpawnablePrioritizedTownNPC orig, int x, int y, ref bool canSpawn) => {
+            On_WorldGen.IsThereASpawnablePrioritizedTownNPC += (On_WorldGen.orig_IsThereASpawnablePrioritizedTownNPC orig, int x, int y, ref bool canSpawn) =>
+            {
                 int temp = WorldGen.prioritizedTownNPCType;
                 if (ArchipelagoSystem.specialSpawnGhosts.Contains(temp))
                 {
@@ -256,7 +259,7 @@ namespace SeldomDespArchipelago
                     WorldGen.prioritizedTownNPCType = temp;
                     return result;
                 }
-                
+
                 return orig(x, y, ref canSpawn);
             };
 
@@ -328,6 +331,7 @@ namespace SeldomDespArchipelago
                         else if (Main.netMode == NetmodeID.Server)
                             ChatHelper.BroadcastChatMessage(NetworkText.FromKey("Announcement.HasArrived", npc.GetFullNetName()), new Color(50, 125, 255));
                         if (archipelagoSystem.session.goals.Contains(npc.TypeName)) archipelagoSystem.QueueLocation(npc.TypeName);  // For Princess + Future Single NPC Goals W/O NPC Randomization
+                        if (archipelagoSystem.session.goals.Contains(npc.TypeName)) archipelagoSystem.QueueLocation(npc.TypeName);  // For Princess + Future Single NPC Goals W/O NPC Randomization
                         return 1;
                     }
                 });
@@ -364,7 +368,7 @@ namespace SeldomDespArchipelago
 
             On_WorldGen.ScoreRoom_IsThisRoomOccupiedBySomeone += (On_WorldGen.orig_ScoreRoom_IsThisRoomOccupiedBySomeone orig, int ignoreNPC, int npcTypeAsking) =>
             {
-                 GhostNPC[] existingGhosts = [.. (from npc in Main.npc where npc.active && npc.ModNPC is GhostNPC select npc.ModNPC as GhostNPC)];
+                GhostNPC[] existingGhosts = [.. (from npc in Main.npc where npc.active && npc.ModNPC is GhostNPC select npc.ModNPC as GhostNPC)];
                 foreach (var ghost in existingGhosts)
                 {
                     for (int i = 0; i < WorldGen.numRoomTiles; i++)
@@ -391,6 +395,7 @@ namespace SeldomDespArchipelago
 
                 // Bound NPCs
                 // Specifically, this stops the existence of town NPCs from preventing their bound counterparts.
+                // Specifically, this stops the existence of town NPCs from preventing their bound counterparts.
                 void SkipInstruction(string varName)
                 {
                     var label = il.DefineLabel();
@@ -414,8 +419,10 @@ namespace SeldomDespArchipelago
                 cursor.Index++;
                 cursor.EmitPop();
                 cursor.EmitDelegate(OldManSpawnBlocked);
+                cursor.EmitDelegate(OldManSpawnBlocked);
             };
 
+            // Add Checks To Bound NPCs + Enable Saved Bools For Vanilla
             // Add Checks To Bound NPCs + Enable Saved Bools For Vanilla
 
             Terraria.IL_NPC.AI_000_TransformBoundNPC += il =>
@@ -426,7 +433,7 @@ namespace SeldomDespArchipelago
                 cursor.EmitLdarg(2);
                 cursor.EmitDelegate((int npcType) =>
                 {
-                   switch (npcType)
+                    switch (npcType)
                     {
                         case NPCID.Angler: NPC.savedAngler = true; break;
                         case NPCID.Golfer: NPC.savedGolfer = true; break;
@@ -436,7 +443,7 @@ namespace SeldomDespArchipelago
                         case NPCID.Mechanic: NPC.savedMech = true; break;
                         case NPCID.Wizard: NPC.savedWizard = true; break;
                         default: throw new Exception($"NPC type {npcType} unaccounted for in TransformBoundNPC");
-                    } 
+                    }
                 });
 
                 cursor.EmitDelegate(() =>
@@ -461,10 +468,18 @@ namespace SeldomDespArchipelago
                         case NPCID.Mechanic: boundNPCtype = NPCID.BoundMechanic; locName = "Mechanic"; break;
                         case NPCID.Wizard: boundNPCtype = NPCID.BoundWizard; locName = "Wizard"; break;
                         default: throw new Exception($"NPC type {npcType} unaccounted for in TransformBoundNPC. Also, {npcType} somehow changed value mid-exec. Dial 911 as fast as you can");
+                        case NPCID.Angler: boundNPCtype = NPCID.SleepingAngler; locName = "Angler"; break;
+                        case NPCID.Golfer: boundNPCtype = NPCID.GolferRescue; locName = "Golfer"; break;
+                        case NPCID.DD2Bartender: boundNPCtype = NPCID.BartenderUnconscious; locName = "Tavernkeep"; break;
+                        case NPCID.Stylist: boundNPCtype = NPCID.WebbedStylist; locName = "Stylist"; break;
+                        case NPCID.GoblinTinkerer: boundNPCtype = NPCID.BoundGoblin; locName = "Goblin Tinkerer"; break;
+                        case NPCID.Mechanic: boundNPCtype = NPCID.BoundMechanic; locName = "Mechanic"; break;
+                        case NPCID.Wizard: boundNPCtype = NPCID.BoundWizard; locName = "Wizard"; break;
+                        default: throw new Exception($"NPC type {npcType} unaccounted for in TransformBoundNPC. Also, {npcType} somehow changed value mid-exec. Dial 911 as fast as you can");
                     }
                     if (!archipelagoSystem.world.randomizedNPCs.Contains(npcType)) return npcType;
                     archipelagoSystem.QueueLocationClient(locName);
-                    if (archipelagoSystem.world.npcLocTypeToNpcItemType is not null && archipelagoSystem.world.npcLocTypeToNpcItemType.TryGetValue(npcType, out int newNpcType) && !NPC.AnyNPCs(newNpcType)) 
+                    if (archipelagoSystem.world.npcLocTypeToNpcItemType is not null && archipelagoSystem.world.npcLocTypeToNpcItemType.TryGetValue(npcType, out int newNpcType) && !NPC.AnyNPCs(newNpcType))
                         return newNpcType;
                     NPC npc = Main.npc[NPC.FindFirstNPC(boundNPCtype)];
                     if (Main.netMode == NetmodeID.MultiplayerClient)
@@ -524,7 +539,7 @@ namespace SeldomDespArchipelago
                 cursor.EmitBge(label);
                 cursor.EmitDelegate<Func<NPC>>(() => Main.npc[NPC.FindFirstNPC(NPCID.DemonTaxCollector)]);
             };
-            
+
             // Correct Skeletron-spawning Behavior
             // If the Old Man and the Clothier exist, this method cannot differentiate whether it was summoned via Old Man or voodoo doll.
             IL_NPC.SpawnSkeletron += il =>
@@ -537,7 +552,7 @@ namespace SeldomDespArchipelago
                 cursor.EmitDelegate((IEntitySource _, int x, int y, int _, int _, float _, float _, float _, float _, int _, int onWho) =>
                 {
                     void Broadcast(string msg) => ChatHelper.BroadcastChatMessage(NetworkText.FromLiteral(msg), Color.White);
-                    
+
                     int oldManIndex = -1;
                     int clothierIndex = -1;
                     for (int i = 0; i < Main.npc.Length; i++)
@@ -669,7 +684,8 @@ namespace SeldomDespArchipelago
                     // Crimes
                     cursor.EmitDelegate<Action>(() => Temp = (bool)field.GetValue(null));
                     cursor.Index++;
-                    cursor.EmitDelegate(() => {
+                    cursor.EmitDelegate(() =>
+                    {
                         field.SetValue(null, Temp);
                         Temp = false;
                     });
@@ -680,7 +696,8 @@ namespace SeldomDespArchipelago
                 {
                     cursor.EmitDelegate<Action>(() => Temp = NPC.downedMechBossAny);
                     cursor.Index++;
-                    cursor.EmitDelegate<Action>(() => {
+                    cursor.EmitDelegate<Action>(() =>
+                    {
                         NPC.downedMechBossAny = Temp;
                         Temp = false;
                     });
@@ -694,7 +711,8 @@ namespace SeldomDespArchipelago
                     Main.hardMode = true;
                 });
                 cursor.Index++;
-                cursor.EmitDelegate<Action>(() => {
+                cursor.EmitDelegate<Action>(() =>
+                {
                     Main.hardMode = Temp;
                     Temp = false;
                 });

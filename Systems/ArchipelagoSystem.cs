@@ -476,7 +476,8 @@ namespace SeldomDespArchipelago.Systems
                 });
                 world.suspendedFlags.Add(item);
                 return;
-            } else
+            }
+            else
             {
                 world.suspendedFlags.Remove(item);
             }
@@ -654,7 +655,7 @@ namespace SeldomDespArchipelago.Systems
                         if (!calSuccess) Chat($"Received unknown item: {item}");
                         break;
                     }
-                    
+
             }
         }
         public override void PostUpdateWorld()
@@ -739,8 +740,9 @@ namespace SeldomDespArchipelago.Systems
             desiredAPversion = null;
             Reset();
         }
-        
-        public string[] Status() {
+
+        public string[] Status()
+        {
             if (status == ConnectStatus.Valid)
             {
                 List<string> msg = ["Archipelago is active!"];
@@ -751,7 +753,7 @@ namespace SeldomDespArchipelago.Systems
                     msg.Add("[c/FF5757:NOTICE:] You have forced off NPC Ghosting. Please verify that your slot has NPC Randomization disabled.");
                 }
                 return msg.ToArray();
-                    
+
             }
             return status switch
             {
