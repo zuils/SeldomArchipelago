@@ -119,7 +119,6 @@ namespace SeldomDespArchipelago
                 cursor.EmitDelegate(() =>
                 {
                     return OldManSpawnBlocked() || NPC.AnyNPCs(NPCID.OldMan);
-                    return OldManSpawnBlocked() || NPC.AnyNPCs(NPCID.OldMan);
                 });
 
                 // Town NPCs
@@ -331,7 +330,6 @@ namespace SeldomDespArchipelago
                         else if (Main.netMode == NetmodeID.Server)
                             ChatHelper.BroadcastChatMessage(NetworkText.FromKey("Announcement.HasArrived", npc.GetFullNetName()), new Color(50, 125, 255));
                         if (archipelagoSystem.session.goals.Contains(npc.TypeName)) archipelagoSystem.QueueLocation(npc.TypeName);  // For Princess + Future Single NPC Goals W/O NPC Randomization
-                        if (archipelagoSystem.session.goals.Contains(npc.TypeName)) archipelagoSystem.QueueLocation(npc.TypeName);  // For Princess + Future Single NPC Goals W/O NPC Randomization
                         return 1;
                     }
                 });
@@ -395,7 +393,6 @@ namespace SeldomDespArchipelago
 
                 // Bound NPCs
                 // Specifically, this stops the existence of town NPCs from preventing their bound counterparts.
-                // Specifically, this stops the existence of town NPCs from preventing their bound counterparts.
                 void SkipInstruction(string varName)
                 {
                     var label = il.DefineLabel();
@@ -419,10 +416,8 @@ namespace SeldomDespArchipelago
                 cursor.Index++;
                 cursor.EmitPop();
                 cursor.EmitDelegate(OldManSpawnBlocked);
-                cursor.EmitDelegate(OldManSpawnBlocked);
             };
 
-            // Add Checks To Bound NPCs + Enable Saved Bools For Vanilla
             // Add Checks To Bound NPCs + Enable Saved Bools For Vanilla
 
             Terraria.IL_NPC.AI_000_TransformBoundNPC += il =>
@@ -460,14 +455,6 @@ namespace SeldomDespArchipelago
                     string locName;
                     switch (npcType)
                     {
-                        case NPCID.Angler: boundNPCtype = NPCID.SleepingAngler; locName = "Angler"; break;
-                        case NPCID.Golfer: boundNPCtype = NPCID.GolferRescue; locName = "Golfer"; break;
-                        case NPCID.DD2Bartender: boundNPCtype = NPCID.BartenderUnconscious; locName = "Tavernkeep"; break;
-                        case NPCID.Stylist: boundNPCtype = NPCID.WebbedStylist; locName = "Stylist"; break;
-                        case NPCID.GoblinTinkerer: boundNPCtype = NPCID.BoundGoblin; locName = "Goblin Tinkerer"; break;
-                        case NPCID.Mechanic: boundNPCtype = NPCID.BoundMechanic; locName = "Mechanic"; break;
-                        case NPCID.Wizard: boundNPCtype = NPCID.BoundWizard; locName = "Wizard"; break;
-                        default: throw new Exception($"NPC type {npcType} unaccounted for in TransformBoundNPC. Also, {npcType} somehow changed value mid-exec. Dial 911 as fast as you can");
                         case NPCID.Angler: boundNPCtype = NPCID.SleepingAngler; locName = "Angler"; break;
                         case NPCID.Golfer: boundNPCtype = NPCID.GolferRescue; locName = "Golfer"; break;
                         case NPCID.DD2Bartender: boundNPCtype = NPCID.BartenderUnconscious; locName = "Tavernkeep"; break;
