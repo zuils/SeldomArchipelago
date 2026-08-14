@@ -1,13 +1,14 @@
-using SeldomArchipelago.Systems;
+using SeldomDespArchipelago.Systems;
 using Terraria.ModLoader;
 
-namespace SeldomArchipelago.Command
+namespace SeldomDespArchipelago.Command
 {
     public class ApCommand : ModCommand
     {
         public override string Command => "ap";
         public override CommandType Type => CommandType.World;
         public override string Description => "Sends a command to Archipelago";
+        public override bool IsCaseSensitive => true;
 
         public override void Action(CommandCaller caller, string input, string[] args)
         {

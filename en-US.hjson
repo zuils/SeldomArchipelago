@@ -1,0 +1,107 @@
+Mods: {
+	SeldomDespArchipelago: {
+		Configs: {
+			Config: {
+				manualFlags: {
+					Label: Receive Flag As Inventory Item
+					Tooltip: Flag items entered (such as Hardmode, Post-Plantera, etc.) will not activate automatically when received, and instead spawn an inventory item that can manually activate said flag.
+				}
+
+				Headers: {
+					Miscellaneous: Miscellaneous Header
+					Chat: Chat Header
+					Advanced: Advanced Header
+					Common: Common Header
+					Debug: Debug Header
+				}
+
+				chatSettings: {
+					Tooltip: ""
+					Label: Adjust Filter
+				}
+
+				colorText: {
+					Tooltip: ""
+					Label: Color AP Text
+				}
+
+				password: {
+					Tooltip: ""
+					Label: Password
+				}
+
+				address: {
+					Tooltip: ""
+					Label: Server Address
+				}
+
+				port: {
+					Tooltip: ""
+					Label: Port
+				}
+
+				name: {
+					Tooltip: ""
+					Label: Name
+				}
+
+				forceOffNPC: {
+					Label: Force NPC Ghosting Off
+					Tooltip: Force this mod to use vanilla behavior for NPCs. If your slot has NPC Randomization enabled, leave this setting off.
+				}
+
+				DisplayName: Config
+			}
+
+			ChatSetting: {
+				Tooltip: ""
+
+				All: {
+					Tooltip: See all item/location messages in the multiworld normally
+					Label: All
+				}
+
+				Grey: {
+					Tooltip: Grey out item/loaction messages unrelated to you
+					Label: Grey
+				}
+
+				Filter: {
+					Tooltip: Filter out item/location messages unrelated to you
+					Label: Filter
+				}
+
+				Disable: {
+					Tooltip: Hide all AP messages
+					Label: Disable
+				}
+			}
+		}
+
+		NPCs: {
+			GhostNPC: {
+				TownNPCMood: {
+					Princess_LovesNPC: I like {NPCName}.
+					LikeNPC_Princess: I like {NPCName}.
+					HateCrowded: I hate how crowded I am.
+					DislikeCrowded: I dislike how crowded I am.
+					LoveSpace: I love having so much space.
+					FarFromHome: I am too far from home.
+					NoHome: I hate not having a home.
+					Content: I am content.
+				}
+
+				DisplayName: Ghost N P C
+			}
+
+			CollectionNPC.DisplayName: Collection N P C
+		}
+
+		Items: {
+			FlagStarter: {
+				Tooltip: ""
+				DisplayName: Flag Starter
+			}
+		}
+	}
+}

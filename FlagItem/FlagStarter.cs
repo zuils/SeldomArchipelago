@@ -1,4 +1,4 @@
-﻿using SeldomArchipelago.Systems;
+﻿using SeldomDespArchipelago.Systems;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,9 +13,9 @@ using Terraria.ID;
 using Terraria.Localization;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
-using static SeldomArchipelago.Systems.ArchipelagoSystem;
+using static SeldomDespArchipelago.Systems.ArchipelagoSystem;
 
-namespace SeldomArchipelago.FlagItem
+namespace SeldomDespArchipelago.FlagItem
 {
     public class FlagStarter : ModItem
     {
@@ -58,15 +58,12 @@ namespace SeldomArchipelago.FlagItem
                 tooltips.Add(new TooltipLine(Mod, "Tooltip1", "In this state, it's sad and pointless. Please discard."));
             }
         }
-        public override void SetStaticDefaults()
-        {
-            Item.ResearchUnlockCount = 999;
-        }
         public override void SetDefaults()
         {
             Item.CloneDefaults(ItemID.DemonHeart);
         }
         public override bool CanStack(Item source) => false;
+        public override bool CanResearch() => false;
         public override bool? UseItem(Player player)
         {
             var system = ModContent.GetInstance<ArchipelagoSystem>();

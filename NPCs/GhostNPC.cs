@@ -24,9 +24,9 @@ using System.Collections.Immutable;
 using Newtonsoft.Json.Linq;
 using System.IO;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using SeldomArchipelago.Systems;
+using SeldomDespArchipelago.Systems;
 
-namespace SeldomArchipelago.NPCs
+namespace SeldomDespArchipelago.NPCs
 {
     [AutoloadHead]
     public class GhostNPC : ModNPC
@@ -135,7 +135,7 @@ namespace SeldomArchipelago.NPCs
                 return;
             }
             GhostNPC ghost = Main.npc[index].ModNPC as GhostNPC;
-            if (ghost.transformType > 0)
+            if (ghost.transformType > 0 && !NPC.AnyNPCs(ghost.transformType))
             {
                 Main.npc[index].Transform(ghost.transformType);
                 if (ghost.transformType == NPCID.Truffle) AchievementsHelper.NotifyProgressionEvent(18);
@@ -146,6 +146,11 @@ namespace SeldomArchipelago.NPCs
                 NPC.FairyEffects(ghost.NPC.Center, Main.rand.Next(3));
             }
             ModContent.GetInstance<ArchipelagoSystem>().QueueLocation(ArchipelagoSystem.npcIDtoName[ghost.ghostType]);
+        }
+        public override bool ModifyDeathMessage(ref NetworkText customText, ref Color color)
+        {
+            customText = NetworkText.FromLiteral(GetChat());
+            return false;
         }
         public override void SaveData(TagCompound tag)
         {

@@ -1,64 +1,113 @@
-# Archipelago Terraria Client
+# Usage
+To play using this branch, you must generate and host a game **using the packaged `.apworld` found on the releases page**, and subscribe to (or manually install) the corresponding tModLoader mods.
+**The workshop mod will NOT work with a YAML generated from the website.**
+## Generating a Game
+This process is identical to that of most custom games:
+1. Download the .apworld and place it in the `custom_worlds` directory of your Archipelago installation.
+2. Launch `ArchipelagoLauncher.exe` and click `Generate Template YAMLs` in the menu.
+- This should open the `Players/Templates` folder that should contain a new `Terraria_Desp_Beta.yaml` file for configuration.
+3. Configure this file, save a copy, and place it in the `Players` directory, along with whichever `.yaml` files you want to generate with.
+4. Navigate back to `ArchipelagoLauncher.exe` and click `Generate`.
+5. Find the resulting `.zip` file in the `output` directory. From there, you can host the game easily on `archipelago.gg`.
+## Installing the Mod
+The simplest way to install the mod is to subscribe to it [here](https://steamcommunity.com/sharedfiles/filedetails/?id=3676602360).
+Alternatively, you can download the `SeldomDespArchipelago.tmod` file in the corresponding release and place that in C:/Users/**YourPCName**/Documents/My Games/Terraria/tModLoader/Mods.
+## Connecting to a Game
+1. Launch tModLoader, navigate to Workshop > Manage Mods, and check to see if Archipelago Randomizer (Desp's Beta) is properly installed.
+2. Configure the server address, port, slot/player name, password as necessary, and the rest to your liking.
+3. Launch a world (creating a new one is recommended). If the chat displays "Archipelago is Active," you are connected successfully!
 
-Not to be confused with prior implementations:
+# About This Fork
 
-- [TerrariaFlagRandomizer](https://github.com/Cronus-waters/TerrariaFlagRandomizer)
-- [TerrariaArchipelago](https://github.com/Whoneedspacee/TerrariaArchipelago)
+This is a public beta for some features that may one day be included in Terraria's core Archipelago implementation.
 
-Archipelago is a multiworld randomizer, which is a sort of multi-game mod that shuffles things
-between games. So, for example, when you kill Skeletron in your Terraria game, your friend might get
-Mothwing Cloak in their Hollow Knight game. But you can't enter the Dungeon until your friend picks
-up the item at Vengeful Spirit's location in their game. Archipelago has support for a lot of games.
-Learn more on its [website](https://archipelago.gg/).
+Built off of the [official Archipelago branch](https://github.com/Seldom-SE/archipelago_terraria_client), developed and managed by Seldom.
+If you're unclear about what Archipelago is, check out that page's README.
 
-This implementation uses boss kills and event clears as checks. The items are the permanent changes
-to the world that bosses and events reward in vanilla. Things like "Post-Plantera" and "Hardmode".
-Bosses still drop their original loot, though. Optionally, you may also include achievement checks
-and item rewards.
+## Currently Implemented
+For in-depth information on what each feature does, scroll down to the **Feature Explanation** section.
+### Major Features
+- Compatibility with Calamity 2.2.1 (Hog Wild update)
+- NPC randomization (Vanilla Town NPCs only, no pets, **GFB compatibility untested!**)
+- Wall of Flesh + Princess goals
+  - Additional configuration for randomizing checks after the set goal
+- Additional achievement classifications
+- Shimmer logic toggle
+- Health logic
+- Advanced configuration for manual flag activation (building off of Hardmode Starter)
+- Advanced configuration for AP chat
+### Minor Features
+- Fixed early activation of "Begone, Evil!"
+- Mute achievements on world load
 
-Because this mod adds an extra layer of multiplayer, there are many ways to use it:
-- Randomize one singleplayer Terraria world
-- Randomize one multiplayer Terraria world
-- Randomize multiple singleplayer or multiplayer Terraria worlds between each other
-- Randomize Terraria with entirely separate games
+# Feature Explanation
+## NPC Randomization
+NPC Randomization is a setting you can enable in your `.yaml` prior to generating a multiworld.
+If enabled: 
+- The ability for each vanilla town NPC to move in becomes an item.
+- Finding and talking to a rescuable NPC (Sleeping Angler, Bound Goblin, etc.) is a location.
+- Meeting the conditions for an NPC to move in (barring receiving them as an AP item) and speaking to the resultant Ghost NPC is a location.
+As of now, these only apply to vanilla Town NPCs that are not pets or wandering merchants.
+### Notes
+For a ghost or rescuable NPC to spawn, you need to meet the conditions that it would normally spawn under in an Archipelago randomizer.
+For example, the Clothier ghost will move in after receiving the Post-Skeletron item, *not* after defeating Skeletron.
+The Bound Tinkerer will appear after receiving Post-Goblin Army, *not* after defeating it in-game.
 
-## Usage
+A real NPC will only move in if the corresponding item is received (you need the "Merchant" item for the Merchant to move in, etc.)
 
-### For the Terraria player
+Both the real Truffle and the ghost Truffle will only spawn in a glowing mushroom field.
+## New goals
+These are additional goals you can enable in your `.yaml` prior to generating a multiworld.
+- Wall of Flesh
+- Princess
+### Wall of Flesh
+Victory is earned once the Wall of Flesh is summoned and defeated.
+Note that this is intended for use with NPC randomization. It is strongly recommended you do not enable this goal with NPC randomization disabled, as this will result in an immediately beatable game.
+### Princess
+Victory is earned once the requirements for the Princess is met (all Vanilla town NPCs move in besides Santa Claus & Town Pets).
+This goal randomizes everything up to and including Plantera. While created with NPC Randomization in mind, it is also perfectly playable otherwise.
+## "Shuffle To" Configuration
+This option is present in your `.yaml` and allows you to shuffle checks *past* your set goal.
+For example, setting it to 'Moon Lord' will randomize all checks up to Moon Lord, even if an earlier boss is chosen for the goal.
+### Notes
+- Certain configurations may result in 'post-game' checks, or checks that are only accessible after the goal condition is reached.
+- This option can *not* be set to a boss earlier than the chosen goal. If it is, the generator will simply ignore this option.
+## Additional Achievement Classifications
+The following achievement classifications are added and can be toggled in the `.yaml`:
+- Rare: Achievements involving rare enemies/drops
+- Time: Achievements based on random time-based events
+- Crafting: Achievements dedicated to crafting complex items
+### Notes
+Some achievements may fall into multiple categories.
+- For example, 'The Great Slime Mitosis' will only be shuffled if both 'Rare' and 'Time' are enabled, as it requires both the spawn of a rare NPC (mystic frog for mystic slime) and the occurance of a random event (natural party for cool slime).
 
-Subscribe to the mod at
-[its Steam page](https://steamcommunity.com/sharedfiles/filedetails/?id=2922217554). In Workshop >
-Manage Mods, edit Archipelago Randomizer (Seldom's Implementation)'s settings. If you're using
-archipelago.gg to host, leave the server address as "archipelago.gg". If you're hosting, the address
-will probably be "localhost" and the server should tell you the port. If not, whoever's hosting
-should know.
+Additionally, the logic for some achievements may change depending on which categories are enabled.
+- For example, 'Kill the Sun' requires access to a solar tablet *unless* 'Time' is enabled, in which case it only requires the conditions for a naturally spawning eclipse to be met.
+## Shimmer Logic Toggle
+Sequence breaks involving shimmer transmutations can now be disabled or enabled in the `.yaml`.
+If disabled, all transmutations or decrafting using Shimmer are disregarded in logic.
+### Notes
+This option only covers optional transmutations via Shimmer. The player may still be expected to utilize the Shimmer when mandatory, i.e. transmuting a sparkle slime balloon into the diva slime.
+## Health Logic
+The randomizer considers a maximum health requirement for each boss, requiring access to prior health upgrades depending on their intended stage of progression in vanilla.
+### Notes
+- This option is intended for use with Calamity, and guarantees that early bosses like Leviathan & Anahita and Primordial Wyrm will not have to be fought with extremely inadequate gear.
+  - It is ON by default.
+- All amounts are based off [the walkthrough from the official Calamity wiki](https://calamitymod.wiki.gg/wiki/Guide:Mod_progression).
+- Currently, each boss's health requirement cannot be fine-tuned. However, there is an additional handicap setting that allows you to decrease how many different types of max HP upgrades are needed for each boss.
+  - For example, with Calamity enabled, setting the handicap to -2 would remove both the Sanguine Tangerine and Life Fruit requirement for Plantera, while Yharon would only require Life Crystals, Fruits, and one Calamity health upgrade (chosen between Sanguine Tangerine, Miracle Fruit, or Tainted Cloudberry)
+## Advanced Manual Flag Configuration
+Accessible through the client-side mod's config.
+This expands upon the "Hardmode Starter" option in stable by allowing all vanilla & Calamity flags to be set for manual activation.
+Setting a flag for manual activation means that once you receive the item, you gain the ability to trigger the corresponding item instead of it activating manually.
+### Notes
+**This option allows you to opt out of receiving flags like Hardmode too early and making early-game difficult. Please make sure to configure it before entering a world.**
+Some good examples of flags to set as manual are Hardmode, Post-Plantera (for the dungeon changes especially) and Post-Moon Lord (which, in Calamity, adds incredibly tough enemies to the Hallow and Underworld).
+## Advanced AP Chat Configuration
+Accessible through the client-side mod's config.
+Provides the ability to toggle the color and visibility of AP messages unrelated to your world.
+# License
 
-You may use as many worlds as you like. You may open your world in multiplayer for others to join.
-Use `/ap` to use the Archipelago console, and `/apflags` to check what boss and event flags you
-have.
-
-### For the host, if you have any Terraria players
-
-You can host easily on [archipelago.gg](https://archipelago.gg/).
-
-For shorter runs, if this mod has upcoming content, and if it's up, you can use
-[Archipelago's beta site](http://archipelago.gg:24242/).
-
-Or, if you know how to use them, you can run locally with Terraria's `.apworld`. Check the
-`#terraria` channel on Archipelago's Discord for the latest `.apworld` if there is one.
-
-Alternatively, if you have the technical knowledge, you can run from source. Run
-[Archipelago](https://github.com/ArchipelagoMW/Archipelago) (or a branch on
-[my fork](https://github.com/Seldom-SE/Archipelago)) from source (see this
-[guide](https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/running%20from%20source.md)).
-You will need to run `Generate.py` and `MultiServer.py`. To create the `yaml` files, you can run
-`WebHost.py`. This will run a website, so watch the console for an address including `localhost`,
-and go there on your browser. Terraria players have to setup their `yaml` files from this website,
-but other games should work fine from [the official site](https://archipelago.gg/). You may instead
-host the game with `WebHost.py`, if you prefer.
-
-## License
-
-Archipelago Terraria Client is licensed under MIT. The Archipelago logo, by Krista Corkos and
-Chistopher Wilson, is licensed under CC BY-NC 4.0. The icon and collection button image used by this
+Archipelago Terraria Client is licensed under MIT. The purple and white Archipelago logo was created by this repo's owner (Desperandos). The icon and collection button image used by this
 mod are modified versions of the Archipelago logo, made to fit Terraria's style.
+

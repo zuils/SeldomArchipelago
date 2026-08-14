@@ -1,8 +1,8 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using SeldomArchipelago.NPCs;
-using SeldomArchipelago.Players;
-using SeldomArchipelago.Systems;
+using SeldomDespArchipelago.NPCs;
+using SeldomDespArchipelago.Players;
+using SeldomDespArchipelago.Systems;
 using System.Collections.Generic;
 using System.Reflection;
 using Terraria;
@@ -13,7 +13,7 @@ using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.UI;
 
-namespace SeldomArchipelago.UI
+namespace SeldomDespArchipelago.UI
 {
     class CollectionButton : UIElement
     {
@@ -36,7 +36,7 @@ namespace SeldomArchipelago.UI
         {
             if (Clickable)
             {
-                spriteBatch.Draw((Texture2D)ModContent.Request<Texture2D>(hovered ? "SeldomArchipelago/UI/CollectionButtonHover" : "SeldomArchipelago/UI/CollectionButton"), new Vector2(left, top), new Color(255, 255, 255));
+                spriteBatch.Draw((Texture2D)ModContent.GetInstance<SeldomArchipelago>().Assets.Request<Texture2D>(hovered ? "UI/CollectionButtonHover" : "UI/CollectionButton"), new Vector2(left, top), new Color(255, 255, 255));
                 if (hovered)
                 {
                     Main.LocalPlayer.mouseInterface = true;

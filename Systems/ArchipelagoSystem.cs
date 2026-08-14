@@ -6,7 +6,7 @@ using Archipelago.MultiClient.Net.Packets;
 using Microsoft.Xna.Framework;
 using Color = Microsoft.Xna.Framework.Color;
 using Newtonsoft.Json.Linq;
-using SeldomArchipelago.Players;
+using SeldomDespArchipelago.Players;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -23,9 +23,9 @@ using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
 using Terraria.Social;
 using Terraria.WorldBuilding;
-using SeldomArchipelago.FlagItem;
+using SeldomDespArchipelago.FlagItem;
 using System.Linq;
-using SeldomArchipelago.NPCs;
+using SeldomDespArchipelago.NPCs;
 using System.Formats.Tar;
 using Archipelago.MultiClient.Net.MessageLog.Messages;
 using System.Diagnostics.Metrics;
@@ -33,12 +33,15 @@ using Terraria.GameContent.UI.States;
 using Archipelago.MultiClient.Net.MessageLog.Parts;
 using Terraria.ModLoader.Config;
 using System.Text;
+using Archipelago.MultiClient.Net.Helpers;
+using System.Data;
 
-namespace SeldomArchipelago.Systems
+namespace SeldomDespArchipelago.Systems
 {
     class ArchipelagoSystem : ModSystem
     {
-        Version version = new Version(0, 6, 61);
+        public readonly Version APversion = new Version(0, 6, 100);
+        public const string APWorldName = "Terraria_Desp_Beta";
         // Data that's reset between worlds
         public class WorldState : TagSerializable
         {
@@ -76,7 +79,7 @@ namespace SeldomArchipelago.Systems
             // If this is the case, we can transform the ghost/bound npc into the item npc as soon as it is activated, for both expediency and cuteness.
             public Dictionary<int, int> npcLocTypeToNpcItemType = null;
 
-            public bool NPCRandoActive() => randomizedNPCs is not null;
+            public bool NPCRandoActive() => !ModContent.GetInstance<Config.Config>().forceOffNPC && randomizedNPCs is not null;
             public TagCompound SerializeData()
             {
                 var tag = new TagCompound
@@ -134,7 +137,6 @@ namespace SeldomArchipelago.Systems
             // instead of collecting them. This is needed bc AP just gives us a list of items that
             // we have, and it's up to us to keep track of which ones we've already applied.
             public int currentItem;
-            public HashSet<string> collectedLocations = new HashSet<string>();
             public List<string> goals = new List<string>();
 
             public bool victory;
@@ -150,8 +152,15 @@ namespace SeldomArchipelago.Systems
             Valid,
             SlotOrSeedMismatch,
             CalamityNeeded,
-            NoCalamityNeeded
+            NoCalamityNeeded,
+            WrongSlot,
+            WrongPass,
+            WrongGame,
+            ClientOlder,
+            ClientNewer,
         }
+        // Keeps track of the last APworld version the game tried to connect to for player convenience
+        public int[] desiredAPversion = null;
 
         // Contains ghosts that require special housing conditions to spawn.
         public readonly static ImmutableHashSet<int> specialSpawnGhosts =
@@ -174,9 +183,18 @@ namespace SeldomArchipelago.Systems
             {
                 newSession = ArchipelagoSessionFactory.CreateSession(config.address, config.port);
 
-                result = newSession.TryConnectAndLogin("Terraria", config.name, ItemsHandlingFlags.AllItems, version, null, null, config.password == "" ? null : config.password);
-                if (result is LoginFailure)
+                result = newSession.TryConnectAndLogin(APWorldName, config.name, ItemsHandlingFlags.AllItems, APversion, null, null, config.password == "" ? null : config.password);
+                if (result is LoginFailure failure)
                 {
+                    var error = failure.ErrorCodes.First();  // don't think it's important to get multiple
+                    status = error switch
+                    {
+                        ConnectionRefusedError.InvalidSlot => ConnectStatus.WrongSlot,
+                        ConnectionRefusedError.InvalidGame => ConnectStatus.WrongGame,
+                        ConnectionRefusedError.IncompatibleVersion => ConnectStatus.ClientOlder,
+                        ConnectionRefusedError.InvalidPassword => ConnectStatus.WrongPass,
+                        _ => ConnectStatus.Unset,
+                    };
                     return;
                 }
             }
@@ -188,9 +206,23 @@ namespace SeldomArchipelago.Systems
             session = new();
             session.session = newSession;
 
-            session.collectedLocations = (from id in session.session.Locations.AllLocationsChecked select session.session.Locations.GetLocationNameFromId(id)).ToHashSet();
-
             var success = (LoginSuccessful)result;
+
+            bool versionSlotData = success.SlotData.TryGetValue("version", out var versionObj);
+            bool newerVersion = false;
+            if (versionSlotData)
+            {
+                desiredAPversion = ((JArray)versionObj).ToObject<int[]>();
+                newerVersion = desiredAPversion[0] != APversion.Major || desiredAPversion[1] != APversion.Minor || desiredAPversion[2] != APversion.Build;
+            }
+
+            if (!versionSlotData || newerVersion)
+            {
+                status = ConnectStatus.ClientNewer;
+                Reset();
+                return;
+            }
+
             session.goals = new List<string>(((JArray)success.SlotData["goal"]).ToObject<string[]>());
 
             session.session.MessageLog.OnMessageReceived += ApMessageToChat;
@@ -205,15 +237,16 @@ namespace SeldomArchipelago.Systems
 
             session.calamity = (long)success.SlotData["calamity"] == 1;
 
+            bool randomizedNPCs = (long)success.SlotData["npc_rando"] == 1;
             string[] randomizedNPCnames = ((JArray)success.SlotData["randomize_npcs"]).ToObject<string[]>();
-            if (randomizedNPCnames.Length > 0)
+            if (randomizedNPCs)
             {
                 world.randomizedNPCs = (from name in randomizedNPCnames select npcNameToID[name]).ToImmutableHashSet();
                 string[] allNPCnames = npcNameToID.Keys.ToArray();
                 var locIDtoNPCname = new Dictionary<long, string>();
                 foreach (string loc in allNPCnames)
                 {
-                    locIDtoNPCname[session.session.Locations.GetLocationIdFromName("Terraria", loc)] = loc;
+                    locIDtoNPCname[session.session.Locations.GetLocationIdFromName(APWorldName, loc)] = loc;
                 }
                 if (locIDtoNPCname.ContainsKey(-1))
                 {
@@ -265,7 +298,7 @@ namespace SeldomArchipelago.Systems
                 Reset();
                 return;
             }
-            bool calamityActive = ModContent.GetInstance<CalamitySystem>() is not null;
+            bool calamityActive = ModLoader.HasMod("CalamityMod");
             if (calamityActive != session.calamity)
             {
                 if (calamityActive) status = ConnectStatus.NoCalamityNeeded;
@@ -336,7 +369,6 @@ namespace SeldomArchipelago.Systems
             }
             else Chat(colorMsg());
         }
-        public bool LocationCollected(string loc) => session is null ? world.locationBacklog.Contains(loc) : session.collectedLocations.Contains(loc);
 
         public static string[] flags = { "Post-King Slime", "Post-Desert Scourge", "Post-Giant Clam", "Post-Eye of Cthulhu", "Post-Acid Rain Tier 1", "Post-Crabulon", "Post-Evil Boss", "Post-Old One's Army Tier 1", "Post-Goblin Army", "Post-Queen Bee", "Post-The Hive Mind", "Post-The Perforators", "Post-Skeletron", "Post-Deerclops", "Post-The Slime God", "Hardmode", "Post-Dreadnautilus", "Post-Hardmode Giant Clam", "Post-Pirate Invasion", "Post-Queen Slime", "Post-Aquatic Scourge", "Post-Cragmaw Mire", "Post-Acid Rain Tier 2", "Post-The Twins", "Post-Old One's Army Tier 2", "Post-Brimstone Elemental", "Post-The Destroyer", "Post-Cryogen", "Post-Skeletron Prime", "Post-Calamitas Clone", "Post-Plantera", "Post-Great Sand Shark", "Post-Leviathan and Anahita", "Post-Astrum Aureus", "Post-Golem", "Post-Old One's Army Tier 3", "Post-Martian Madness", "Post-The Plaguebringer Goliath", "Post-Duke Fishron", "Post-Mourning Wood", "Post-Pumpking", "Post-Everscream", "Post-Santa-NK1", "Post-Ice Queen", "Post-Frost Legion", "Post-Ravager", "Post-Empress of Light", "Post-Lunatic Cultist", "Post-Astrum Deus", "Post-Lunar Events", "Post-Moon Lord", "Post-Profaned Guardians", "Post-The Dragonfolly", "Post-Providence, the Profaned Goddess", "Post-Storm Weaver", "Post-Ceaseless Void", "Post-Signus, Envoy of the Devourer", "Post-Polterghast", "Post-Mauler", "Post-Nuclear Terror", "Post-The Old Duke", "Post-The Devourer of Gods", "Post-Yharon, Dragon of Rebirth", "Post-Exo Mechs", "Post-Supreme Witch, Calamitas", "Post-Primordial Wyrm", "Post-Boss Rush" };
 
@@ -393,7 +425,7 @@ namespace SeldomArchipelago.Systems
             "Post-Lunatic Cultist" => NPC.downedAncientCultist,
             "Post-Lunar Events" => NPC.downedTowerNebula,
             "Post-Moon Lord" => NPC.downedMoonlord,
-            _ => ModContent.GetInstance<CalamitySystem>()?.CheckCalamityFlag(flag) ?? false,
+            _ => ModLoader.HasMod("CalamityMod") ? CalamitySystem.CheckCalamityFlag(flag) : false,
         };
         public static Dictionary<string, int> npcNameToID = new()
             {
@@ -444,7 +476,8 @@ namespace SeldomArchipelago.Systems
                 });
                 world.suspendedFlags.Add(item);
                 return;
-            } else
+            }
+            else
             {
                 world.suspendedFlags.Remove(item);
             }
@@ -469,7 +502,7 @@ namespace SeldomArchipelago.Systems
                         if (NPC.AnyNPCs(NPCID.Spazmatism))
                         {
                             // If the player is fighting The Twins, it would mess with the `CalamityGlobalNPC.OnKill` logic, so we have a fallback
-                            if (ModLoader.HasMod("CalamityMod")) ModContent.GetInstance<CalamitySystem>().SpawnMechOres();
+                            if (ModLoader.HasMod("CalamityMod")) CalamitySystem.SpawnMechOres();
                             NPC.downedMechBoss2 = NPC.downedMechBossAny = true;
                         }
                         else BossFlag(set, NPCID.Retinazer);
@@ -494,43 +527,43 @@ namespace SeldomArchipelago.Systems
                 case "Post-Lunatic Cultist": BossFlag(ref NPC.downedAncientCultist, NPCID.CultistBoss); break;
                 case "Post-Lunar Events": NPC.downedTowerNebula = NPC.downedTowerSolar = NPC.downedTowerStardust = NPC.downedTowerVortex = true; break;
                 case "Post-Moon Lord": BossFlag(ref NPC.downedMoonlord, NPCID.MoonLordCore); break;
-                case "Post-Desert Scourge": ModContent.GetInstance<CalamitySystem>().CalamityOnKillDesertScourge(); break;
-                case "Post-Giant Clam": ModContent.GetInstance<CalamitySystem>().CalamityOnKillGiantClam(false); break;
-                case "Post-Acid Rain Tier 1": ModContent.GetInstance<CalamitySystem>().CalamityAcidRainTier1Downed(); break;
-                case "Post-Crabulon": ModContent.GetInstance<CalamitySystem>().CalamityOnKillCrabulon(); break;
-                case "Post-The Hive Mind": ModContent.GetInstance<CalamitySystem>().CalamityOnKillTheHiveMind(); break;
-                case "Post-The Perforators": ModContent.GetInstance<CalamitySystem>().CalamityOnKillThePerforators(); break;
-                case "Post-The Slime God": ModContent.GetInstance<CalamitySystem>().CalamityOnKillTheSlimeGod(); break;
-                case "Post-Dreadnautilus": ModContent.GetInstance<CalamitySystem>().CalamityDreadnautilusDowned(); break;
-                case "Post-Hardmode Giant Clam": ModContent.GetInstance<CalamitySystem>().CalamityOnKillGiantClam(true); break;
-                case "Post-Aquatic Scourge": ModContent.GetInstance<CalamitySystem>().CalamityOnKillAquaticScourge(); break;
-                case "Post-Cragmaw Mire": ModContent.GetInstance<CalamitySystem>().CalamityOnKillCragmawMire(); break;
-                case "Post-Acid Rain Tier 2": ModContent.GetInstance<CalamitySystem>().CalamityAcidRainTier2Downed(); break;
-                case "Post-Brimstone Elemental": ModContent.GetInstance<CalamitySystem>().CalamityOnKillBrimstoneElemental(); break;
-                case "Post-Cryogen": ModContent.GetInstance<CalamitySystem>().CalamityOnKillCryogen(); break;
-                case "Post-Calamitas Clone": ModContent.GetInstance<CalamitySystem>().CalamityOnKillCalamitasClone(); break;
-                case "Post-Great Sand Shark": ModContent.GetInstance<CalamitySystem>().CalamityOnKillGreatSandShark(); break;
-                case "Post-Leviathan and Anahita": ModContent.GetInstance<CalamitySystem>().CalamityOnKillLeviathanAndAnahita(); break;
-                case "Post-Astrum Aureus": ModContent.GetInstance<CalamitySystem>().CalamityOnKillAstrumAureus(); break;
-                case "Post-The Plaguebringer Goliath": ModContent.GetInstance<CalamitySystem>().CalamityOnKillThePlaguebringerGoliath(); break;
-                case "Post-Ravager": ModContent.GetInstance<CalamitySystem>().CalamityOnKillRavager(); break;
-                case "Post-Astrum Deus": ModContent.GetInstance<CalamitySystem>().CalamityOnKillAstrumDeus(); break;
-                case "Post-Profaned Guardians": ModContent.GetInstance<CalamitySystem>().CalamityOnKillProfanedGuardians(); break;
-                case "Post-The Dragonfolly": ModContent.GetInstance<CalamitySystem>().CalamityOnKillTheDragonfolly(); break;
-                case "Post-Providence, the Profaned Goddess": ModContent.GetInstance<CalamitySystem>().CalamityOnKillProvidenceTheProfanedGoddess(); break;
-                case "Post-Storm Weaver": ModContent.GetInstance<CalamitySystem>().CalamityOnKillStormWeaver(); break;
-                case "Post-Ceaseless Void": ModContent.GetInstance<CalamitySystem>().CalamityOnKillCeaselessVoid(); break;
-                case "Post-Signus, Envoy of the Devourer": ModContent.GetInstance<CalamitySystem>().CalamityOnKillSignusEnvoyOfTheDevourer(); break;
-                case "Post-Polterghast": ModContent.GetInstance<CalamitySystem>().CalamityOnKillPolterghast(); break;
-                case "Post-Mauler": ModContent.GetInstance<CalamitySystem>().CalamityOnKillMauler(); break;
-                case "Post-Nuclear Terror": ModContent.GetInstance<CalamitySystem>().CalamityOnKillNuclearTerror(); break;
-                case "Post-The Old Duke": ModContent.GetInstance<CalamitySystem>().CalamityOnKillTheOldDuke(); break;
-                case "Post-The Devourer of Gods": ModContent.GetInstance<CalamitySystem>().CalamityOnKillTheDevourerOfGods(); break;
-                case "Post-Yharon, Dragon of Rebirth": ModContent.GetInstance<CalamitySystem>().CalamityOnKillYharonDragonOfRebirth(); break;
-                case "Post-Exo Mechs": ModContent.GetInstance<CalamitySystem>().CalamityOnKillExoMechs(); break;
-                case "Post-Supreme Witch, Calamitas": ModContent.GetInstance<CalamitySystem>().CalamityOnKillSupremeWitchCalamitas(); break;
-                case "Post-Primordial Wyrm": ModContent.GetInstance<CalamitySystem>().CalamityPrimordialWyrmDowned(); break;
-                case "Post-Boss Rush": ModContent.GetInstance<CalamitySystem>().CalamityBossRushDowned(); break;
+                case "Post-Desert Scourge": CalamitySystem.CalamityOnKillDesertScourge(); break;
+                case "Post-Giant Clam": CalamitySystem.CalamityOnKillGiantClam(false); break;
+                case "Post-Acid Rain Tier 1": CalamitySystem.CalamityAcidRainTier1Downed(); break;
+                case "Post-Crabulon": CalamitySystem.CalamityOnKillCrabulon(); break;
+                case "Post-The Hive Mind": CalamitySystem.CalamityOnKillTheHiveMind(); break;
+                case "Post-The Perforators": CalamitySystem.CalamityOnKillThePerforators(); break;
+                case "Post-The Slime God": CalamitySystem.CalamityOnKillTheSlimeGod(); break;
+                case "Post-Dreadnautilus": CalamitySystem.CalamityDreadnautilusDowned(); break;
+                case "Post-Hardmode Giant Clam": CalamitySystem.CalamityOnKillGiantClam(true); break;
+                case "Post-Aquatic Scourge": CalamitySystem.CalamityOnKillAquaticScourge(); break;
+                case "Post-Cragmaw Mire": CalamitySystem.CalamityOnKillCragmawMire(); break;
+                case "Post-Acid Rain Tier 2": CalamitySystem.CalamityAcidRainTier2Downed(); break;
+                case "Post-Brimstone Elemental": CalamitySystem.CalamityOnKillBrimstoneElemental(); break;
+                case "Post-Cryogen": CalamitySystem.CalamityOnKillCryogen(); break;
+                case "Post-Calamitas Clone": CalamitySystem.CalamityOnKillCalamitasClone(); break;
+                case "Post-Great Sand Shark": CalamitySystem.CalamityOnKillGreatSandShark(); break;
+                case "Post-Leviathan and Anahita": CalamitySystem.CalamityOnKillLeviathanAndAnahita(); break;
+                case "Post-Astrum Aureus": CalamitySystem.CalamityOnKillAstrumAureus(); break;
+                case "Post-The Plaguebringer Goliath": CalamitySystem.CalamityOnKillThePlaguebringerGoliath(); break;
+                case "Post-Ravager": CalamitySystem.CalamityOnKillRavager(); break;
+                case "Post-Astrum Deus": CalamitySystem.CalamityOnKillAstrumDeus(); break;
+                case "Post-Profaned Guardians": CalamitySystem.CalamityOnKillProfanedGuardians(); break;
+                case "Post-The Dragonfolly": CalamitySystem.CalamityOnKillTheDragonfolly(); break;
+                case "Post-Providence, the Profaned Goddess": CalamitySystem.CalamityOnKillProvidenceTheProfanedGoddess(); break;
+                case "Post-Storm Weaver": CalamitySystem.CalamityOnKillStormWeaver(); break;
+                case "Post-Ceaseless Void": CalamitySystem.CalamityOnKillCeaselessVoid(); break;
+                case "Post-Signus, Envoy of the Devourer": CalamitySystem.CalamityOnKillSignusEnvoyOfTheDevourer(); break;
+                case "Post-Polterghast": CalamitySystem.CalamityOnKillPolterghast(); break;
+                case "Post-Mauler": CalamitySystem.CalamityOnKillMauler(); break;
+                case "Post-Nuclear Terror": CalamitySystem.CalamityOnKillNuclearTerror(); break;
+                case "Post-The Old Duke": CalamitySystem.CalamityOnKillTheOldDuke(); break;
+                case "Post-The Devourer of Gods": CalamitySystem.CalamityOnKillTheDevourerOfGods(); break;
+                case "Post-Yharon, Dragon of Rebirth": CalamitySystem.CalamityOnKillYharonDragonOfRebirth(); break;
+                case "Post-Exo Mechs": CalamitySystem.CalamityOnKillExoMechs(); break;
+                case "Post-Supreme Witch, Calamitas": CalamitySystem.CalamityOnKillSupremeWitchCalamitas(); break;
+                case "Post-Primordial Wyrm": CalamitySystem.CalamityPrimordialWyrmDowned(); break;
+                case "Post-Boss Rush": break;  // TODO: fix Post-Boss Rush sending the boss rush location check
                 case "Reward: Hermes Boots": GiveItem(ItemID.HermesBoots); break;
                 case "Reward: Magic Mirror": GiveItem(ItemID.MagicMirror); break;
                 case "Reward: Demon Conch": GiveItem(ItemID.DemonConch); break;
@@ -609,50 +642,20 @@ namespace SeldomArchipelago.Systems
                 case "Reward: Red Counterweight": GiveItem(ItemID.RedCounterweight); break;
                 case "Reward: Yoyo Glove": GiveItem(ItemID.YoYoGlove); break;
                 case "Reward: Coins": GiveCoins(); break;
-                case "Reward: Cosmolight": ModContent.GetInstance<CalamitySystem>().GiveCosmolight(); break;
                 case "Reward: Diving Helmet": GiveItem(ItemID.DivingHelmet); break;
                 case "Reward: Jellyfish Necklace": GiveItem(ItemID.JellyfishNecklace); break;
-                case "Reward: Corrupt Flask": ModContent.GetInstance<CalamitySystem>().GiveCorruptFlask(); break;
-                case "Reward: Crimson Flask": ModContent.GetInstance<CalamitySystem>().GiveCrimsonFlask(); break;
-                case "Reward: Craw Carapace": ModContent.GetInstance<CalamitySystem>().GiveCrawCarapace(); break;
-                case "Reward: Giant Shell": ModContent.GetInstance<CalamitySystem>().GiveGiantShell(); break;
-                case "Reward: Life Jelly": ModContent.GetInstance<CalamitySystem>().GiveLifeJelly(); break;
-                case "Reward: Vital Jelly": ModContent.GetInstance<CalamitySystem>().GiveVitalJelly(); break;
-                case "Reward: Cleansing Jelly": ModContent.GetInstance<CalamitySystem>().GiveCleansingJelly(); break;
-                case "Reward: Giant Tortoise Shell": ModContent.GetInstance<CalamitySystem>().GiveGiantTortoiseShell(); break;
-                case "Reward: Coin of Deceit": ModContent.GetInstance<CalamitySystem>().GiveCoinOfDeceit(); break;
-                case "Reward: Ink Bomb": ModContent.GetInstance<CalamitySystem>().GiveInkBomb(); break;
-                case "Reward: Voltaic Jelly": ModContent.GetInstance<CalamitySystem>().GiveVoltaicJelly(); break;
-                case "Reward: Wulfrum Battery": ModContent.GetInstance<CalamitySystem>().GiveWulfrumBattery(); break;
-                case "Reward: Luxor's Gift": ModContent.GetInstance<CalamitySystem>().GiveLuxorsGift(); break;
-                case "Reward: Raider's Talisman": ModContent.GetInstance<CalamitySystem>().GiveRaidersTalisman(); break;
-                case "Reward: Rotten Dogtooth": ModContent.GetInstance<CalamitySystem>().GiveRottenDogtooth(); break;
-                case "Reward: Scuttler's Jewel": ModContent.GetInstance<CalamitySystem>().GiveScuttlersJewel(); break;
-                case "Reward: Unstable Granite Core": ModContent.GetInstance<CalamitySystem>().GiveUnstableGraniteCore(); break;
-                case "Reward: Amidias' Spark": ModContent.GetInstance<CalamitySystem>().GiveAmidiasSpark(); break;
-                case "Reward: Ursa Sergeant": ModContent.GetInstance<CalamitySystem>().GiveUrsaSergeant(); break;
-                case "Reward: Trinket of Chi": ModContent.GetInstance<CalamitySystem>().GiveTrinketOfChi(); break;
-                case "Reward: The Transformer": ModContent.GetInstance<CalamitySystem>().GiveTheTransformer(); break;
-                case "Reward: Rover Drive": ModContent.GetInstance<CalamitySystem>().GiveRoverDrive(); break;
-                case "Reward: Marnite Repulsion Shield": ModContent.GetInstance<CalamitySystem>().GiveMarniteRepulsionShield(); break;
-                case "Reward: Frost Barrier": ModContent.GetInstance<CalamitySystem>().GiveFrostBarrier(); break;
-                case "Reward: Ancient Fossil": ModContent.GetInstance<CalamitySystem>().GiveAncientFossil(); break;
-                case "Reward: Spelunker's Amulet": ModContent.GetInstance<CalamitySystem>().GiveSpelunkersAmulet(); break;
-                case "Reward: Fungal Symbiote": ModContent.GetInstance<CalamitySystem>().GiveFungalSymbiote(); break;
-                case "Reward: Gladiator's Locket": ModContent.GetInstance<CalamitySystem>().GiveGladiatorsLocket(); break;
-                case "Reward: Wulfrum Acrobatics Pack": ModContent.GetInstance<CalamitySystem>().GiveWulfrumAcrobaticsPack(); break;
-                case "Reward: Depths Charm": ModContent.GetInstance<CalamitySystem>().GiveDepthsCharm(); break;
-                case "Reward: Anechoic Plating": ModContent.GetInstance<CalamitySystem>().GiveAnechoicPlating(); break;
-                case "Reward: Iron Boots": ModContent.GetInstance<CalamitySystem>().GiveIronBoots(); break;
-                case "Reward: Sprit Glyph": ModContent.GetInstance<CalamitySystem>().GiveSpritGlyph(); break;
-                case "Reward: Abyssal Amulet": ModContent.GetInstance<CalamitySystem>().GiveAbyssalAmulet(); break;
                 case "Reward: Life Crystal": GiveItem(ItemID.LifeCrystal); break;
                 case "Reward: Enchanted Sword": GiveItem(ItemID.EnchantedSword); break;
                 case "Reward: Starfury": GiveItem(ItemID.Starfury); break;
                 case "Reward: Defender Medal": GiveItem(ItemID.DefenderMedal); break;
                 case null: break;
-                default: Chat($"Received unknown item: {item}"); break;
-                    
+                default:
+                    {
+                        bool calSuccess = CalamitySystem.GiveItem(item);
+                        if (!calSuccess) Chat($"Received unknown item: {item}");
+                        break;
+                    }
+
             }
         }
         public override void PostUpdateWorld()
@@ -698,11 +701,11 @@ namespace SeldomArchipelago.Systems
                 world.collectedItems++;
             }
 
-            if (ModLoader.HasMod("CalamityMod")) ModContent.GetInstance<CalamitySystem>().CalamityPostUpdateWorld();
+            if (ModLoader.HasMod("CalamityMod")) CalamitySystem.CalamityPostUpdateWorld();
 
             if (session.victory) return;
 
-            foreach (var goal in session.goals) if (!session.collectedLocations.Contains(goal)) return;
+            foreach (var goal in session.goals) if (!session.session.Locations.AllLocationsChecked.Contains(session.session.Locations.GetLocationIdFromName(APWorldName, goal))) return;
 
             var victoryPacket = new StatusUpdatePacket()
             {
@@ -734,41 +737,77 @@ namespace SeldomArchipelago.Systems
         {
             world = new();
             status = ConnectStatus.Unset;
+            desiredAPversion = null;
             Reset();
         }
-        
-        public string[] Status() => status switch
+
+        public string[] Status()
         {
-            ConnectStatus.Unset => new[] {
-                @"The world is not connected to Archipelago! Reload the world to try again.",
-                "If you are the host, check your config in the main menu at Workshop > Manage Mods > Config",
-            },
-            ConnectStatus.SlotOrSeedMismatch => new[]
+            if (status == ConnectStatus.Valid)
             {
-                "This world has save data for a different multiworld/slot.",
-                $"SAVE DATA MULTIWORLD SLOT: {world.slotName}, SEED {world.seed}",
-                "You have been disconnected from the server. Please load a different world."
-            },
-            // For the next two messages, we instruct the player to reload the current world since it passed the mismatch test
-            ConnectStatus.CalamityNeeded => new[]
-            {
-                "The multiworld slot you connected to has Calamity integration enabled, but you do not have the mod enabled in your modlist.",
-                "You have been disconnected from the server. Please enable Calamity, then reload this world."
-            },
-            ConnectStatus.NoCalamityNeeded => new[]
-            {
-                "The multiworld slot you connected to has Calamity integration disabled, but you have the mod enabled in your modlist.",
-                "You have been disconnected from the server. Please disable Calamity, then reload this world."
-            },
-            ConnectStatus.Valid => ModContent.GetInstance<CalamitySystem>() switch
-            {
-                null => new[] { "Archipelago is active!" },
-                _ => new[] {
-                    "Archipelago is active!",
-                    "Calamity Archipelago detected. If you beat a Calamity boss and it doesn't give you a check, restart your game and beat it again. It is a rare, unsolved bug."
+                List<string> msg = ["Archipelago is active!"];
+                if (ModLoader.HasMod("CalamityMod"))
+                    msg.Add("Calamity Archipelago detected. If you beat a Calamity boss and it doesn't give you a check, restart your game and beat it again. It is a rare, unsolved bug.");
+                if (ModContent.GetInstance<Config.Config>().forceOffNPC)
+                {
+                    msg.Add("[c/FF5757:NOTICE:] You have forced off NPC Ghosting. Please verify that your slot has NPC Randomization disabled.");
                 }
-            },
-        };
+                return msg.ToArray();
+
+            }
+            return status switch
+            {
+                ConnectStatus.Unset => new[] {
+                    @"The world is not connected to Archipelago! Reload the world to try again.",
+                    "If you are the host, check your config in the main menu at Workshop > Manage Mods > Config",
+                },
+                ConnectStatus.WrongSlot => new[]
+                {
+                    $"Could not find a slot named \"{ModContent.GetInstance<Config.Config>().name}\" registered in the multiworld.",
+                    "If you are the host, check your config in the main menu at Workshop > Manage Mods > Config, then reload the world."
+                },
+                ConnectStatus.WrongPass => new[]
+                {
+                    $"The password for the Archipelago server is incorrect.",
+                    "If you are the host, check your config in the main menu at Workshop > Manage Mods > Config, then reload the world."
+                },
+                ConnectStatus.WrongGame => new[]
+                {
+                    $"The slot \"{ModContent.GetInstance<Config.Config>().name}\" is set to a different game on the server, not \"{APWorldName}\".",
+                    "If this is the correct slot, make sure that you did not use the website to generate your YAML.",
+                    "See this page for more information: https://github.com/desperandos101/SeldomArchipelago/tree/release",
+                    "You have been disconnected from the server.",
+                },
+                ConnectStatus.SlotOrSeedMismatch => new[]
+                {
+                    "This world has save data for a different multiworld/slot.",
+                    $"SAVE DATA MULTIWORLD SLOT: {world.slotName}, SEED {world.seed}",
+                    "You have been disconnected from the server. Please load a different world."
+                },
+                // For the next messages, we instruct the player to reload the current world since it passed the mismatch test
+                ConnectStatus.CalamityNeeded => new[]
+                {
+                    "The multiworld slot you connected to has Calamity integration enabled, but you do not have the mod enabled in your modlist.",
+                    "You have been disconnected from the server. Please enable Calamity, then reload this world."
+                },
+                ConnectStatus.NoCalamityNeeded => new[]
+                {
+                    "The multiworld slot you connected to has Calamity integration disabled, but you have the mod enabled in your modlist.",
+                    "You have been disconnected from the server. Please disable Calamity, then reload this world."
+                },
+                ConnectStatus.ClientOlder => new[]
+                {
+                    "The multiworld slot you connected to requires a newer version of the client.",
+                    "You have been disconnected from the server. Please upgrade your client, then reload this world."
+                },
+                ConnectStatus.ClientNewer => new[]
+                {
+                    "The multiworld slot you connected to requires an older version of the client.",
+                    $"Look on the releases page for the latest client compatible with APWorld version {(desiredAPversion is null ? "0.6.61, then if that fails to connect, 0.6.62." : $"{desiredAPversion[0]}.{desiredAPversion[1]}.{desiredAPversion[2]}.")}",
+                    "You have been disconnected from the server. Please downpatch your client, then reload this world."
+                },
+            };
+        }
 
         public bool SendCommand(string command)
         {
@@ -806,6 +845,7 @@ namespace SeldomArchipelago.Systems
 
                 info.Add($"You've collected {world.collectedItems} items");
                 info.Add($"NPC randomization is {(world.NPCRandoActive() ? "en" : "dis")}abled");
+                info.Add($"NPCs randomized: [{(world.randomizedNPCs is not null ? string.Join(", ", from npc in world.randomizedNPCs select npcIDtoName[npc]) : "None")}]");
                 info.Add($"Received NPC IDs: [{string.Join(", ", from npc in world.receivedNPCs select npcIDtoName[npc])}]");
             }
 
@@ -851,7 +891,6 @@ namespace SeldomArchipelago.Systems
 
                 info.Add($"DeathLink is {(session.deathlink == null ? "dis" : "en")}abled");
                 info.Add($"{session.currentItem} items have been applied");
-                info.Add($"Collected locations: [{string.Join("; ", session.collectedLocations)}]");
                 info.Add($"Goals: [{string.Join("; ", session.goals)}]");
                 info.Add($"Victory has {(session.victory ? "been achieved! Hooray!" : "not been achieved. Alas.")}");
                 info.Add($"You are slot {session.slot}");
@@ -888,21 +927,15 @@ namespace SeldomArchipelago.Systems
                 return;
             }
 
-            var location = session.session.Locations.GetLocationIdFromName("Terraria", locationName);
+            var location = session.session.Locations.GetLocationIdFromName(APWorldName, locationName);
             if (location == -1) return;
 
-            if (!session.collectedLocations.Contains(locationName))
+            if (session.session.Locations.AllLocationsChecked.Contains(location))
             {
-                if (session.session.Locations.AllLocationsChecked.Contains(location))
-                {
-                    Chat($"Location {locationName} already collected.");
-                    session.collectedLocations.Add(locationName);
-                    return;
-                }
-                session.locationQueue.Add(session.session.Locations.ScoutLocationsAsync(new[] { location }));
-                session.collectedLocations.Add(locationName);
+                Mod.Logger.Info($"[AP] Location {locationName} already collected.");
+                return;
             }
-
+            session.locationQueue.Add(session.session.Locations.ScoutLocationsAsync(new[] { location }));
             session.session.Locations.CompleteLocationChecks(new[] { location });
         }
 
@@ -974,7 +1007,7 @@ namespace SeldomArchipelago.Systems
 
         static void BossFlag(int boss)
         {
-            if (ModLoader.HasMod("CalamityMod")) ModContent.GetInstance<CalamitySystem>().VanillaBossKilled(boss);
+            if (ModLoader.HasMod("CalamityMod")) CalamitySystem.VanillaBossKilled(boss);
         }
 
         void GiveItem(int? item, Action<Player> giveItem)
@@ -1002,8 +1035,7 @@ namespace SeldomArchipelago.Systems
             }
         }
 
-        void GiveItem(int item) => GiveItem(item, player => player.QuickSpawnItem(player.GetSource_GiftOrReward(), item, 1));
-        public void GiveItem<T>() where T : ModItem => GiveItem(ModContent.ItemType<T>());
+        public void GiveItem(int item) => GiveItem(item, player => player.QuickSpawnItem(player.GetSource_GiftOrReward(), item, 1));
 
         int[] baseCoins = { 15, 20, 25, 30, 40, 50, 70, 100 };
 
@@ -1033,7 +1065,7 @@ namespace SeldomArchipelago.Systems
             // is the case.
             list.Add(new PassLegacy("Hallowed Ore", (progress, config) =>
             {
-                if (ModLoader.HasMod("CalamityMod")) ModContent.GetInstance<CalamitySystem>().CalamityStartHardmode();
+                if (ModLoader.HasMod("CalamityMod")) CalamitySystem.CalamityStartHardmode();
             }));
         }
     }
