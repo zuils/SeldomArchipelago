@@ -118,11 +118,7 @@ namespace SeldomArchipelagoBeta.Systems
             "Post-Supreme Witch, Calamitas" => CalamityMod.DownedBossSystem.downedCalamitas,
             "Post-Primordial Wyrm" => CalamityMod.DownedBossSystem.downedPrimordialWyrm,
             "Post-Boss Rush" => CalamityMod.DownedBossSystem.downedBossRush,
-            _ => ((Func<bool>)(() =>
-            {
-                ModContent.GetInstance<ArchipelagoSystem>().Chat($"Unknown flag: {flag}");
-                return false;
-            }))(),
+            _ => null,
         };
 
         public static void CalamityStartHardmode()

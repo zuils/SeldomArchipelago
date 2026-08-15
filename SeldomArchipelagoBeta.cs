@@ -32,7 +32,7 @@ using Terraria.ModLoader;
 namespace SeldomArchipelagoBeta
 {
     // TODO Use a data-oriented approach to get rid of all this repetition
-    
+
     public class SeldomArchipelago : Mod
     {
         // We reuse some parts of Terraria's code for multiple purposes in this mod. For example,
@@ -52,7 +52,8 @@ namespace SeldomArchipelagoBeta
             }
         }
 
-        readonly (Version, Version) calVersionRange = (new Version(2, 2, 2), new Version(2, 2, 4));
+        readonly Version calVersion = new Version(2, 2, 2);
+        readonly Version fargoVersion = new Version(1, 7, 3, 9);
 
         public static MethodInfo leviathanRealOnKill = null;
         public override void Load()
@@ -110,7 +111,7 @@ namespace SeldomArchipelagoBeta
                             count++;
                         }
                     }
-                      return count;
+                    return count;
                 });
                 cursor.EmitStloc(40);  // NPC Count
 
@@ -177,7 +178,7 @@ namespace SeldomArchipelagoBeta
                             NPCID.Steampunker,
                             NPCID.Cyborg
                         ];
-                         if (princessNPCs.IsSubsetOf(existingTownTypes))
+                        if (princessNPCs.IsSubsetOf(existingTownTypes))
                         {
                             Main.townNPCCanSpawn[NPCID.Princess] = true;
                         }
@@ -192,7 +193,7 @@ namespace SeldomArchipelagoBeta
                                 validGhostTypes.Add(type);
                             Main.townNPCCanSpawn[type] = archipelagoSystem.world.receivedNPCs.Contains(type);
                         }
-                            
+
                         // Enqueue Ghosts
                         if (archipelagoSystem.session is not null)
                             foreach (int type in validGhostTypes)
@@ -231,7 +232,8 @@ namespace SeldomArchipelagoBeta
                         Main.townNPCCanSpawn[NPCID.BlueSlime] = true;
                         WorldGen.prioritizedTownNPCType = NPCID.BlueSlime;
                         return;
-                    };
+                    }
+                    ;
                 });
                 cursor.EmitRet();
             };
@@ -239,7 +241,8 @@ namespace SeldomArchipelagoBeta
             // Bypass AnyNPCs Blocks
             // The method we subscribe here checks multiple times whether an NPC of the type prioritizedTownNPCType exists.
             // If any of those return true, it blocks that NPC from spawning, which is a problem especially for special spawn ghosts that need to spawn while their real counterpart is alive.
-            On_WorldGen.IsThereASpawnablePrioritizedTownNPC += (On_WorldGen.orig_IsThereASpawnablePrioritizedTownNPC orig, int x, int y, ref bool canSpawn) => {
+            On_WorldGen.IsThereASpawnablePrioritizedTownNPC += (On_WorldGen.orig_IsThereASpawnablePrioritizedTownNPC orig, int x, int y, ref bool canSpawn) =>
+            {
                 int temp = WorldGen.prioritizedTownNPCType;
                 if (ArchipelagoSystem.specialSpawnGhosts.Contains(temp))
                 {
@@ -257,7 +260,7 @@ namespace SeldomArchipelagoBeta
                     WorldGen.prioritizedTownNPCType = temp;
                     return result;
                 }
-                
+
                 return orig(x, y, ref canSpawn);
             };
 
@@ -365,7 +368,7 @@ namespace SeldomArchipelagoBeta
 
             On_WorldGen.ScoreRoom_IsThisRoomOccupiedBySomeone += (On_WorldGen.orig_ScoreRoom_IsThisRoomOccupiedBySomeone orig, int ignoreNPC, int npcTypeAsking) =>
             {
-                 GhostNPC[] existingGhosts = [.. (from npc in Main.npc where npc.active && npc.ModNPC is GhostNPC select npc.ModNPC as GhostNPC)];
+                GhostNPC[] existingGhosts = [.. (from npc in Main.npc where npc.active && npc.ModNPC is GhostNPC select npc.ModNPC as GhostNPC)];
                 foreach (var ghost in existingGhosts)
                 {
                     for (int i = 0; i < WorldGen.numRoomTiles; i++)
@@ -427,7 +430,7 @@ namespace SeldomArchipelagoBeta
                 cursor.EmitLdarg(2);
                 cursor.EmitDelegate((int npcType) =>
                 {
-                   switch (npcType)
+                    switch (npcType)
                     {
                         case NPCID.Angler: NPC.savedAngler = true; break;
                         case NPCID.Golfer: NPC.savedGolfer = true; break;
@@ -437,7 +440,7 @@ namespace SeldomArchipelagoBeta
                         case NPCID.Mechanic: NPC.savedMech = true; break;
                         case NPCID.Wizard: NPC.savedWizard = true; break;
                         default: throw new Exception($"NPC type {npcType} unaccounted for in TransformBoundNPC");
-                    } 
+                    }
                 });
 
                 cursor.EmitDelegate(() =>
@@ -465,7 +468,7 @@ namespace SeldomArchipelagoBeta
                     }
                     if (!archipelagoSystem.world.randomizedNPCs.Contains(npcType)) return npcType;
                     archipelagoSystem.QueueLocationClient(locName);
-                    if (archipelagoSystem.world.npcLocTypeToNpcItemType is not null && archipelagoSystem.world.npcLocTypeToNpcItemType.TryGetValue(npcType, out int newNpcType) && !NPC.AnyNPCs(newNpcType)) 
+                    if (archipelagoSystem.world.npcLocTypeToNpcItemType is not null && archipelagoSystem.world.npcLocTypeToNpcItemType.TryGetValue(npcType, out int newNpcType) && !NPC.AnyNPCs(newNpcType))
                         return newNpcType;
                     NPC npc = Main.npc[NPC.FindFirstNPC(boundNPCtype)];
                     if (Main.netMode == NetmodeID.MultiplayerClient)
@@ -525,7 +528,7 @@ namespace SeldomArchipelagoBeta
                 cursor.EmitBge(label);
                 cursor.EmitDelegate<Func<NPC>>(() => Main.npc[NPC.FindFirstNPC(NPCID.DemonTaxCollector)]);
             };
-            
+
             // Correct Skeletron-spawning Behavior
             // If the Old Man and the Clothier exist, this method cannot differentiate whether it was summoned via Old Man or voodoo doll.
             IL_NPC.SpawnSkeletron += il =>
@@ -538,7 +541,7 @@ namespace SeldomArchipelagoBeta
                 cursor.EmitDelegate((IEntitySource _, int x, int y, int _, int _, float _, float _, float _, float _, int _, int onWho) =>
                 {
                     void Broadcast(string msg) => ChatHelper.BroadcastChatMessage(NetworkText.FromLiteral(msg), Color.White);
-                    
+
                     int oldManIndex = -1;
                     int clothierIndex = -1;
                     for (int i = 0; i < Main.npc.Length; i++)
@@ -670,7 +673,8 @@ namespace SeldomArchipelagoBeta
                     // Crimes
                     cursor.EmitDelegate<Action>(() => Temp = (bool)field.GetValue(null));
                     cursor.Index++;
-                    cursor.EmitDelegate(() => {
+                    cursor.EmitDelegate(() =>
+                    {
                         field.SetValue(null, Temp);
                         Temp = false;
                     });
@@ -681,7 +685,8 @@ namespace SeldomArchipelagoBeta
                 {
                     cursor.EmitDelegate<Action>(() => Temp = NPC.downedMechBossAny);
                     cursor.Index++;
-                    cursor.EmitDelegate<Action>(() => {
+                    cursor.EmitDelegate<Action>(() =>
+                    {
                         NPC.downedMechBossAny = Temp;
                         Temp = false;
                     });
@@ -695,7 +700,8 @@ namespace SeldomArchipelagoBeta
                     Main.hardMode = true;
                 });
                 cursor.Index++;
-                cursor.EmitDelegate<Action>(() => {
+                cursor.EmitDelegate<Action>(() =>
+                {
                     Main.hardMode = Temp;
                     Temp = false;
                 });
@@ -724,25 +730,16 @@ namespace SeldomArchipelagoBeta
             if (!ModLoader.HasMod("CalamityMod")) return;
             var calamity = ModLoader.GetMod("CalamityMod");
 
-            void CheckCompatibility(Mod mod, (Version, Version) versionRange)
+            int relativeCalVersion = calamity.Version.CompareTo(calVersion);
+            if (relativeCalVersion < 0)
             {
-                string exception = null;
-                int stepsFromLowest = mod.Version.CompareTo(versionRange.Item1);
-                int stepsFromHighest = mod.Version.CompareTo(versionRange.Item2);
-                if (stepsFromLowest < 0)
-                {
-                    exception = $"You are using an older version of {mod.DisplayNameClean}.\nPlease reload with version {versionRange.Item2}.";
-                }
-                else if (stepsFromHighest > 0)
-                {
-                    exception = $"You are using a newer version of {mod.DisplayNameClean}.\nThis is probably because the mod recently received an update.\nPlease downpatch to version {versionRange.Item2}.";
-                }
-                if (exception is not null) throw new Exception(exception);
+                throw new Exception($"You are using an older version of Calamity. Please reload with {calVersion}.");
             }
-
-            CheckCompatibility(calamity, calVersionRange);
-
-            Dictionary<string, string> defaultOnKillChecks = new()
+            else if (relativeCalVersion > 0)
+            {
+                throw new Exception($"You are using a newer version of calamity.\nThis is probably because the mod recently received an update.\nPlease downpatch to {calVersion}.");
+            }
+            Dictionary<string, string> defaultCalamityOnKillChecks = new()
             {
                 {"DesertScourgeHead", "Desert Scourge"},
                 {"CragmawMire", "Cragmaw Mire"},
@@ -776,7 +773,7 @@ namespace SeldomArchipelagoBeta
             foreach (var type in calamityAssembly.GetTypes())
             {
                 MethodInfo GetOnKill() => type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public);
-                if (defaultOnKillChecks.TryGetValue(type.Name, out string loc))
+                if (defaultCalamityOnKillChecks.TryGetValue(type.Name, out string loc))
                 {
                     MethodInfo onKill = GetOnKill();
                     if (onKill is null) continue;
@@ -926,7 +923,58 @@ namespace SeldomArchipelagoBeta
                 }
             }
             #endregion
+            #region Fargo Souls Reflection
+            if (!ModLoader.HasMod("FargowiltasSouls")) return;
+            var fargo = ModLoader.GetMod("FargowiltasSouls");
+
+            int relativeFargoVersion = fargo.Version.CompareTo(fargoVersion);
+            if (relativeFargoVersion < 0)
+            {
+                throw new Exception($"You are using an older version of Calamity. Please reload with {calVersion}.");
+            }
+            else if (relativeFargoVersion > 0)
+            {
+                throw new Exception($"You are using a newer version of calamity.\nThis is probably because the mod recently received an update.\nPlease downpatch to {calVersion}.");
+            }
+            Dictionary<string, string> defaultFargoOnKillChecks = new()
+            {
+                {"TrojanSquirrel", "Trojan Squirrel"},
+                {"CursedCoffin", "Cursed Coffin"},
+                {"DeviBoss", "Deviantt"},
+                {"BanishedBaron", "Banished Baron"},
+                {"LifeChallenger", "Lifelight"},
+                {"TimberChampion", "Champion of Timber"},
+                {"TerraChampion", "Champion of Terra"},
+                {"EarthChampion", "Champion of Earth"},
+                {"NatureChampion", "Champion of Nature"},
+                {"LifeChampion", "Champion of Life"},
+                {"ShadowChampion", "Champion of Death"},
+                {"SpiritChampion", "Champion of Spirit"},
+                {"WillChampion", "Champion of Will"},
+                {"CosmosChampion", "Eridanus, Champion of Cosmos"},
+                {"AbomBoss", "Abominationn"},
+                {"MutantBoss", "Mutant"},
+            };
+            var fargoAssembly = fargo.GetType().Assembly;
+            foreach (var type in fargoAssembly.GetTypes())
+            {
+                MethodInfo GetOnKill() => type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public);
+
+                if (!defaultFargoOnKillChecks.TryGetValue(type.Name, out string loc))
+                    continue;
+
+                MethodInfo onKill = GetOnKill();
+
+                if (onKill is null)
+                {
+                    Logger.Warn($"Could not find OnKill for Fargo type {type.FullName}");
+                    continue;
+                }
+
+                MonoModHooks.Add(onKill, DefaultSendLocOnKill(loc));
+            }
         }
+            #endregion
 
         public override void HandlePacket(BinaryReader reader, int whoAmI)
         {

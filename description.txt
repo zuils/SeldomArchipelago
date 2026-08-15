@@ -1,7 +1,7 @@
 Archipelago multiworld randomizer integration for Terraria.
 
-This is a beta branch intended for use on games running Terraria_Beta. For more information, see the beta's homepage.
+This is a beta branch intended for use on games running the Zuils Beta. This adds support for Fargo's Souls mod. For more information, see the beta's homepage.
 
-https://github.com/desperandos101/SeldomArchipelago/tree/release
+https://github.com/zuils/SeldomArchipelago
 
 Please note that this mod will NOT work with YAMLs generated from the website. You will have to use the latest APWorld file in the previous link.

@@ -1,7 +1,7 @@
-displayName = Archipelago Randomizer (BETA)
-author = Desp
-version = 2.0.6.1
-homepage = https://github.com/desperandos101/SeldomArchipelago/tree/release
+displayName = Archipelago Randomizer (Zuils's Beta)
+author = Seldom, Desp, Zuils
+version = 2.1.0.0
+homepage = https://github.com/zuils/SeldomArchipelago
 includeSource = true
 dllReferences = Archipelago.MultiClient.Net, Newtonsoft.Json
 weakReferences = CalamityMod

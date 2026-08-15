@@ -326,6 +326,7 @@ namespace SeldomArchipelagoBeta.Systems
                 }
             }
         }
+
         public void ApMessageToChat(LogMessage message)
         {
             var config = ModContent.GetInstance<Config.Config>();
@@ -476,7 +477,8 @@ namespace SeldomArchipelagoBeta.Systems
                 });
                 world.suspendedFlags.Add(item);
                 return;
-            } else
+            }
+            else
             {
                 world.suspendedFlags.Remove(item);
             }
@@ -563,6 +565,23 @@ namespace SeldomArchipelagoBeta.Systems
                 case "Post-Supreme Witch, Calamitas": CalamitySystem.CalamityOnKillSupremeWitchCalamitas(); break;
                 case "Post-Primordial Wyrm": CalamitySystem.CalamityPrimordialWyrmDowned(); break;
                 case "Post-Boss Rush": break;  // TODO: fix Post-Boss Rush sending the boss rush location check
+                case "Post-Trojan Squirrel": FargoSystem.FargoOnKillTrojanSquirrel(); break;
+                case "Post-Cursed Coffin": FargoSystem.FargoOnKillCursedCoffin(); break;
+                case "Post-Deviantt": FargoSystem.FargoOnKillDeviantt(); break;
+                case "Post-Banished Baron": FargoSystem.FargoOnKillBanishedBaron(); break;
+                case "Post-Lifelight": FargoSystem.FargoOnKillLifelight(); break;
+                case "Post-Betsy": FargoSystem.FargoOnKillBetsy(); Chat($"Note: Boss Checklist Mod won't show that you have the Post-Betsy flag."); break;
+                case "Post-Champion of Timber": FargoSystem.FargoOnKillTimberChampion(); break;
+                case "Post-Champion of Terra": FargoSystem.FargoOnKillTerraChampion(); break;
+                case "Post-Champion of Earth": FargoSystem.FargoOnKillEarthChampion(); break;
+                case "Post-Champion of Nature": FargoSystem.FargoOnKillNatureChampion(); break;
+                case "Post-Champion of Life": FargoSystem.FargoOnKillLifeChampion(); break;
+                case "Post-Champion of Death": FargoSystem.FargoOnKillDeathChampion(); break;
+                case "Post-Champion of Spirit": FargoSystem.FargoOnKillSpiritChampion(); break;
+                case "Post-Champion of Will": FargoSystem.FargoOnKillWillChampion(); break;
+                case "Post-Eridanus, Champion of Cosmos": FargoSystem.FargoOnKillCosmosChampion(); break;
+                case "Post-Abominationn": FargoSystem.FargoOnKillAbominationn(); break;
+                case "Post-Mutant": FargoSystem.FargoOnKillMutant(); break;
                 case "Reward: Hermes Boots": GiveItem(ItemID.HermesBoots); break;
                 case "Reward: Magic Mirror": GiveItem(ItemID.MagicMirror); break;
                 case "Reward: Demon Conch": GiveItem(ItemID.DemonConch); break;
@@ -654,7 +673,6 @@ namespace SeldomArchipelagoBeta.Systems
                         if (!calSuccess) Chat($"Received unknown item: {item}");
                         break;
                     }
-                    
             }
         }
         public override void PostUpdateWorld()
@@ -701,6 +719,7 @@ namespace SeldomArchipelagoBeta.Systems
             }
 
             if (ModLoader.HasMod("CalamityMod")) CalamitySystem.CalamityPostUpdateWorld();
+            if (ModLoader.HasMod("FargowiltasSouls")) FargoSystem.FargoPostUpdateWorld();
 
             if (session.victory) return;
 
@@ -739,8 +758,9 @@ namespace SeldomArchipelagoBeta.Systems
             desiredAPversion = null;
             Reset();
         }
-        
-        public string[] Status() {
+
+        public string[] Status()
+        {
             if (status == ConnectStatus.Valid)
             {
                 List<string> msg = ["Archipelago is active!"];
@@ -751,7 +771,7 @@ namespace SeldomArchipelagoBeta.Systems
                     msg.Add("[c/FF5757:NOTICE:] You have forced off NPC Ghosting. Please verify that your slot has NPC Randomization disabled.");
                 }
                 return msg.ToArray();
-                    
+
             }
             return status switch
             {
