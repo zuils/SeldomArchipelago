@@ -930,11 +930,11 @@ namespace SeldomArchipelagoBeta
             int relativeFargoVersion = fargo.Version.CompareTo(fargoVersion);
             if (relativeFargoVersion < 0)
             {
-                throw new Exception($"You are using an older version of Calamity. Please reload with {calVersion}.");
+                throw new Exception($"You are using an older version of Fargo Souls. Please reload with {fargoVersion}.");
             }
             else if (relativeFargoVersion > 0)
             {
-                throw new Exception($"You are using a newer version of calamity.\nThis is probably because the mod recently received an update.\nPlease downpatch to {calVersion}.");
+                throw new Exception($"You are using a newer version of fargo souls.\nThis is probably because the mod recently received an update.\nPlease downpatch to {fargoVersion}.");
             }
             Dictionary<string, string> defaultFargoOnKillChecks = new()
             {
