@@ -4,12 +4,12 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.Serialization;
-using SeldomDespArchipelago.Systems;
+using SeldomZuilsArchipelago.Systems;
 using System.Runtime.Serialization;
 using Terraria.ModLoader.Config;
-using static SeldomDespArchipelago.Systems.ArchipelagoSystem;
+using static SeldomZuilsArchipelago.Systems.ArchipelagoSystem;
 
-namespace SeldomDespArchipelago.Config
+namespace SeldomZuilsArchipelago.Config
 {
     public class Config : ModConfig
     {

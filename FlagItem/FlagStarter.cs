@@ -1,4 +1,4 @@
-﻿using SeldomDespArchipelago.Systems;
+﻿using SeldomZuilsArchipelago.Systems;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,9 +13,9 @@ using Terraria.ID;
 using Terraria.Localization;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
-using static SeldomDespArchipelago.Systems.ArchipelagoSystem;
+using static SeldomZuilsArchipelago.Systems.ArchipelagoSystem;
 
-namespace SeldomDespArchipelago.FlagItem
+namespace SeldomZuilsArchipelago.FlagItem
 {
     public class FlagStarter : ModItem
     {

@@ -24,15 +24,15 @@ using System.Collections.Immutable;
 using Newtonsoft.Json.Linq;
 using System.IO;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using SeldomDespArchipelago.Systems;
+using SeldomZuilsArchipelago.Systems;
 
-namespace SeldomDespArchipelago.NPCs
+namespace SeldomZuilsArchipelago.NPCs
 {
     [AutoloadHead]
     public class GhostNPC : ModNPC
     {
         int ghostType;
-        public int GhostType {get => ghostType;}
+        public int GhostType { get => ghostType; }
         int transformType;
         public void SetGhostType(int type)
         {

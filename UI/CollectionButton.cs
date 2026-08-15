@@ -1,8 +1,8 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using SeldomDespArchipelago.NPCs;
-using SeldomDespArchipelago.Players;
-using SeldomDespArchipelago.Systems;
+using SeldomZuilsArchipelago.NPCs;
+using SeldomZuilsArchipelago.Players;
+using SeldomZuilsArchipelago.Systems;
 using System.Collections.Generic;
 using System.Reflection;
 using Terraria;
@@ -13,7 +13,7 @@ using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.UI;
 
-namespace SeldomDespArchipelago.UI
+namespace SeldomZuilsArchipelago.UI
 {
     class CollectionButton : UIElement
     {

@@ -1,6 +1,6 @@
 using ReLogic.Utilities;
-using SeldomDespArchipelago.NPCs;
-using SeldomDespArchipelago.Systems;
+using SeldomZuilsArchipelago.NPCs;
+using SeldomZuilsArchipelago.Systems;
 using System.Collections.Generic;
 using System.Reflection;
 using Terraria;
@@ -12,7 +12,7 @@ using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
 
-namespace SeldomDespArchipelago.Players
+namespace SeldomZuilsArchipelago.Players
 {
     public class ArchipelagoPlayer : ModPlayer
     {
