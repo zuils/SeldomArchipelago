@@ -5,7 +5,7 @@ To play using this branch, you must generate and host a game **using the package
 This process is identical to that of most custom games:
 1. Download the .apworld and place it in the `custom_worlds` directory of your Archipelago installation.
 2. Launch `ArchipelagoLauncher.exe` and click `Generate Template YAMLs` in the menu.
-- This should open the `Players/Templates` folder that should contain a new `Terraria_Desp_Beta.yaml` file for configuration.
+- This should open the `Players/Templates` folder that should contain a new `Terraria Beta.yaml` file for configuration.
 3. Configure this file, save a copy, and place it in the `Players` directory, along with whichever `.yaml` files you want to generate with.
 4. Navigate back to `ArchipelagoLauncher.exe` and click `Generate`.
 5. Find the resulting `.zip` file in the `output` directory. From there, you can host the game easily on `archipelago.gg`.
@@ -27,7 +27,8 @@ If you're unclear about what Archipelago is, check out that page's README.
 ## Currently Implemented
 For in-depth information on what each feature does, scroll down to the **Feature Explanation** section.
 ### Major Features
-- Compatibility with Calamity 2.2.1 (Hog Wild update)
+- Compatibility with Calamity 2.2.2 (Hog Wild update)
+- Compatibility with Fargo Souls 1.7.3.9
 - NPC randomization (Vanilla Town NPCs only, no pets, **GFB compatibility untested!**)
 - Wall of Flesh + Princess goals
   - Additional configuration for randomizing checks after the set goal
@@ -102,7 +103,7 @@ This expands upon the "Hardmode Starter" option in stable by allowing all vanill
 Setting a flag for manual activation means that once you receive the item, you gain the ability to trigger the corresponding item instead of it activating manually.
 ### Notes
 **This option allows you to opt out of receiving flags like Hardmode too early and making early-game difficult. Please make sure to configure it before entering a world.**
-Some good examples of flags to set as manual are Hardmode, Post-Plantera (for the dungeon changes especially) and Post-Moon Lord (which, in Calamity, adds incredibly tough enemies to the Hallow and Underworld).
+Some good examples of flags to set as manual are Hardmode, Post-Plantera (for the dungeon changes especially) and Post-Moon Lord (which, in , adds incredibly tough enemies to the Hallow and Underworld).
 ## Advanced AP Chat Configuration
 Accessible through the client-side mod's config.
 Provides the ability to toggle the color and visibility of AP messages unrelated to your world.
