@@ -52,6 +52,7 @@ namespace SeldomZuilsArchipelago
         }
 
         readonly Version calVersion = new Version(2, 2, 2);
+        readonly Version fargoVersion = new Version(1, 7, 3, 9);
 
         public static MethodInfo leviathanRealOnKill = null;
         public override void Load()
@@ -728,16 +729,16 @@ namespace SeldomZuilsArchipelago
             if (!ModLoader.HasMod("CalamityMod")) return;
             var calamity = ModLoader.GetMod("CalamityMod");
 
-            int relativeVersion = calamity.Version.CompareTo(calVersion);
-            if (relativeVersion < 0)
+            int relativeCalVersion = calamity.Version.CompareTo(calVersion);
+            if (relativeCalVersion < 0)
             {
                 throw new Exception($"You are using an older version of Calamity. Please reload with {calVersion}.");
             }
-            else if (relativeVersion > 0)
+            else if (relativeCalVersion > 0)
             {
                 throw new Exception($"You are using a newer version of calamity.\nThis is probably because the mod recently received an update.\nPlease downpatch to {calVersion}.");
             }
-            Dictionary<string, string> defaultOnKillChecks = new()
+            Dictionary<string, string> defaultCalamityOnKillChecks = new()
             {
                 {"DesertScourgeHead", "Desert Scourge"},
                 {"CragmawMire", "Cragmaw Mire"},
@@ -771,7 +772,7 @@ namespace SeldomZuilsArchipelago
             foreach (var type in calamityAssembly.GetTypes())
             {
                 MethodInfo GetOnKill() => type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public);
-                if (defaultOnKillChecks.TryGetValue(type.Name, out string loc))
+                if (defaultCalamityOnKillChecks.TryGetValue(type.Name, out string loc))
                 {
                     MethodInfo onKill = GetOnKill();
                     if (onKill is null) continue;
@@ -921,7 +922,58 @@ namespace SeldomZuilsArchipelago
                 }
             }
             #endregion
+            #region Fargo Souls Reflection
+            if (!ModLoader.HasMod("FargowiltasSouls")) return;
+            var fargo = ModLoader.GetMod("FargowiltasSouls");
+
+            int relativeFargoVersion = fargo.Version.CompareTo(fargoVersion);
+            if (relativeFargoVersion < 0)
+            {
+                throw new Exception($"You are using an older version of Calamity. Please reload with {calVersion}.");
+            }
+            else if (relativeFargoVersion > 0)
+            {
+                throw new Exception($"You are using a newer version of calamity.\nThis is probably because the mod recently received an update.\nPlease downpatch to {calVersion}.");
+            }
+            Dictionary<string, string> defaultFargoOnKillChecks = new()
+            {
+                {"TrojanSquirrel", "Trojan Squirrel"},
+                {"CursedCoffin", "Cursed Coffin"},
+                {"DeviBoss", "Deviantt"},
+                {"BanishedBaron", "Banished Baron"},
+                {"LifeChallenger", "Lifelight"},
+                {"TimberChampion", "Champion of Timber"},
+                {"TerraChampion", "Champion of Terra"},
+                {"EarthChampion", "Champion of Earth"},
+                {"NatureChampion", "Champion of Nature"},
+                {"LifeChampion", "Champion of Life"},
+                {"ShadowChampion", "Champion of Death"},
+                {"SpiritChampion", "Champion of Spirit"},
+                {"WillChampion", "Champion of Will"},
+                {"CosmosChampion", "Eridanus, Champion of Cosmos"},
+                {"AbomBoss", "Abominationn"},
+                {"MutantBoss", "Mutant"},
+            };
+            var fargoAssembly = fargo.GetType().Assembly;
+            foreach (var type in fargoAssembly.GetTypes())
+            {
+                MethodInfo GetOnKill() => type.GetMethod("OnKill", BindingFlags.Instance | BindingFlags.Public);
+
+                if (!defaultFargoOnKillChecks.TryGetValue(type.Name, out string loc))
+                    continue;
+
+                MethodInfo onKill = GetOnKill();
+
+                if (onKill is null)
+                {
+                    Logger.Warn($"Could not find OnKill for Fargo type {type.FullName}");
+                    continue;
+                }
+
+                MonoModHooks.Add(onKill, DefaultSendLocOnKill(loc));
+            }
         }
+            #endregion
 
         public override void HandlePacket(BinaryReader reader, int whoAmI)
         {

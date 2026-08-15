@@ -28,6 +28,7 @@ using FargowiltasSouls.Content.Items.Accessories.Masomode;
 using FargowiltasSouls.Content.Projectiles.Minions;
 using FargowiltasSouls.Content.Patreon.ParadoxWolf;
 using FargowiltasSouls.Content.Patreon.Potato;
+using FargowiltasSouls.Content.Items.Accessories.Souls;
 
 
 namespace SeldomZuilsArchipelago.Systems
@@ -81,12 +82,33 @@ namespace SeldomZuilsArchipelago.Systems
             "Post-Eridanus, Champion of Cosmos" => WorldSavingSystem.DownedBoss[(int)WorldSavingSystem.Downed.CosmosChampion],
             "Post-Abominationn" => WorldSavingSystem.DownedAbom,
             "Post-Mutant" => WorldSavingSystem.DownedMutant,
-            _ => ((Func<bool>)(() =>
-            {
-                ModContent.GetInstance<ArchipelagoSystem>().Chat($"Unknown flag: {flag}");
-                return false;
-            }))(),
+            _ => null,
         };
+
+        private static bool soulOfEternityChecked;
+
+        public static void FargoPostUpdateWorld()
+        {
+            if (soulOfEternityChecked) return;
+
+            int soulOfEternity = ModContent.ItemType<EternitySoul>();
+
+            for (int i = 0; i < Main.maxPlayers; i++)
+            {
+                Player player = Main.player[i];
+
+                if (!player.active)
+                    continue;
+
+                if (!player.HasItem(soulOfEternity))
+                    continue;
+
+                ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Soul of Eternity");
+
+                soulOfEternityChecked = true;
+                break;
+            }
+        }
 
         public static void VanillaBossKilled(int boss)
         {

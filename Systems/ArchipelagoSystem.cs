@@ -338,6 +338,7 @@ namespace SeldomZuilsArchipelago.Systems
                 }
             }
         }
+
         public void ApMessageToChat(LogMessage message)
         {
             var config = ModContent.GetInstance<Config.Config>();
@@ -596,7 +597,7 @@ namespace SeldomZuilsArchipelago.Systems
                 case "Post-Deviantt": FargoSystem.FargoOnKillDeviantt(); break;
                 case "Post-Banished Baron": FargoSystem.FargoOnKillBanishedBaron(); break;
                 case "Post-Lifelight": FargoSystem.FargoOnKillLifelight(); break;
-                case "Post-Betsy": FargoSystem.FargoOnKillBetsy(); break;
+                case "Post-Betsy": FargoSystem.FargoOnKillBetsy(); Chat($"Note: Boss Checklist Mod won't show that you have the Post-Betsy flag."); break;
                 case "Post-Champion of Timber": FargoSystem.FargoOnKillTimberChampion(); break;
                 case "Post-Champion of Terra": FargoSystem.FargoOnKillTerraChampion(); break;
                 case "Post-Champion of Earth": FargoSystem.FargoOnKillEarthChampion(); break;
@@ -701,6 +702,7 @@ namespace SeldomZuilsArchipelago.Systems
                         if (!handled) Chat($"Received unknown item: {item}");
                         break;
                     }
+
             }
         }
         public override void PostUpdateWorld()
@@ -747,6 +749,7 @@ namespace SeldomZuilsArchipelago.Systems
             }
 
             if (ModLoader.HasMod("CalamityMod")) CalamitySystem.CalamityPostUpdateWorld();
+            if (ModLoader.HasMod("FargowiltasSouls")) FargoSystem.FargoPostUpdateWorld();
 
             if (session.victory) return;
 
