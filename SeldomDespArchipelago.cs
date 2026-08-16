@@ -16,6 +16,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Metadata.Ecma335;
+using System.Text;
 using Terraria;
 using Terraria.Achievements;
 using Terraria.Chat;
@@ -51,7 +52,7 @@ namespace SeldomDespArchipelago
             }
         }
 
-        readonly Version calVersion = new Version(2, 2, 2);
+        readonly (Version, Version) calVersionRange = (new Version(2, 2, 2), new Version(2, 2, 4));
 
         public static MethodInfo leviathanRealOnKill = null;
         public override void Load()
@@ -723,15 +724,24 @@ namespace SeldomDespArchipelago
             if (!ModLoader.HasMod("CalamityMod")) return;
             var calamity = ModLoader.GetMod("CalamityMod");
 
-            int relativeVersion = calamity.Version.CompareTo(calVersion);
-            if (relativeVersion < 0)
+            void CheckCompatibility(Mod mod, (Version, Version) versionRange)
             {
-                throw new Exception($"You are using an older version of Calamity. Please reload with {calVersion}.");
+                string exception = null;
+                int stepsFromLowest = mod.Version.CompareTo(versionRange.Item1);
+                int stepsFromHighest = mod.Version.CompareTo(versionRange.Item2);
+                if (stepsFromLowest < 0)
+                {
+                    exception = $"You are using an older version of {mod.DisplayNameClean}.\nPlease reload with version {versionRange.Item2}.";
+                }
+                else if (stepsFromHighest > 0)
+                {
+                    exception = $"You are using a newer version of {mod.DisplayNameClean}.\nThis is probably because the mod recently received an update.\nPlease downpatch to version {versionRange.Item2}.";
+                }
+                if (exception is not null) throw new Exception(exception);
             }
-            else if (relativeVersion > 0)
-            {
-                throw new Exception($"You are using a newer version of calamity.\nThis is probably because the mod recently received an update.\nPlease downpatch to {calVersion}.");
-            }
+
+            CheckCompatibility(calamity, calVersionRange);
+
             Dictionary<string, string> defaultOnKillChecks = new()
             {
                 {"DesertScourgeHead", "Desert Scourge"},
