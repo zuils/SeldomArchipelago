@@ -16,6 +16,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Metadata.Ecma335;
+using System.Text;
 using Terraria;
 using Terraria.Achievements;
 using Terraria.Chat;
@@ -51,10 +52,31 @@ namespace SeldomArchipelagoBeta
             }
         }
 
-        readonly Version calVersion = new Version(2, 2, 2);
-        readonly Version fargoVersion = new Version(1, 7, 3, 9);
-
         public static MethodInfo leviathanRealOnKill = null;
+        private static readonly (Version Min, Version Max) calVersionRange = (new Version(2, 2, 2), new Version(2, 2, 4));
+        private static readonly (Version Min, Version Max) fargoVersionRange = (new Version(1, 7, 3), new Version(1, 7, 3, 9));
+        private static readonly (Version Min, Version Max) fargoCalVersionRange = (new Version(1, 2, 0, 27), new Version(1, 2, 0, 28));
+        private static void CheckCompatibility(Mod mod, (Version Min, Version Max) versionRange)
+        {
+            if (mod.Version < versionRange.Min)
+            {
+                throw new Exception($"You are using an older version of {mod.DisplayNameClean}.\nPlease reload with version {versionRange.Item2}.");
+            }
+
+            if (mod.Version > versionRange.Max)
+            {
+                throw new Exception($"You are using a newer version of {mod.DisplayNameClean}.\nThis is probably because the mod recently received an update.\nPlease downpatch to version {versionRange.Item2}.");
+            }
+        }
+        private static Mod CheckMod(string modName, (Version Min, Version Max) versionRange)
+        {
+            if (!ModLoader.HasMod(modName)) return null;
+
+            Mod mod = ModLoader.GetMod(modName);
+            CheckCompatibility(mod, versionRange);
+            return mod;
+        }
+
         public override void Load()
         {
             var archipelagoSystem = ModContent.GetInstance<ArchipelagoSystem>();
@@ -732,18 +754,9 @@ namespace SeldomArchipelagoBeta
         #region  Calamity Reflection
         void LoadCalamityReflection()
         {
-            if (!ModLoader.HasMod("CalamityMod")) return;
-            var calamity = ModLoader.GetMod("CalamityMod");
+            var calamity = CheckMod("CalamityMod", calVersionRange);
+            if (calamity is null) return;
 
-            int relativeCalVersion = calamity.Version.CompareTo(calVersion);
-            if (relativeCalVersion < 0)
-            {
-                throw new Exception($"You are using an older version of Calamity. Please reload with {calVersion}.");
-            }
-            else if (relativeCalVersion > 0)
-            {
-                throw new Exception($"You are using a newer version of calamity.\nThis is probably because the mod recently received an update.\nPlease downpatch to {calVersion}.");
-            }
             Dictionary<string, string> defaultCalamityOnKillChecks = new()
             {
                 {"DesertScourgeHead", "Desert Scourge"},
@@ -933,18 +946,15 @@ namespace SeldomArchipelagoBeta
         #region Fargo Souls Reflection
         void LoadFargoReflection()
         {
-            if (!ModLoader.HasMod("FargowiltasSouls")) return;
-            var fargo = ModLoader.GetMod("FargowiltasSouls");
+            var fargo = CheckMod("FargowiltasSouls", fargoVersionRange);
+            if (fargo is null) return;
 
-            int relativeFargoVersion = fargo.Version.CompareTo(fargoVersion);
-            if (relativeFargoVersion < 0)
+            if (ModLoader.HasMod("CalamityMod"))
             {
-                throw new Exception($"You are using an older version of Fargo Souls. Please reload with {fargoVersion}.");
+                var fargoCal = CheckMod("FargowiltasCrossmod", fargoCalVersionRange);
+                if (fargoCal is null) return;
             }
-            else if (relativeFargoVersion > 0)
-            {
-                throw new Exception($"You are using a newer version of fargo souls.\nThis is probably because the mod recently received an update.\nPlease downpatch to {fargoVersion}.");
-            }
+
             Dictionary<string, string> defaultFargoOnKillChecks = new()
             {
                 {"TrojanSquirrel", "Trojan Squirrel"},
