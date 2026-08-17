@@ -72,14 +72,14 @@ namespace SeldomArchipelagoBeta.Systems
 
         public static void CalamityPostUpdateWorld()
         {
-            if (CalamityMod.DownedBossSystem.downedBossRush && !ranBossRush) 
+            if (CalamityMod.DownedBossSystem.downedBossRush && !ranBossRush)
             {
                 ModContent.GetInstance<ArchipelagoSystem>().QueueLocation("Boss Rush");
                 ranBossRush = true;
             }
         }
 
-        public static bool CheckCalamityFlag(string flag) => flag switch
+        public static bool? CheckCalamityFlag(string flag) => flag switch
         {
             "Post-Desert Scourge" => CalamityMod.DownedBossSystem.downedDesertScourge,
             "Post-Giant Clam" => CalamityMod.DownedBossSystem.downedCLAM,
@@ -155,7 +155,7 @@ namespace SeldomArchipelagoBeta.Systems
                 newAI = newAi
             };
             int globalIndex = ModContent.GetInstance<CalamityGlobalNPC>().PerEntityIndex;
-            GlobalNPC[] dummyArray = new GlobalNPC[globalIndex +1];
+            GlobalNPC[] dummyArray = new GlobalNPC[globalIndex + 1];
             dummyArray[globalIndex] = calamityNpc;
             typeof(NPC).GetField("_globals", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(entity, dummyArray);
             typeof(ModType<NPC>).GetProperty("Entity").SetValue(npc, entity);
@@ -180,7 +180,7 @@ namespace SeldomArchipelagoBeta.Systems
         {
             var seldomArchipelago = ModContent.GetInstance<SeldomArchipelago>();
             seldomArchipelago.Temp = true;
-            SeldomArchipelago.leviathanRealOnKill.Invoke(new CalamityMod.NPCs.Leviathan.Leviathan(), new object[] { new NPC() {type = ModContent.NPCType<CalamityMod.NPCs.Leviathan.Leviathan>()}});
+            SeldomArchipelago.leviathanRealOnKill.Invoke(new CalamityMod.NPCs.Leviathan.Leviathan(), new object[] { new NPC() { type = ModContent.NPCType<CalamityMod.NPCs.Leviathan.Leviathan>() } });
             seldomArchipelago.Temp = false;
         }
 
