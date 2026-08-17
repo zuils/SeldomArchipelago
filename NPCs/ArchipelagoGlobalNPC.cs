@@ -5,7 +5,6 @@ using Terraria.ModLoader;
 
 namespace SeldomArchipelagoBeta.NPCs
 {
-    [ExtendsFromMod("CalamityMod", "FargowiltasSouls")]
     public class ArchipelagoGlobalNPC : GlobalNPC
     {
         public override void OnKill(NPC npc)
@@ -14,6 +13,7 @@ namespace SeldomArchipelagoBeta.NPCs
             if (ModLoader.HasMod("FargowiltasSouls")) FargoOnKill(npc.type);
         }
 
+        [JITWhenModsEnabled("CalamityMod")]
         void CalamityOnKill(int npc)
         {
             var seldomArchipelago = ModContent.GetInstance<ArchipelagoSystem>();

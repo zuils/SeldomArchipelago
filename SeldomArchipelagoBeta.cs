@@ -726,7 +726,13 @@ namespace SeldomArchipelagoBeta
             if (Main.netMode != NetmodeID.Server) Main.Achievements.OnAchievementCompleted += OnAchievementCompleted;
             #endregion
             // Unmaintainable reflection
-            #region  Calamity Reflection
+            LoadCalamityReflection();
+            LoadFargoReflection();
+        }
+
+        #region  Calamity Reflection
+        void LoadCalamityReflection()
+        {
             if (!ModLoader.HasMod("CalamityMod")) return;
             var calamity = ModLoader.GetMod("CalamityMod");
 
@@ -922,8 +928,12 @@ namespace SeldomArchipelagoBeta
                     }
                 }
             }
-            #endregion
-            #region Fargo Souls Reflection
+        }
+        #endregion
+
+        #region Fargo Souls Reflection
+        void LoadFargoReflection()
+        {
             if (!ModLoader.HasMod("FargowiltasSouls")) return;
             var fargo = ModLoader.GetMod("FargowiltasSouls");
 
@@ -974,7 +984,7 @@ namespace SeldomArchipelagoBeta
                 MonoModHooks.Add(onKill, DefaultSendLocOnKill(loc));
             }
         }
-            #endregion
+        #endregion
 
         public override void HandlePacket(BinaryReader reader, int whoAmI)
         {

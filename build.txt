@@ -1,4 +1,4 @@
-displayName = Archipelago Randomizer (Zuils's Beta)
+displayName = Archipelago Randomizer (BETA)
 author = Seldom, Desp, Zuils
 version = 2.1.0.0
 homepage = https://github.com/zuils/SeldomArchipelago
