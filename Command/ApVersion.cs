@@ -1,10 +1,10 @@
 using System;
-using SeldomZuilsArchipelago.Systems;
+using SeldomArchipelagoBeta.Systems;
 using Terraria;
 using Terraria.GameContent.Events;
 using Terraria.ModLoader;
 
-namespace SeldomZuilsArchipelago.Command
+namespace SeldomArchipelagoBeta.Command
 {
     public class ApVersion : ModCommand
     {

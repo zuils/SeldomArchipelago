@@ -1,7 +1,7 @@
-using SeldomZuilsArchipelago.Systems;
+using SeldomArchipelagoBeta.Systems;
 using Terraria.ModLoader;
 
-namespace SeldomZuilsArchipelago.Command
+namespace SeldomArchipelagoBeta.Command
 {
     public class ApFlagstartCommand : ModCommand
     {

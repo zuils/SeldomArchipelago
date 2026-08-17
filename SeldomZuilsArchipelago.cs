@@ -6,10 +6,10 @@ using Microsoft.CodeAnalysis.Operations;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using SeldomZuilsArchipelago.NPCs;
-using SeldomZuilsArchipelago.Players;
-using SeldomZuilsArchipelago.Systems;
-using SeldomZuilsArchipelago.UI;
+using SeldomArchipelagoBeta.NPCs;
+using SeldomArchipelagoBeta.Players;
+using SeldomArchipelagoBeta.Systems;
+using SeldomArchipelagoBeta.UI;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -28,7 +28,7 @@ using Terraria.Localization;
 using Terraria.ModLoader;
 
 // Note: When pulling commits from here to main, this namespace needs to be refactored.
-namespace SeldomZuilsArchipelago
+namespace SeldomArchipelagoBeta
 {
     // TODO Use a data-oriented approach to get rid of all this repetition
 
@@ -725,7 +725,13 @@ namespace SeldomZuilsArchipelago
             if (Main.netMode != NetmodeID.Server) Main.Achievements.OnAchievementCompleted += OnAchievementCompleted;
             #endregion
             // Unmaintainable reflection
-            #region  Calamity Reflection
+            LoadCalamityReflection();
+            LoadFargoReflection();
+        }
+
+        #region  Calamity Reflection
+        void LoadCalamityReflection()
+        {
             if (!ModLoader.HasMod("CalamityMod")) return;
             var calamity = ModLoader.GetMod("CalamityMod");
 
@@ -921,8 +927,12 @@ namespace SeldomZuilsArchipelago
                     }
                 }
             }
-            #endregion
-            #region Fargo Souls Reflection
+        }
+        #endregion
+
+        #region Fargo Souls Reflection
+        void LoadFargoReflection()
+        {
             if (!ModLoader.HasMod("FargowiltasSouls")) return;
             var fargo = ModLoader.GetMod("FargowiltasSouls");
 
@@ -973,7 +983,7 @@ namespace SeldomZuilsArchipelago
                 MonoModHooks.Add(onKill, DefaultSendLocOnKill(loc));
             }
         }
-            #endregion
+        #endregion
 
         public override void HandlePacket(BinaryReader reader, int whoAmI)
         {

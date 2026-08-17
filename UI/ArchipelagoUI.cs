@@ -1,6 +1,6 @@
 using Terraria.UI;
 
-namespace SeldomZuilsArchipelago.UI
+namespace SeldomArchipelagoBeta.UI
 {
     class ArchipelagoUI : UIState
     {
