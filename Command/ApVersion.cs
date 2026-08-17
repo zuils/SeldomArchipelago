@@ -1,10 +1,10 @@
 using System;
-using SeldomDespArchipelago.Systems;
+using SeldomArchipelagoBeta.Systems;
 using Terraria;
 using Terraria.GameContent.Events;
 using Terraria.ModLoader;
 
-namespace SeldomDespArchipelago.Command
+namespace SeldomArchipelagoBeta.Command
 {
     public class ApVersion : ModCommand
     {

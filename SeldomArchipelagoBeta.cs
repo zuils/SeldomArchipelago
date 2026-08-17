@@ -6,10 +6,10 @@ using Microsoft.CodeAnalysis.Operations;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using SeldomDespArchipelago.NPCs;
-using SeldomDespArchipelago.Players;
-using SeldomDespArchipelago.Systems;
-using SeldomDespArchipelago.UI;
+using SeldomArchipelagoBeta.NPCs;
+using SeldomArchipelagoBeta.Players;
+using SeldomArchipelagoBeta.Systems;
+using SeldomArchipelagoBeta.UI;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -29,7 +29,7 @@ using Terraria.Localization;
 using Terraria.ModLoader;
 
 // Note: When pulling commits from here to main, this namespace needs to be refactored.
-namespace SeldomDespArchipelago
+namespace SeldomArchipelagoBeta
 {
     // TODO Use a data-oriented approach to get rid of all this repetition
     

@@ -4,7 +4,7 @@ using Terraria;
 using Terraria.ModLoader;
 using Terraria.UI;
 
-namespace SeldomDespArchipelago.UI
+namespace SeldomArchipelagoBeta.UI
 {
     [Autoload(Side = ModSide.Client)]
     class UISystem : ModSystem

@@ -12,7 +12,7 @@ using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 
-namespace SeldomDespArchipelago.Systems
+namespace SeldomArchipelagoBeta.Systems
 {
     // Direct usage of Calamity must happen in here, else the mod won't compile without Calamity
     [ExtendsFromMod("CalamityMod")]

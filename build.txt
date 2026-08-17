@@ -1,4 +1,4 @@
-displayName = Archipelago Randomizer (Desp's Beta)
+displayName = Archipelago Randomizer (BETA)
 author = Desp
 version = 2.0.6.1
 homepage = https://github.com/desperandos101/SeldomArchipelago/tree/release

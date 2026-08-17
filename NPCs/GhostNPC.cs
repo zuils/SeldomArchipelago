@@ -24,9 +24,9 @@ using System.Collections.Immutable;
 using Newtonsoft.Json.Linq;
 using System.IO;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using SeldomDespArchipelago.Systems;
+using SeldomArchipelagoBeta.Systems;
 
-namespace SeldomDespArchipelago.NPCs
+namespace SeldomArchipelagoBeta.NPCs
 {
     [AutoloadHead]
     public class GhostNPC : ModNPC

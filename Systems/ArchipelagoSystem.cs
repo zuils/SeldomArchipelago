@@ -6,7 +6,7 @@ using Archipelago.MultiClient.Net.Packets;
 using Microsoft.Xna.Framework;
 using Color = Microsoft.Xna.Framework.Color;
 using Newtonsoft.Json.Linq;
-using SeldomDespArchipelago.Players;
+using SeldomArchipelagoBeta.Players;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -23,9 +23,9 @@ using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
 using Terraria.Social;
 using Terraria.WorldBuilding;
-using SeldomDespArchipelago.FlagItem;
+using SeldomArchipelagoBeta.FlagItem;
 using System.Linq;
-using SeldomDespArchipelago.NPCs;
+using SeldomArchipelagoBeta.NPCs;
 using System.Formats.Tar;
 using Archipelago.MultiClient.Net.MessageLog.Messages;
 using System.Diagnostics.Metrics;
@@ -36,7 +36,7 @@ using System.Text;
 using Archipelago.MultiClient.Net.Helpers;
 using System.Data;
 
-namespace SeldomDespArchipelago.Systems
+namespace SeldomArchipelagoBeta.Systems
 {
     class ArchipelagoSystem : ModSystem
     {
