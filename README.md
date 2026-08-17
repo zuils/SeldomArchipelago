@@ -10,7 +10,8 @@ This process is identical to that of most custom games:
 4. Navigate back to `ArchipelagoLauncher.exe` and click `Generate`.
 5. Find the resulting `.zip` file in the `output` directory. From there, you can host the game easily on `archipelago.gg`.
 ## Installing the Mod
-Download the `SeldomArchipelagoBeta.tmod` file in the corresponding release and place that in C:/Users/**YourPCName**/Documents/My Games/Terraria/tModLoader/Mods.
+The simplest way to install the mod is to subscribe to it [here](https://steamcommunity.com/sharedfiles/filedetails/?id=3676602360).
+Alternatively, you can download the `SeldomArchipelagoBeta.tmod` file in the corresponding release and place that in C:/Users/**YourPCName**/Documents/My Games/Terraria/tModLoader/Mods.
 ## Connecting to a Game
 1. Launch tModLoader, navigate to Workshop > Manage Mods, and check to see if Archipelago Randomizer (Desp's Beta) is properly installed.
 2. Configure the server address, port, slot/player name, password as necessary, and the rest to your liking.
