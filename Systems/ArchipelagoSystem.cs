@@ -41,7 +41,7 @@ namespace SeldomArchipelagoBeta.Systems
     class ArchipelagoSystem : ModSystem
     {
         public readonly Version APversion = new Version(0, 6, 100);
-        public const string APWorldName = "Terraria_Beta";
+        public const string APWorldName = "Terraria Beta";
         // Data that's reset between worlds
         public class WorldState : TagSerializable
         {
@@ -128,6 +128,7 @@ namespace SeldomArchipelagoBeta.Systems
             public string slotName = null;
             public string seed = null;
             public bool calamity = false;
+            public bool fargo = false;
             // List of locations that are currently being sent
             public List<Task<Dictionary<long, ScoutedItemInfo>>> locationQueue = new List<Task<Dictionary<long, ScoutedItemInfo>>>();
             public ArchipelagoSession session;
@@ -153,6 +154,8 @@ namespace SeldomArchipelagoBeta.Systems
             SlotOrSeedMismatch,
             CalamityNeeded,
             NoCalamityNeeded,
+            FargoNeeded,
+            NoFargoNeeded,
             WrongSlot,
             WrongPass,
             WrongGame,
@@ -236,6 +239,7 @@ namespace SeldomArchipelagoBeta.Systems
             }
 
             session.calamity = (long)success.SlotData["calamity"] == 1;
+            session.fargo = (long)success.SlotData["fargo"] == 1;
 
             bool randomizedNPCs = (long)success.SlotData["npc_rando"] == 1;
             string[] randomizedNPCnames = ((JArray)success.SlotData["randomize_npcs"]).ToObject<string[]>();
@@ -306,6 +310,14 @@ namespace SeldomArchipelagoBeta.Systems
                 Reset();
                 return;
             }
+            bool fargoActive = ModLoader.HasMod("FargowiltasSouls");
+            if (fargoActive != session.fargo)
+            {
+                if (fargoActive) status = ConnectStatus.NoFargoNeeded;
+                else status = ConnectStatus.FargoNeeded;
+                Reset();
+                return;
+            }
             status = ConnectStatus.Valid;
 
             // Refresh suspended flags
@@ -326,6 +338,7 @@ namespace SeldomArchipelagoBeta.Systems
                 }
             }
         }
+
         public void ApMessageToChat(LogMessage message)
         {
             var config = ModContent.GetInstance<Config.Config>();
@@ -370,7 +383,7 @@ namespace SeldomArchipelagoBeta.Systems
             else Chat(colorMsg());
         }
 
-        public static string[] flags = { "Post-King Slime", "Post-Desert Scourge", "Post-Giant Clam", "Post-Eye of Cthulhu", "Post-Acid Rain Tier 1", "Post-Crabulon", "Post-Evil Boss", "Post-Old One's Army Tier 1", "Post-Goblin Army", "Post-Queen Bee", "Post-The Hive Mind", "Post-The Perforators", "Post-Skeletron", "Post-Deerclops", "Post-The Slime God", "Hardmode", "Post-Dreadnautilus", "Post-Hardmode Giant Clam", "Post-Pirate Invasion", "Post-Queen Slime", "Post-Aquatic Scourge", "Post-Cragmaw Mire", "Post-Acid Rain Tier 2", "Post-The Twins", "Post-Old One's Army Tier 2", "Post-Brimstone Elemental", "Post-The Destroyer", "Post-Cryogen", "Post-Skeletron Prime", "Post-Calamitas Clone", "Post-Plantera", "Post-Great Sand Shark", "Post-Leviathan and Anahita", "Post-Astrum Aureus", "Post-Golem", "Post-Old One's Army Tier 3", "Post-Martian Madness", "Post-The Plaguebringer Goliath", "Post-Duke Fishron", "Post-Mourning Wood", "Post-Pumpking", "Post-Everscream", "Post-Santa-NK1", "Post-Ice Queen", "Post-Frost Legion", "Post-Ravager", "Post-Empress of Light", "Post-Lunatic Cultist", "Post-Astrum Deus", "Post-Lunar Events", "Post-Moon Lord", "Post-Profaned Guardians", "Post-The Dragonfolly", "Post-Providence, the Profaned Goddess", "Post-Storm Weaver", "Post-Ceaseless Void", "Post-Signus, Envoy of the Devourer", "Post-Polterghast", "Post-Mauler", "Post-Nuclear Terror", "Post-The Old Duke", "Post-The Devourer of Gods", "Post-Yharon, Dragon of Rebirth", "Post-Exo Mechs", "Post-Supreme Witch, Calamitas", "Post-Primordial Wyrm", "Post-Boss Rush" };
+        public static string[] flags = { "Post-Trojan Squirrel", "Post-King Slime", "Post-Desert Scourge", "Post-Giant Clam", "Post-Eye of Cthulhu", "Post-Cursed Coffin", "Post-Acid Rain Tier 1", "Post-Crabulon", "Post-Evil Boss", "Post-Old One's Army Tier 1", "Post-Goblin Army", "Post-Queen Bee", "Post-The Hive Mind", "Post-The Perforators", "Post-Skeletron", "Post-Deerclops", "Post-The Slime God", "Post-Deviantt", "Hardmode", "Post-Dreadnautilus", "Post-Hardmode Giant Clam", "Post-Pirate Invasion", "Post-Queen Slime", "Post-Banished Baron", "Post-Aquatic Scourge", "Post-Cragmaw Mire", "Post-Acid Rain Tier 2", "Post-The Twins", "Post-Old One's Army Tier 2", "Post-Brimstone Elemental", "Post-The Destroyer", "Post-Cryogen", "Post-Skeletron Prime", "Post-Lifelight", "Post-Calamitas Clone", "Post-Plantera", "Post-Great Sand Shark", "Post-Leviathan and Anahita", "Post-Astrum Aureus", "Post-Golem", "Post-Old One's Army Tier 3", "Post-Martian Madness", "Post-The Plaguebringer Goliath", "Post-Duke Fishron", "Post-Mourning Wood", "Post-Pumpking", "Post-Everscream", "Post-Santa-NK1", "Post-Ice Queen", "Post-Frost Legion", "Post-Ravager", "Post-Empress of Light", "Post-Betsy", "Post-Lunatic Cultist", "Post-Astrum Deus", "Post-Lunar Events", "Post-Moon Lord", "Post-Profaned Guardians", "Post-The Dragonfolly", "Post-Providence, the Profaned Goddess", "Post-Champion of Timber", "Post-Champion of Terra", "Post-Champion of Earth", "Post-Champion of Nature", "Post-Champion of Life", "Post-Champion of Death", "Post-Champion of Spirit", "Post-Champion of Will", "Post-Storm Weaver", "Post-Ceaseless Void", "Post-Signus, Envoy of the Devourer", "Post-Polterghast", "Post-Mauler", "Post-Nuclear Terror", "Post-The Old Duke", "Post-The Devourer of Gods", "Post-Eridanus, Champion of Cosmos", "Post-Yharon, Dragon of Rebirth", "Post-Abominationn", "Post-Exo Mechs", "Post-Supreme Witch, Calamitas", "Post-Primordial Wyrm", "Post-Mutant", "Post-Boss Rush" };
 
         public static bool FindFlag(string flag, out string fuzzy)
         {
@@ -425,8 +438,23 @@ namespace SeldomArchipelagoBeta.Systems
             "Post-Lunatic Cultist" => NPC.downedAncientCultist,
             "Post-Lunar Events" => NPC.downedTowerNebula,
             "Post-Moon Lord" => NPC.downedMoonlord,
-            _ => ModLoader.HasMod("CalamityMod") ? CalamitySystem.CheckCalamityFlag(flag) : false,
+            _ => CheckModFlag(flag),
         };
+
+        private bool CheckModFlag(string flag)
+        {
+            bool? result = null;
+            if (ModLoader.HasMod("CalamityMod")) result = CalamitySystem.CheckCalamityFlag(flag);
+            if (result is null && ModLoader.HasMod("FargowiltasSouls")) result = FargoSystem.CheckFargoFlag(flag);
+
+            if (result is null)
+            {
+                Chat($"Unknown flag: {flag}");
+                return false;
+            }
+            return result.Value;
+        }
+
         public static Dictionary<string, int> npcNameToID = new()
             {
                 {"Guide", NPCID.Guide },
@@ -476,7 +504,8 @@ namespace SeldomArchipelagoBeta.Systems
                 });
                 world.suspendedFlags.Add(item);
                 return;
-            } else
+            }
+            else
             {
                 world.suspendedFlags.Remove(item);
             }
@@ -563,6 +592,23 @@ namespace SeldomArchipelagoBeta.Systems
                 case "Post-Supreme Witch, Calamitas": CalamitySystem.CalamityOnKillSupremeWitchCalamitas(); break;
                 case "Post-Primordial Wyrm": CalamitySystem.CalamityPrimordialWyrmDowned(); break;
                 case "Post-Boss Rush": break;  // TODO: fix Post-Boss Rush sending the boss rush location check
+                case "Post-Trojan Squirrel": FargoSystem.FargoOnKillTrojanSquirrel(); break;
+                case "Post-Cursed Coffin": FargoSystem.FargoOnKillCursedCoffin(); break;
+                case "Post-Deviantt": FargoSystem.FargoOnKillDeviantt(); break;
+                case "Post-Banished Baron": FargoSystem.FargoOnKillBanishedBaron(); break;
+                case "Post-Lifelight": FargoSystem.FargoOnKillLifelight(); break;
+                case "Post-Betsy": FargoSystem.FargoOnKillBetsy(); Chat($"Note: Boss Checklist Mod won't show that you have the Post-Betsy flag."); break;
+                case "Post-Champion of Timber": FargoSystem.FargoOnKillTimberChampion(); break;
+                case "Post-Champion of Terra": FargoSystem.FargoOnKillTerraChampion(); break;
+                case "Post-Champion of Earth": FargoSystem.FargoOnKillEarthChampion(); break;
+                case "Post-Champion of Nature": FargoSystem.FargoOnKillNatureChampion(); break;
+                case "Post-Champion of Life": FargoSystem.FargoOnKillLifeChampion(); break;
+                case "Post-Champion of Death": FargoSystem.FargoOnKillDeathChampion(); break;
+                case "Post-Champion of Spirit": FargoSystem.FargoOnKillSpiritChampion(); break;
+                case "Post-Champion of Will": FargoSystem.FargoOnKillWillChampion(); break;
+                case "Post-Eridanus, Champion of Cosmos": FargoSystem.FargoOnKillCosmosChampion(); break;
+                case "Post-Abominationn": FargoSystem.FargoOnKillAbominationn(); break;
+                case "Post-Mutant": FargoSystem.FargoOnKillMutant(); break;
                 case "Reward: Hermes Boots": GiveItem(ItemID.HermesBoots); break;
                 case "Reward: Magic Mirror": GiveItem(ItemID.MagicMirror); break;
                 case "Reward: Demon Conch": GiveItem(ItemID.DemonConch); break;
@@ -650,11 +696,12 @@ namespace SeldomArchipelagoBeta.Systems
                 case null: break;
                 default:
                     {
-                        bool calSuccess = CalamitySystem.GiveItem(item);
-                        if (!calSuccess) Chat($"Received unknown item: {item}");
+                        bool handled = false;
+                        if (ModLoader.HasMod("CalamityMod")) handled = CalamitySystem.GiveItem(item);
+                        if (!handled && ModLoader.HasMod("FargowiltasSouls")) handled = FargoSystem.GiveItem(item);
+                        if (!handled) Chat($"Received unknown item: {item}");
                         break;
                     }
-                    
             }
         }
         public override void PostUpdateWorld()
@@ -701,6 +748,7 @@ namespace SeldomArchipelagoBeta.Systems
             }
 
             if (ModLoader.HasMod("CalamityMod")) CalamitySystem.CalamityPostUpdateWorld();
+            if (ModLoader.HasMod("FargowiltasSouls")) FargoSystem.FargoPostUpdateWorld();
 
             if (session.victory) return;
 
@@ -739,8 +787,9 @@ namespace SeldomArchipelagoBeta.Systems
             desiredAPversion = null;
             Reset();
         }
-        
-        public string[] Status() {
+
+        public string[] Status()
+        {
             if (status == ConnectStatus.Valid)
             {
                 List<string> msg = ["Archipelago is active!"];
@@ -751,7 +800,7 @@ namespace SeldomArchipelagoBeta.Systems
                     msg.Add("[c/FF5757:NOTICE:] You have forced off NPC Ghosting. Please verify that your slot has NPC Randomization disabled.");
                 }
                 return msg.ToArray();
-                    
+
             }
             return status switch
             {
@@ -792,6 +841,16 @@ namespace SeldomArchipelagoBeta.Systems
                 {
                     "The multiworld slot you connected to has Calamity integration disabled, but you have the mod enabled in your modlist.",
                     "You have been disconnected from the server. Please disable Calamity, then reload this world."
+                },
+                ConnectStatus.FargoNeeded => new[]
+                {
+                    "The multiworld slot you connected to has Fargo Souls integration enabled, but you do not have the mod enabled in your modlist.",
+                    "You have been disconnected from the server. Please enable Fargo Souls, then reload this world."
+                },
+                ConnectStatus.NoFargoNeeded => new[]
+                {
+                    "The multiworld slot you connected to has Fargo Souls integration disabled, but you have the mod enabled in your modlist.",
+                    "You have been disconnected from the server. Please disable Fargo Souls, then reload this world."
                 },
                 ConnectStatus.ClientOlder => new[]
                 {
@@ -1006,6 +1065,7 @@ namespace SeldomArchipelagoBeta.Systems
         static void BossFlag(int boss)
         {
             if (ModLoader.HasMod("CalamityMod")) CalamitySystem.VanillaBossKilled(boss);
+            if (ModLoader.HasMod("FargowiltasSouls")) FargoSystem.VanillaBossKilled(boss);
         }
 
         void GiveItem(int? item, Action<Player> giveItem)

@@ -92,6 +92,7 @@ Mods: {
 				}
 
 				DisplayName: Ghost N P C
+				Census.SpawnCondition: Conditions unknown
 			}
 
 			CollectionNPC.DisplayName: Collection N P C

@@ -32,7 +32,7 @@ namespace SeldomArchipelagoBeta.NPCs
     public class GhostNPC : ModNPC
     {
         int ghostType;
-        public int GhostType {get => ghostType;}
+        public int GhostType { get => ghostType; }
         int transformType;
         public void SetGhostType(int type)
         {

@@ -4,8 +4,6 @@
 /ref
 /Backup
 /UpgradeLog.html
-*.csproj
-/lib/CalamityMod.dll
 /.idea
 /Properties
 /.vscode
