@@ -156,6 +156,7 @@ namespace SeldomArchipelagoBeta.Systems
             NoCalamityNeeded,
             FargoNeeded,
             NoFargoNeeded,
+            FargoCalNeeded,
             WrongSlot,
             WrongPass,
             WrongGame,
@@ -317,6 +318,16 @@ namespace SeldomArchipelagoBeta.Systems
                 else status = ConnectStatus.FargoNeeded;
                 Reset();
                 return;
+            }
+            if (session.calamity && session.fargo)
+            {
+                bool fargoCalActive = ModLoader.HasMod("FargowiltasCrossmod");
+                if (!fargoCalActive)
+                {
+                    status = ConnectStatus.FargoCalNeeded;
+                    Reset();
+                    return;
+                }
             }
             status = ConnectStatus.Valid;
 
@@ -844,13 +855,18 @@ namespace SeldomArchipelagoBeta.Systems
                 },
                 ConnectStatus.FargoNeeded => new[]
                 {
-                    "The multiworld slot you connected to has Fargo Souls integration enabled, but you do not have the mod enabled in your modlist.",
+                    "The multiworld slot you connected to has Fargo's Souls integration enabled, but you do not have the mod enabled in your modlist.",
                     "You have been disconnected from the server. Please enable Fargo Souls, then reload this world."
                 },
                 ConnectStatus.NoFargoNeeded => new[]
                 {
-                    "The multiworld slot you connected to has Fargo Souls integration disabled, but you have the mod enabled in your modlist.",
+                    "The multiworld slot you connected to has Fargo's Souls integration disabled, but you have the mod enabled in your modlist.",
                     "You have been disconnected from the server. Please disable Fargo Souls, then reload this world."
+                },
+                ConnectStatus.FargoCalNeeded => new[]
+                {
+                    "The multiworld slot you connected to has both Calamity and Fargo's Souls integration enabled, but you do not have the Fargo's Souls DLC mod enabled in your modlist.",
+                    "You have been disconnected from the server. Please enable Fargo's Souls DLC, then reload this world."
                 },
                 ConnectStatus.ClientOlder => new[]
                 {
