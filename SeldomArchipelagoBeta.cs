@@ -944,6 +944,13 @@ namespace SeldomArchipelagoBeta
             var fargo = CheckMod("FargowiltasSouls", fargoVersionRange);
             if (fargo is null) return;
 
+            if (ModLoader.HasMod("CalamityMod"))
+            {
+                var fargoCal = CheckMod("FargowiltasCrossmod", fargoCalVersionRange);
+                if (fargoCal is null)
+                    throw new Exception("You have both Calamity and Fargo's Souls enabled, but Fargo's Souls DLC is missing.\nPlease install it to use the Archipelago mod with both Calamity and Fargo's Souls.");
+            }
+
             Dictionary<string, string> defaultFargoOnKillChecks = new()
             {
                 {"TrojanSquirrel", "Trojan Squirrel"},
